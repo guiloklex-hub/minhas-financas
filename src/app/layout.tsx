@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings } from "lucide-react";
+import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +48,9 @@ export default function RootLayout({
             <Link href="/orcamentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
               <PieChart size={18} /> Orçamentos
             </Link>
+            <Link href="/investimentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-blue-400">
+              <TrendingUp size={18} /> Investimentos
+            </Link>
             <Link href="/configuracoes/categorias" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
               <Settings size={18} /> Configurações
             </Link>
@@ -77,6 +80,10 @@ export default function RootLayout({
           <Link href="/transacoes" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
             <ArrowLeftRight size={20} />
             <span className="text-[10px] mt-1 font-medium">Extrato</span>
+          </Link>
+          <Link href="/investimentos" className="flex flex-col items-center text-blue-500 hover:text-blue-400 transition-colors">
+            <TrendingUp size={20} />
+            <span className="text-[10px] mt-1 font-medium">Investir</span>
           </Link>
           <Link href="/configuracoes/categorias" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
             <Settings size={20} />

@@ -135,3 +135,84 @@ export async function testGeminiConnection() {
     return { success: false, message: e.message || "Erro de conexão ou chave inválida." };
   }
 }
+
+export async function simulateInvestmentScenario(prompt: string) {
+  const startTime = performance.now();
+  let status = "SUCCESS";
+  let errorMessage: string | null = null;
+  let promptTokens = 0;
+  let completionTokens = 0;
+  let totalTokens = 0;
+  let costUsd = 0;
+
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY não configurada.");
+    }
+
+    // 1. Coletar carteira
+    const investments = await prisma.investment.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const portfolioContext = investments.length > 0 
+      ? investments.map(inv => `- ${inv.name} (${inv.type}): R$ ${inv.currentAmount.toFixed(2)} rendendo ${(inv.yieldRate * 100).toFixed(2)}% a.a. Vencimento: ${inv.maturityDate ? new Date(inv.maturityDate).toLocaleDateString() : 'Indefinido'}`).join('\n')
+      : "O usuário não possui nenhum investimento cadastrado no momento.";
+
+    // 2. Preparar prompt e regras
+    const systemInstruction = `
+Você é um planejador financeiro quantitativo e calculista.
+Sua missão é ler a pergunta "E se?" do usuário e realizar os cálculos necessários para responder de forma clara.
+
+Carteira Atual do Usuário:
+${portfolioContext}
+
+Regras Matemáticas e Tributárias do Brasil a considerar em seus cálculos mentais:
+- Juros Compostos Anuais: M = P * (1 + i)^n
+- Imposto de Renda Regressivo (para Renda Fixa):
+  * Até 180 dias: 22.5% sobre o lucro
+  * De 181 a 360 dias: 20%
+  * De 361 a 720 dias: 17.5%
+  * Acima de 720 dias: 15%
+- IOF: altíssimo para saques com menos de 30 dias (deve alertar se for o caso).
+
+Estrutura da Resposta:
+- Use formatação Markdown.
+- Calcule e mostre o Custo de Oportunidade (ex: quanto deixará de ganhar se sacar antes).
+- Dê um veredito direto e matemático se vale a pena ou não a ação proposta.
+
+Pergunta do Usuário: "${prompt}"
+`;
+
+    // 3. Chamada ao Gemini
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const modelName = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+    const model = genAI.getGenerativeModel({ model: modelName });
+
+    const result = await model.generateContent(systemInstruction);
+    
+    // Telemetria
+    if (result.response.usageMetadata) {
+      promptTokens = result.response.usageMetadata.promptTokenCount;
+      completionTokens = result.response.usageMetadata.candidatesTokenCount;
+      totalTokens = result.response.usageMetadata.totalTokenCount;
+      costUsd = (promptTokens / 1_000_000 * 0.1) + (completionTokens / 1_000_000 * 0.4);
+    }
+
+    const responseText = result.response.text();
+
+    const latency = performance.now() - startTime;
+    await logAiUsage("Simulador E-Se", status, null, promptTokens, completionTokens, totalTokens, latency, costUsd);
+
+    return { success: true, answer: responseText };
+  } catch (e: any) {
+    status = "ERROR";
+    errorMessage = e.message || "Unknown error";
+    const latency = performance.now() - startTime;
+    await logAiUsage("Simulador E-Se", status, errorMessage, promptTokens, completionTokens, totalTokens, latency, costUsd);
+
+    console.error("AI Simulator Error:", e);
+    return { success: false, error: errorMessage };
+  }
+}

@@ -72,3 +72,15 @@ model AiUsageLog {
   createdAt        DateTime @default(now())
 }
 
+model Investment {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   // "FIXED_INCOME", "VARIABLE_INCOME", "CRYPTO"
+  initialAmount Float
+  currentAmount Float
+  yieldRate     Float    // Taxa anual, ex: 0.105 para 10.5%
+  startDate     DateTime
+  maturityDate  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
