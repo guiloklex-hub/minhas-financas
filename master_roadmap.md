@@ -1,38 +1,20 @@
-# Master Roadmap: Gerenciador de Finanças
+# Master Roadmap - Minhas Finanças (Premium)
 
-Este documento detalha as 5 fases estruturais para a construção da versão completa do Gerenciador de Finanças, seguindo a stack Next.js App Router, Server Actions, Prisma e Tailwind CSS (Dark/Minimalista).
+Objetivo: Desenvolver a versão Premium e Definitiva do Gerenciador de Finanças.
 
-## Fase 1: Gestão de Contas
-**Objetivo:** Permitir ao usuário criar, editar e excluir contas (ex: Carteira, Nubank, Itaú), além de definir seus saldos iniciais pela interface.
-- **Server Actions:** `createAccount`, `updateAccount`, `deleteAccount` (em `src/actions/accounts.ts`).
-- **Componentes e Páginas:**
-  - Página `/contas` para listar todas as contas atuais.
-  - Formulário modal ou página para Adicionar/Editar Conta.
-- **Integração:** Atualizar o Dashboard (`/`) para refletir os saldos globais reais consolidados.
+## Fases de Desenvolvimento
 
-## Fase 2: Módulo de Transações
-**Objetivo:** CRUD completo de receitas, despesas e transferências entre as contas.
-- **Server Actions:** `createTransaction`, `updateTransaction`, `deleteTransaction` (em `src/actions/transactions.ts`).
-- **Componentes e Páginas:**
-  - Página `/transacoes` com tabela moderna e filtros (por mês, tipo, conta, categoria).
-  - Formulário para registrar Nova Transação com seletores de Conta, Categoria, Tipo e Data.
+- **Fase 1: Gráficos e Analytics no Dashboard**
+  Implementação do Recharts para receitas vs despesas e gráfico de pizza de categorias no dashboard principal (`src/app/page.tsx`).
 
-## Fase 3: Orçamentos (Budgets)
-**Objetivo:** Definição e acompanhamento de metas mensais por categoria.
-- **Server Actions:** `createBudget`, `updateBudget`, `deleteBudget` (em `src/actions/budgets.ts`).
-- **Componentes e Páginas:**
-  - Página `/orcamentos` exibindo as metas do mês atual vs. o realizado (com barras de progresso).
-  - Integração com o fluxo de despesas para calcular o progresso automaticamente.
+- **Fase 2: Transferências entre Contas**
+  Ajuste no modelo do Prisma e criação de Server Actions/UI para realizar transferências de saldos entre contas.
 
-## Fase 4: Relatórios e Gráficos
-**Objetivo:** Dashboards interativos para análise financeira utilizando Recharts.
-- **Server Actions:** Actions para buscar dados agrupados para os gráficos (ex: `getMonthlyCashFlow`, `getExpensesByCategory`).
-- **Componentes e Páginas:**
-  - Inclusão de gráficos de barras/linhas no Dashboard ou em página de `/relatorios`.
-  - Gráfico de pizza (Pie chart) para gastos por categoria.
+- **Fase 3: Transações Recorrentes**
+  Lógica e UI para duplicar despesas fixas mensalmente de forma automatizada.
 
-## Fase 5: Painel de Insights
-**Objetivo:** Resumo analítico textual ou destacados de métricas-chave do comportamento financeiro do mês (ex: "Sua maior despesa este mês foi Alimentação").
-- **Componentes e Páginas:**
-  - Cards de Insights na página principal.
-  - Algoritmos simples em Server Components para analisar dados do mês vs. mês anterior.
+- **Fase 4: Importador de Arquivos**
+  Leitura e processamento de CSV/OFX para criação de transações em massa.
+
+- **Fase 5: Tela de Insights**
+  Módulo analítico que compara os gastos atuais com os de meses anteriores, fornecendo um resumo inteligente do mês.

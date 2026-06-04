@@ -1,17 +1,19 @@
 "use client"
 
-import { useTransition } from "react"
+import { useTransition, useState } from "react"
 import { createTransaction } from "@/actions/transactions"
 import { Category, Account } from "@prisma/client"
 
 export default function TransactionForm({ categories, accounts }: { categories: Category[], accounts: Account[] }) {
   const [isPending, startTransition] = useTransition();
+  const [isRecurring, setIsRecurring] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
       const result = await createTransaction(formData);
       if (result.success) {
         (document.getElementById("transaction-form") as HTMLFormElement).reset();
+        setIsRecurring(false);
       } else {
         alert(result.error);
       }
@@ -64,6 +66,35 @@ export default function TransactionForm({ categories, accounts }: { categories: 
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4 p-4 border border-[var(--color-border)] rounded-md bg-black/20">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input 
+            type="checkbox" 
+            name="isRecurring"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+            className="w-4 h-4 rounded border-zinc-700 text-emerald-500 focus:ring-emerald-500 bg-zinc-950"
+          />
+          <span className="text-sm font-medium text-white/90">Transação Recorrente?</span>
+        </label>
+        
+        {isRecurring && (
+          <div>
+            <label htmlFor="recurrenceMonths" className="block text-sm font-medium mb-1 text-white/80">Repetir por quantos meses?</label>
+            <input 
+              type="number" 
+              id="recurrenceMonths" 
+              name="recurrenceMonths" 
+              min="2" 
+              max="24"
+              defaultValue="2"
+              className="w-full md:w-1/3 bg-black/50 border border-[var(--color-border)] rounded-md p-2 focus:outline-none focus:border-white/50 transition-colors" 
+            />
+            <p className="text-xs text-white/50 mt-1">Gera cópias desta transação para os meses seguintes.</p>
+          </div>
+        )}
       </div>
 
       <button 

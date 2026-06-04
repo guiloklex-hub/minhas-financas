@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import TransactionForm from "./TransactionForm"
+import CsvImporter from "./CsvImporter"
 
 export default async function TransacoesPage() {
   let categories = await prisma.category.findMany();
@@ -38,7 +39,10 @@ export default async function TransacoesPage() {
     <div className="space-y-8">
       <h2 className="text-3xl font-bold tracking-tight">Transações</h2>
       
-      <TransactionForm categories={categories} accounts={accounts} />
+      <div className="grid grid-cols-1 gap-6">
+        <TransactionForm categories={categories} accounts={accounts} />
+        <CsvImporter categories={categories} accounts={accounts} />
+      </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">

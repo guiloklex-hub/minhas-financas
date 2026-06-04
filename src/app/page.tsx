@@ -1,54 +1,114 @@
 import { prisma } from "@/lib/prisma"
+import { IncomeExpenseBarChart } from "@/components/charts/IncomeExpenseBarChart";
+import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 
 export default async function Dashboard() {
-  const transactions = await prisma.transaction.findMany();
   const accounts = await prisma.account.findMany({
     include: { transactions: true }
   });
 
-  const income = transactions
+  // Calculate current month boundaries
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // Fetch transactions for the current month to power the charts
+  const currentMonthTransactions = await prisma.transaction.findMany({
+    where: {
+      date: {
+        gte: firstDayOfMonth,
+        lte: lastDayOfMonth,
+      }
+    },
+    include: { category: true }
+  });
+
+  const income = currentMonthTransactions
     .filter(t => t.type === "INCOME")
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const expense = transactions
+  const expense = currentMonthTransactions
     .filter(t => t.type === "EXPENSE")
     .reduce((acc, t) => acc + t.amount, 0);
 
   const totalInitialBalance = accounts.reduce((acc, account) => acc + account.initialBalance, 0);
-  const balance = totalInitialBalance + income - expense;
+  
+  // To get the total balance we actually need all transactions, not just the current month
+  const allTransactions = await prisma.transaction.findMany();
+  const totalIncome = allTransactions.filter(t => t.type === "INCOME").reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = allTransactions.filter(t => t.type === "EXPENSE").reduce((acc, t) => acc + t.amount, 0);
+  const balance = totalInitialBalance + totalIncome - totalExpense;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
+  // Prepare data for Bar Chart (Current Month)
+  const barChartData = [
+    {
+      name: 'Mês Atual',
+      receitas: income,
+      despesas: expense,
+    }
+  ];
+
+  // Prepare data for Pie Chart (Current Month Expenses by Category)
+  const expensesByCategory = currentMonthTransactions
+    .filter(t => t.type === "EXPENSE")
+    .reduce((acc, t) => {
+      const catName = t.category?.name || "Sem Categoria";
+      if (!acc[catName]) {
+        acc[catName] = { name: catName, value: 0, color: t.category?.color || "#52525b" };
+      }
+      acc[catName].value += t.amount;
+      return acc;
+    }, {} as Record<string, { name: string, value: number, color: string }>);
+
+  const pieChartData = Object.values(expensesByCategory);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight mb-6">Resumo Financeiro</h2>
+        <h2 className="text-3xl font-bold tracking-tight mb-6 text-white">Resumo Financeiro</h2>
         
         <div className="grid gap-6 md:grid-cols-3">
           {/* Balance Card */}
-          <div className="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm flex flex-col justify-between">
-            <h3 className="text-sm font-medium text-white/70 uppercase tracking-wider mb-2">Saldo Global</h3>
-            <p className="text-4xl font-semibold">{formatCurrency(balance)}</p>
+          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-zinc-700 transition-all duration-200">
+            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Saldo Global</h3>
+            <p className="text-4xl font-semibold text-white">{formatCurrency(balance)}</p>
           </div>
 
           {/* Income Card */}
-          <div className="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm flex flex-col justify-between">
-            <h3 className="text-sm font-medium text-white/70 uppercase tracking-wider mb-2">Receitas</h3>
-            <p className="text-4xl font-semibold text-[var(--color-income)]">{formatCurrency(income)}</p>
+          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-emerald-900/30 transition-all duration-200">
+            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Receitas (Mês Atual)</h3>
+            <p className="text-4xl font-semibold text-emerald-500">{formatCurrency(income)}</p>
           </div>
 
           {/* Expense Card */}
-          <div className="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm flex flex-col justify-between">
-            <h3 className="text-sm font-medium text-white/70 uppercase tracking-wider mb-2">Despesas</h3>
-            <p className="text-4xl font-semibold text-[var(--color-expense)]">{formatCurrency(expense)}</p>
+          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-rose-900/30 transition-all duration-200">
+            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Despesas (Mês Atual)</h3>
+            <p className="text-4xl font-semibold text-rose-500">{formatCurrency(expense)}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
+          <h3 className="text-lg font-bold tracking-tight mb-2 text-white">Receitas vs Despesas</h3>
+          <p className="text-sm text-zinc-400 mb-4">Comparativo do mês atual</p>
+          <IncomeExpenseBarChart data={barChartData} />
+        </div>
+        
+        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
+          <h3 className="text-lg font-bold tracking-tight mb-2 text-white">Despesas por Categoria</h3>
+          <p className="text-sm text-zinc-400 mb-4">Distribuição do mês atual</p>
+          <CategoryPieChart data={pieChartData} />
         </div>
       </div>
       
       <div>
-        <h3 className="text-xl font-bold tracking-tight mb-4">Minhas Contas</h3>
+        <h3 className="text-xl font-bold tracking-tight mb-4 text-white">Minhas Contas</h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {accounts.map(acc => {
             const accIncome = acc.transactions.filter(t => t.type === "INCOME").reduce((sum, t) => sum + t.amount, 0);
@@ -56,14 +116,14 @@ export default async function Dashboard() {
             const accBalance = acc.initialBalance + accIncome - accExpense;
             
             return (
-              <div key={acc.id} className="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm">
+              <div key={acc.id} className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm hover:border-zinc-700 transition-all duration-200">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 className="font-semibold text-lg">{acc.name}</h4>
-                    <span className="text-xs text-white/50 uppercase tracking-wider">{acc.type}</span>
+                    <h4 className="font-semibold text-lg text-white">{acc.name}</h4>
+                    <span className="text-xs text-zinc-500 uppercase tracking-wider">{acc.type}</span>
                   </div>
                 </div>
-                <p className={`text-2xl font-bold ${accBalance >= 0 ? '' : 'text-[var(--color-expense)]'}`}>
+                <p className={`text-2xl font-bold ${accBalance >= 0 ? 'text-white' : 'text-rose-500'}`}>
                   {formatCurrency(accBalance)}
                 </p>
               </div>

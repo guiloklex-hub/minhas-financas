@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Account } from "@prisma/client";
 import AccountForm from "./AccountForm";
+import TransferForm from "./TransferForm";
 
 interface AccountsListProps {
   initialAccounts: Account[];
@@ -10,6 +11,7 @@ interface AccountsListProps {
 
 export default function AccountsList({ initialAccounts }: AccountsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isTransferFormOpen, setIsTransferFormOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
   const formatCurrency = (value: number) => {
@@ -19,15 +21,23 @@ export default function AccountsList({ initialAccounts }: AccountsListProps) {
   const handleEdit = (account: Account) => {
     setSelectedAccount(account);
     setIsFormOpen(true);
+    setIsTransferFormOpen(false);
   };
 
   const handleAddNew = () => {
     setSelectedAccount(null);
     setIsFormOpen(true);
+    setIsTransferFormOpen(false);
+  };
+
+  const handleTransfer = () => {
+    setIsTransferFormOpen(true);
+    setIsFormOpen(false);
   };
 
   const handleSuccess = () => {
     setIsFormOpen(false);
+    setIsTransferFormOpen(false);
     setSelectedAccount(null);
   };
 
@@ -35,13 +45,31 @@ export default function AccountsList({ initialAccounts }: AccountsListProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Gestão de Contas</h2>
-        <button 
-          onClick={handleAddNew}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-md transition-all duration-200"
-        >
-          Nova Conta
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleTransfer}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-all duration-200"
+          >
+            Transferência
+          </button>
+          <button 
+            onClick={handleAddNew}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-md transition-all duration-200"
+          >
+            Nova Conta
+          </button>
+        </div>
       </div>
+
+      {isTransferFormOpen && (
+        <div className="mb-8">
+          <TransferForm 
+            accounts={initialAccounts}
+            onSuccess={handleSuccess}
+            onCancel={() => setIsTransferFormOpen(false)}
+          />
+        </div>
+      )}
 
       {isFormOpen && (
         <div className="mb-8">

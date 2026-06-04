@@ -45,6 +45,10 @@ model Transaction {
   type       String   // "INCOME" ou "EXPENSE"
   date       DateTime
   
+  isTransfer      Boolean  @default(false)
+  transferGroupId String?
+  recurrenceGroupId String?
+  
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
   

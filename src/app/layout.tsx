@@ -47,6 +47,9 @@ export default function RootLayout({
             <Link href="/orcamentos" className="block px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
               Orçamentos
             </Link>
+            <Link href="/insights" className="block px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-emerald-400">
+              Insights ✨
+            </Link>
           </nav>
         </aside>
         
