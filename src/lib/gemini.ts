@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { prisma } from "@/lib/prisma";
 
 export type ParsedTransaction = {
   amount: number;
@@ -7,19 +8,48 @@ export type ParsedTransaction = {
   type: "INCOME" | "EXPENSE";
 };
 
+export async function logAiUsage(feature: string, status: string, errorMessage: string | null, promptTokens: number, completionTokens: number, totalTokens: number, latencyMs: number, costUsd: number) {
+  try {
+    await prisma.aiUsageLog.create({
+      data: {
+        feature,
+        status,
+        errorMessage,
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        latencyMs: Math.round(latencyMs),
+        costUsd
+      }
+    });
+  } catch (e) {
+    console.error("Failed to log AI usage:", e);
+  }
+}
+
 export async function parseTransactionText(
   text: string,
   categories: { id: string; name: string }[]
 ): Promise<ParsedTransaction> {
+  const startTime = performance.now();
+  let status = "SUCCESS";
+  let errorMessage: string | null = null;
+  let promptTokens = 0;
+  let completionTokens = 0;
+  let totalTokens = 0;
+  let costUsd = 0;
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY não configurada.");
+    status = "ERROR";
+    errorMessage = "GEMINI_API_KEY não configurada.";
+    await logAiUsage("Lançamento Mágico", status, errorMessage, 0, 0, 0, performance.now() - startTime, 0);
+    throw new Error(errorMessage);
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const modelName = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
   
-  // O prompt especifica o uso do gemini-3.1-flash-lite (ou o que estiver no .env)
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {
@@ -63,14 +93,32 @@ Se não encontrar uma categoria perfeita, escolha a que mais se aproxima ou lanc
 Texto do usuário: "${text}"
 `;
 
-  const result = await model.generateContent(prompt);
-  const responseText = result.response.text();
-  
   try {
+    const result = await model.generateContent(prompt);
+    
+    // Telemetry capture
+    if (result.response.usageMetadata) {
+      promptTokens = result.response.usageMetadata.promptTokenCount;
+      completionTokens = result.response.usageMetadata.candidatesTokenCount;
+      totalTokens = result.response.usageMetadata.totalTokenCount;
+      // Cost: $0.1 per 1M prompt, $0.4 per 1M completion
+      costUsd = (promptTokens / 1_000_000 * 0.1) + (completionTokens / 1_000_000 * 0.4);
+    }
+
+    const responseText = result.response.text();
     const parsed = JSON.parse(responseText) as ParsedTransaction;
+    
+    const latency = performance.now() - startTime;
+    await logAiUsage("Lançamento Mágico", status, null, promptTokens, completionTokens, totalTokens, latency, costUsd);
+    
     return parsed;
-  } catch (e) {
-    console.error("Failed to parse Gemini response:", responseText);
+  } catch (e: any) {
+    status = "ERROR";
+    errorMessage = e.message || "Failed to parse JSON";
+    const latency = performance.now() - startTime;
+    await logAiUsage("Lançamento Mágico", status, errorMessage, promptTokens, completionTokens, totalTokens, latency, costUsd);
+    
+    console.error("Failed to parse Gemini response:", e);
     throw new Error("Não foi possível entender a transação estruturada.");
   }
 }

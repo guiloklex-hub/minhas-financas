@@ -1,7 +1,11 @@
 import { getInsightsData } from "@/actions/insights";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Wallet, Flame } from "lucide-react";
+import { AiAdvisorCard } from "./AiAdvisorCard";
 
 export default async function InsightsPage() {
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
   const data = await getInsightsData();
 
   const formatCurrency = (value: number) => {
@@ -12,10 +16,14 @@ export default async function InsightsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Insights Inteligentes</h2>
-        <p className="text-zinc-400 mt-2">Uma análise aprofundada das suas tendências financeiras.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Insights Inteligentes</h2>
+          <p className="text-zinc-400 mt-2">Uma análise aprofundada das suas tendências financeiras.</p>
+        </div>
       </div>
+
+      <AiAdvisorCard month={currentMonth} year={currentYear} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* MoM Card */}

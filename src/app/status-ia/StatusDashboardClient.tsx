@@ -1,0 +1,276 @@
+"use client";
+
+import { Activity, Cpu, CircleDollarSign, AlertTriangle, Timer, Users, Crown, Sparkles, CheckCircle2 } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+interface Log {
+  id: string;
+  feature: string;
+  status: string;
+  totalTokens: number;
+  costUsd: number;
+  latencyMs: number;
+  date: string;
+}
+
+interface Props {
+  metrics: {
+    totalCalls: number;
+    last7dCalls: number;
+    totalTokens: number;
+    totalCost: number;
+    errorRate: number;
+    p50: number;
+    p95: number;
+  };
+  chartData: any[];
+  recentLogs: Log[];
+}
+
+export default function StatusDashboardClient({ metrics, chartData, recentLogs }: Props) {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="p-3 rounded-2xl bg-purple-600/20 text-purple-500 border border-purple-500/30">
+          <Sparkles size={32} />
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+            IA (Gemini)
+          </h2>
+          <p className="text-zinc-400 mt-1">Uso, custo estimado, erros e saúde da integração de IA</p>
+        </div>
+      </div>
+
+      {/* Grid: 5 Top Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center">
+            <Activity size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">{metrics.totalCalls}</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Chamadas (30d)</div>
+            <div className="text-[10px] text-zinc-500">{metrics.last7dCalls} nos últimos 7d</div>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
+            <Cpu size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">{metrics.totalTokens.toLocaleString('pt-BR')}</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Tokens (30d)</div>
+            <div className="text-[10px] text-zinc-500"> </div>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
+            <CircleDollarSign size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">{formatCurrency(metrics.totalCost)}</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Custo estimado (30d)</div>
+            <div className="text-[10px] text-zinc-500">estimativa — não é a fatura</div>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center">
+            <AlertTriangle size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">{metrics.errorRate.toFixed(1)}%</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Taxa de erro (30d)</div>
+            <div className="text-[10px] text-zinc-500"> </div>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 flex items-center justify-center">
+            <Timer size={18} />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-white mb-1">{metrics.p50} / {metrics.p95}ms</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Latência p50 / p95</div>
+            <div className="text-[10px] text-zinc-500">chamadas com sucesso</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid: 2 Bottom Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 flex items-center justify-center">
+            <Users size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">1</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Tenants com IA ativa</div>
+            <div className="text-[10px] text-zinc-500">opt-in (aiEnabled)</div>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+          <div className="w-8 h-8 rounded-lg bg-yellow-600/20 text-yellow-500 flex items-center justify-center">
+            <Crown size={18} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white mb-1">1</div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Tenants Premium</div>
+            <div className="text-[10px] text-zinc-500">elegíveis à IA</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Charts Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Chart */}
+        <div className="lg:col-span-2 p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
+          <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Chamadas de IA por dia (30d)</h3>
+          <div className="w-full h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorLancemento" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorConselheiro" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#d946ef" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#d946ef" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis dataKey="date" stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12 }} />
+                <YAxis stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff', borderRadius: '8px' }}
+                  itemStyle={{ color: '#fff' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '12px', color: '#a1a1aa' }} />
+                <Area type="monotone" dataKey="Lançamento Mágico" name="Lançamento Mágico" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorLancemento)" />
+                <Area type="monotone" dataKey="Conselheiro" name="Conselheiro de Insights" stroke="#d946ef" strokeWidth={2} fillOpacity={1} fill="url(#colorConselheiro)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Right Info Box */}
+        <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col">
+          <div className="flex justify-between items-start mb-8">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <Sparkles size={16} className="text-purple-500" />
+              Integração Gemini
+            </h3>
+            <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+              <Sparkles size={14} />
+              TESTAR CONEXÃO
+            </button>
+          </div>
+
+          <div className="space-y-4 text-sm mt-auto">
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+              <span className="text-zinc-400 font-medium">API key</span>
+              <span className="text-emerald-500 flex items-center gap-1 font-semibold">
+                <CheckCircle2 size={16} /> Configurada
+              </span>
+            </div>
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+              <span className="text-zinc-400 font-medium">Modelo (texto)</span>
+              <span className="text-zinc-300 font-mono text-xs">gemini-3.1-flash-lite</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+              <span className="text-zinc-400 font-medium">Modelo (áudio)</span>
+              <span className="text-zinc-300 font-mono text-xs">gemini-3.1-flash-lite</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+              <span className="text-zinc-400 font-medium">Preço in/out (USD/1M)</span>
+              <span className="text-zinc-300 font-mono text-xs">$0.1 / $0.4</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 font-medium">Câmbio USD→BRL</span>
+              <span className="text-zinc-300 font-mono text-xs">5.4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tenants Table */}
+      <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
+        <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Top Tenants por uso (30d)</h3>
+        
+        <div className="flex justify-between items-center text-sm py-4 border-b border-zinc-800/50">
+          <div className="flex items-center gap-4">
+            <span className="text-zinc-500 font-medium w-4">1</span>
+            <span className="text-white font-bold text-base">Usuário Local (Você)</span>
+            <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-2 py-0.5 rounded uppercase tracking-wider">Premium</span>
+          </div>
+          <div className="flex gap-6 text-xs text-zinc-400 font-medium">
+            <span>{metrics.totalCalls} chamadas</span>
+            <span>{metrics.totalTokens.toLocaleString('pt-BR')} tk</span>
+            <span className="text-emerald-500 font-bold">{formatCurrency(metrics.totalCost)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Registros de Uso */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-4">
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Registros de Uso ({metrics.totalCalls})</h3>
+        <div className="flex gap-2">
+          <select className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50">
+            <option>Todas as features</option>
+          </select>
+          <select className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50">
+            <option>Todos os status</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-white/5 border-b border-zinc-800 uppercase text-white/60">
+            <tr>
+              <th className="px-6 py-4 font-medium">Data</th>
+              <th className="px-6 py-4 font-medium">Feature</th>
+              <th className="px-6 py-4 font-medium">Status</th>
+              <th className="px-6 py-4 font-medium">Tokens</th>
+              <th className="px-6 py-4 font-medium">Latência</th>
+              <th className="px-6 py-4 font-medium">Custo</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800">
+            {recentLogs.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Nenhuma chamada de IA registrada ainda.</td>
+              </tr>
+            ) : (
+              recentLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 text-zinc-400">{log.date}</td>
+                  <td className="px-6 py-4 font-medium text-white">{log.feature}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${log.status === 'SUCCESS' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                      {log.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-zinc-400">{log.totalTokens} tk</td>
+                  <td className="px-6 py-4 text-zinc-400">{log.latencyMs} ms</td>
+                  <td className="px-6 py-4 text-emerald-500">{formatCurrency(log.costUsd)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  );
+}
