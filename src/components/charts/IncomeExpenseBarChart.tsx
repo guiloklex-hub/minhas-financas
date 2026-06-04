@@ -12,9 +12,10 @@ interface Props {
 
 export function IncomeExpenseBarChart({ data }: Props) {
   return (
-    <div className="w-full mt-4">
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0">
+      <h3 className="text-lg font-bold text-white mb-6">Receitas vs Despesas</h3>
+      <ResponsiveContainer width="100%" height={300} minWidth={0}>
+        <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
           <XAxis dataKey="name" stroke="#a1a1aa" tick={{ fill: '#a1a1aa' }} />
           <YAxis stroke="#a1a1aa" tick={{ fill: '#a1a1aa' }} tickFormatter={(value) => `R$ ${value}`} />

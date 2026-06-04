@@ -135,8 +135,8 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
         {/* Left Chart */}
         <div className="lg:col-span-2 p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
           <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Chamadas de IA por dia (30d)</h3>
-          <div className="w-full h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full h-[250px] min-w-0 min-h-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorLancemento" x1="0" y1="0" x2="0" y2="1">

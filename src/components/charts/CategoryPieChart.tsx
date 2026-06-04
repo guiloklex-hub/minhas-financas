@@ -20,8 +20,9 @@ export function CategoryPieChart({ data }: Props) {
   }
 
   return (
-    <div className="w-full mt-4">
-      <ResponsiveContainer width="100%" height={300}>
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
+      <h3 className="text-lg font-bold text-white mb-6">Despesas por Categoria</h3>
+      <ResponsiveContainer width="100%" height={300} minWidth={0}>
         <PieChart>
           <Pie
             data={data}
