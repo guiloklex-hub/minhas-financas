@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { createTransactionFromText } from "@/actions/ai-transactions";
 import { Account } from "@prisma/client";
@@ -12,29 +12,28 @@ interface Props {
 export default function AiQuickLaunch({ accounts }: Props) {
   const [text, setText] = useState("");
   const [accountId, setAccountId] = useState(accounts[0]?.id || "");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || !accountId) return;
 
-    setIsLoading(true);
     setMessage(null);
 
-    const result = await createTransactionFromText(text, accountId);
+    startTransition(async () => {
+      const result = await createTransactionFromText(text, accountId);
 
-    if (result.success) {
-      setMessage({ type: 'success', text: `Sucesso! Lançado R$ ${result.data?.amount} na categoria selecionada pela IA.` });
-      setText("");
-    } else {
-      setMessage({ type: 'error', text: result.error || "Erro desconhecido." });
-    }
-
-    setIsLoading(false);
-    
-    // Esconder mensagem após 5 segundos
-    setTimeout(() => setMessage(null), 5000);
+      if (result.success) {
+        setMessage({ type: 'success', text: `Sucesso! Lançado R$ ${result.data?.amount} na categoria selecionada pela IA.` });
+        setText("");
+      } else {
+        setMessage({ type: 'error', text: result.error || "Erro desconhecido." });
+      }
+      
+      // Esconder mensagem após 5 segundos
+      setTimeout(() => setMessage(null), 5000);
+    });
   };
 
   return (
@@ -56,14 +55,14 @@ export default function AiQuickLaunch({ accounts }: Props) {
             onChange={(e) => setText(e.target.value)}
             placeholder="O que você gastou ou recebeu hoje?"
             className="flex-1 bg-zinc-950 border border-zinc-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            disabled={isLoading}
+            disabled={isPending}
           />
           
           <select
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
             className="bg-zinc-950 border border-zinc-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[200px]"
-            disabled={isLoading}
+            disabled={isPending}
           >
             {accounts.map(acc => (
               <option key={acc.id} value={acc.id}>{acc.name}</option>
@@ -72,10 +71,10 @@ export default function AiQuickLaunch({ accounts }: Props) {
 
           <button
             type="submit"
-            disabled={isLoading || !text.trim() || !accountId}
+            disabled={isPending || !text.trim() || !accountId}
             className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center min-w-[140px]"
           >
-            {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Lançar"}
+            {isPending ? <Loader2 className="animate-spin" size={20} /> : "Lançar"}
           </button>
         </div>
         

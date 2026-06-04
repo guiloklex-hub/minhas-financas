@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { Investment } from "@prisma/client";
 import { calculateCompoundInterest, calculateBrazilianTaxes } from "@/lib/financial-math";
 import { simulateInvestmentScenario } from "@/actions/ai-advisor";
@@ -12,13 +12,15 @@ import { TrendingUp, Plus, Trash2, Loader2, Sparkles, Send, ShieldAlert, Landmar
 
 export default function InvestmentDashboardClient({ initialInvestments }: { initialInvestments: Investment[] }) {
   const [investments, setInvestments] = useState<Investment[]>(initialInvestments);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isPendingCreate, startTransitionCreate] = useTransition();
+  const [createError, setCreateError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isPendingDelete, startTransitionDelete] = useTransition();
   
   // Chatbot State
   const [prompt, setPrompt] = useState("");
   const [simResult, setSimResult] = useState("");
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isPendingSimulate, startTransitionSimulate] = useTransition();
 
   // Projeção Matemática (12 meses)
   const projectionData = useMemo(() => {
@@ -55,47 +57,49 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
   const estimatedTaxes12Months = calculateBrazilianTaxes(grossProfit12Months, 365);
   const netProfit12Months = grossProfit12Months - estimatedTaxes12Months;
 
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsCreating(true);
     
     const formData = new FormData(e.currentTarget);
-    const res = await createInvestment(formData);
-    
-    if (res.success && res.data) {
-      setInvestments(prev => [res.data as Investment, ...prev]);
-      (e.target as HTMLFormElement).reset();
-    } else {
-      alert(res.error);
-    }
-    setIsCreating(false);
+    const target = e.currentTarget;
+    startTransitionCreate(async () => {
+      const res = await createInvestment(formData);
+      
+      if (res.success && res.data) {
+        setInvestments(prev => [res.data as Investment, ...prev]);
+        target.reset();
+      } else {
+        setCreateError(res.error || "Erro ao criar investimento");
+        setTimeout(() => setCreateError(""), 5000);
+      }
+    });
   }
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
     if (!confirm("Excluir este ativo?")) return;
     setDeletingId(id);
-    const res = await deleteInvestment(id);
-    if (res.success) {
-      setInvestments(prev => prev.filter(i => i.id !== id));
-    }
-    setDeletingId(null);
+    startTransitionDelete(async () => {
+      const res = await deleteInvestment(id);
+      if (res.success) {
+        setInvestments(prev => prev.filter(i => i.id !== id));
+      }
+      setDeletingId(null);
+    });
   }
 
-  async function handleSimulate(e: React.FormEvent) {
+  function handleSimulate(e: React.FormEvent) {
     e.preventDefault();
     if (!prompt.trim()) return;
     
-    setIsSimulating(true);
     setSimResult("");
-    
-    const res = await simulateInvestmentScenario(prompt);
-    if (res.success && res.answer) {
-      setSimResult(res.answer);
-    } else {
-      setSimResult("Erro na simulação: " + res.error);
-    }
-    
-    setIsSimulating(false);
+    startTransitionSimulate(async () => {
+      const res = await simulateInvestmentScenario(prompt);
+      if (res.success && res.answer) {
+        setSimResult(res.answer);
+      } else {
+        setSimResult("Erro na simulação: " + (res as any).error);
+      }
+    });
   }
 
   return (
@@ -215,10 +219,15 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
                   <input name="maturityDate" type="date" className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
               </div>
-              <button disabled={isCreating} className="w-full h-[42px] bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
-                {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+              <button disabled={isPendingCreate} className="w-full h-[42px] bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
+                {isPendingCreate ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                 Cadastrar Investimento
               </button>
+              {createError && (
+                <div className="p-3 mt-3 rounded-lg text-sm font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  {createError}
+                </div>
+              )}
             </form>
           </div>
 
@@ -235,8 +244,8 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
                       R$ {inv.currentAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} • {(inv.yieldRate * 100).toFixed(2)}% a.a.
                     </p>
                   </div>
-                  <button onClick={() => handleDelete(inv.id)} disabled={deletingId === inv.id} className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors">
-                    {deletingId === inv.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={16}/>}
+                  <button onClick={() => handleDelete(inv.id)} disabled={isPendingDelete && deletingId === inv.id} className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors">
+                    {isPendingDelete && deletingId === inv.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={16}/>}
                   </button>
                 </div>
               ))}
@@ -286,10 +295,10 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
               />
               <button 
                 type="submit" 
-                disabled={isSimulating || !prompt}
+                disabled={isPendingSimulate || !prompt}
                 className="w-10 h-10 bg-purple-600 hover:bg-purple-500 text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
               >
-                {isSimulating ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                {isPendingSimulate ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
               </button>
             </form>
           </div>

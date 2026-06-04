@@ -89,3 +89,40 @@ export async function deleteTransaction(id: string): Promise<{ success: boolean;
     return { success: false, error: "Erro interno ao deletar transação." };
   }
 }
+
+export async function updateTransaction(id: string, formData: FormData): Promise<{ success: boolean; data?: Transaction; error?: string }> {
+  try {
+    const title = formData.get("title") as string;
+    const amount = parseFloat(formData.get("amount") as string);
+    const type = formData.get("type") as string;
+    const dateStr = formData.get("date") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const accountId = formData.get("accountId") as string;
+
+    if (!title || isNaN(amount) || !type || !dateStr || !categoryId || !accountId) {
+      return { success: false, error: "Todos os campos são obrigatórios ou inválidos." };
+    }
+
+    const date = new Date(dateStr);
+
+    const transaction = await prisma.transaction.update({
+      where: { id },
+      data: {
+        title,
+        amount,
+        type,
+        date,
+        categoryId,
+        accountId,
+      }
+    });
+
+    revalidatePath("/");
+    revalidatePath("/transacoes");
+
+    return { success: true, data: transaction };
+  } catch (error) {
+    console.error("Erro ao atualizar transação:", error);
+    return { success: false, error: "Erro interno ao atualizar transação." };
+  }
+}

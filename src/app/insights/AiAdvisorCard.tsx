@@ -17,7 +17,7 @@ export function AiAdvisorCard({ month, year }: { month: number; year: number }) 
       if (res.success && res.advice) {
         setAdvice(res.advice);
       } else {
-        setError(res.error || "Ocorreu um erro ao gerar os conselhos.");
+        setError((res as any).error || "Ocorreu um erro ao gerar os conselhos.");
       }
     } catch (err) {
       setError("Falha na comunicação com o servidor.");

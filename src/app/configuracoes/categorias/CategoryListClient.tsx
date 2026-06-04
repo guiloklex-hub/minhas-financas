@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createCategory, deleteCategory } from "@/actions/categories";
 import { Plus, Trash2, Tag, Loader2 } from "lucide-react";
 import { Category } from "@prisma/client";
@@ -8,7 +8,7 @@ import { Category } from "@prisma/client";
 export default function CategoryListClient({ initialCategories }: { initialCategories: Category[] }) {
   const [categories, setCategories] = useState(initialCategories);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
   async function handleDelete(id: string) {
@@ -26,21 +26,22 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
     setLoadingId(null);
   }
 
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsCreating(true);
     setError("");
     
     const formData = new FormData(e.currentTarget);
-    const res = await createCategory(formData);
-    
-    if (res.success && res.data) {
-      setCategories(prev => [...prev, res.data as Category].sort((a, b) => a.name.localeCompare(b.name)));
-      (e.target as HTMLFormElement).reset();
-    } else {
-      setError(res.error || "Erro ao criar.");
-    }
-    setIsCreating(false);
+    const target = e.currentTarget;
+    startTransition(async () => {
+      const res = await createCategory(formData);
+      
+      if (res.success && res.data) {
+        setCategories(prev => [...prev, res.data as Category].sort((a, b) => a.name.localeCompare(b.name)));
+        target.reset();
+      } else {
+        setError(res.error || "Erro ao criar.");
+      }
+    });
   }
 
   return (
@@ -68,10 +69,10 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
           </div>
           <button 
             type="submit" 
-            disabled={isCreating}
+            disabled={isPending}
             className="h-[42px] px-6 bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center gap-2"
           >
-            {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             Adicionar
           </button>
         </form>
