@@ -29,3 +29,38 @@ export async function createCategory(formData: FormData): Promise<{ success: boo
     return { success: false, error: "Erro interno ao criar categoria." };
   }
 }
+
+export async function getCategories() {
+  return await prisma.category.findMany({
+    orderBy: { name: 'asc' }
+  });
+}
+
+export async function deleteCategory(id: string) {
+  try {
+    const usage = await prisma.transaction.count({
+      where: { categoryId: id }
+    });
+
+    if (usage > 0) {
+      return { success: false, error: "Não é possível excluir uma categoria que possui transações." };
+    }
+
+    const budgetUsage = await prisma.budget.count({
+      where: { categoryId: id }
+    });
+
+    if (budgetUsage > 0) {
+      return { success: false, error: "Não é possível excluir uma categoria vinculada a um orçamento." };
+    }
+
+    await prisma.category.delete({
+      where: { id }
+    });
+
+    revalidatePath("/configuracoes/categorias");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: "Erro ao excluir categoria." };
+  }
+}

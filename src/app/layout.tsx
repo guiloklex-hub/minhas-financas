@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles } from "lucide-react";
+import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,8 +48,8 @@ export default function RootLayout({
             <Link href="/orcamentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
               <PieChart size={18} /> Orçamentos
             </Link>
-            <Link href="/status-ia" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-purple-400">
-              <Sparkles size={18} /> Status IA
+            <Link href="/configuracoes/categorias" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
+              <Settings size={18} /> Configurações
             </Link>
             <Link href="/insights" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-emerald-400">
               <Sparkles size={18} /> Insights
@@ -78,9 +78,9 @@ export default function RootLayout({
             <ArrowLeftRight size={20} />
             <span className="text-[10px] mt-1 font-medium">Extrato</span>
           </Link>
-          <Link href="/status-ia" className="flex flex-col items-center text-purple-500 hover:text-purple-400 transition-colors">
-            <Sparkles size={20} />
-            <span className="text-[10px] mt-1 font-medium">IA</span>
+          <Link href="/configuracoes/categorias" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
+            <Settings size={20} />
+            <span className="text-[10px] mt-1 font-medium">Configs</span>
           </Link>
           <Link href="/insights" className="flex flex-col items-center text-emerald-500 hover:text-emerald-400 transition-colors">
             <Sparkles size={20} />

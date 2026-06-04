@@ -1,7 +1,9 @@
 "use client";
 
-import { Activity, Cpu, CircleDollarSign, AlertTriangle, Timer, Users, Crown, Sparkles, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Activity, Cpu, CircleDollarSign, AlertTriangle, Timer, Users, Crown, Sparkles, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { testGeminiConnection } from "@/actions/ai-advisor";
 
 interface Log {
   id: string;
@@ -28,9 +30,43 @@ interface Props {
 }
 
 export default function StatusDashboardClient({ metrics, chartData, recentLogs }: Props) {
+  const [testStatus, setTestStatus] = useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  const [testMessage, setTestMessage] = useState('');
+
+  const [featureFilter, setFeatureFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value);
   };
+
+  const handleTestConnection = async () => {
+    setTestStatus('LOADING');
+    setTestMessage('');
+    try {
+      const res = await testGeminiConnection();
+      if (res.success) {
+        setTestStatus('SUCCESS');
+      } else {
+        setTestStatus('ERROR');
+        setTestMessage(res.message);
+      }
+    } catch (e: any) {
+      setTestStatus('ERROR');
+      setTestMessage('Erro inesperado.');
+    }
+    
+    // Reset status after 3 seconds if success
+    setTimeout(() => {
+      setTestStatus(prev => prev === 'SUCCESS' ? 'IDLE' : prev);
+    }, 3000);
+  };
+
+  const filteredLogs = recentLogs.filter(log => {
+    if (featureFilter !== 'ALL' && log.feature !== featureFilter) return false;
+    if (statusFilter !== 'ALL' && log.status !== statusFilter) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -170,11 +206,36 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
               <Sparkles size={16} className="text-purple-500" />
               Integração Gemini
             </h3>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-              <Sparkles size={14} />
-              TESTAR CONEXÃO
+            <button 
+              onClick={handleTestConnection}
+              disabled={testStatus === 'LOADING'}
+              className={`text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2
+                ${testStatus === 'LOADING' ? 'bg-purple-600/50 cursor-not-allowed' : 
+                  testStatus === 'SUCCESS' ? 'bg-emerald-600 hover:bg-emerald-700' :
+                  testStatus === 'ERROR' ? 'bg-rose-600 hover:bg-rose-700' :
+                  'bg-purple-600 hover:bg-purple-700'}`}
+            >
+              {testStatus === 'LOADING' ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : testStatus === 'SUCCESS' ? (
+                <CheckCircle2 size={14} />
+              ) : testStatus === 'ERROR' ? (
+                <XCircle size={14} />
+              ) : (
+                <Sparkles size={14} />
+              )}
+              {testStatus === 'LOADING' ? 'TESTANDO...' : 
+               testStatus === 'SUCCESS' ? 'SUCESSO!' : 
+               testStatus === 'ERROR' ? 'ERRO (VER DETALHE)' : 
+               'TESTAR CONEXÃO'}
             </button>
           </div>
+          
+          {testStatus === 'ERROR' && (
+            <div className="mb-4 text-xs text-rose-400 bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+              {testMessage}
+            </div>
+          )}
 
           <div className="space-y-4 text-sm mt-auto">
             <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
@@ -223,13 +284,25 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
 
       {/* Registros de Uso */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Registros de Uso ({metrics.totalCalls})</h3>
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Registros de Uso ({filteredLogs.length})</h3>
         <div className="flex gap-2">
-          <select className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50">
-            <option>Todas as features</option>
+          <select 
+            value={featureFilter}
+            onChange={(e) => setFeatureFilter(e.target.value)}
+            className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          >
+            <option value="ALL">Todas as features</option>
+            <option value="Lançamento Mágico">Lançamento Mágico</option>
+            <option value="Conselheiro">Conselheiro</option>
           </select>
-          <select className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50">
-            <option>Todos os status</option>
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          >
+            <option value="ALL">Todos os status</option>
+            <option value="SUCCESS">Sucesso</option>
+            <option value="ERROR">Erro</option>
           </select>
         </div>
       </div>
@@ -247,12 +320,12 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800">
-            {recentLogs.length === 0 ? (
+            {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Nenhuma chamada de IA registrada ainda.</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Nenhum registro encontrado.</td>
               </tr>
             ) : (
-              recentLogs.map((log) => (
+              filteredLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4 text-zinc-400">{log.date}</td>
                   <td className="px-6 py-4 font-medium text-white">{log.feature}</td>

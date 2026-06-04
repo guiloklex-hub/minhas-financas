@@ -4,8 +4,12 @@ import { prisma } from "@/lib/prisma";
 export type ParsedTransaction = {
   amount: number;
   description: string;
-  categoryId: string;
+  categoryId: string; // Pode vir vazio se newCategory for preenchido
   type: "INCOME" | "EXPENSE";
+  newCategory?: {
+    name: string;
+    color: string;
+  };
 };
 
 export async function logAiUsage(feature: string, status: string, errorMessage: string | null, promptTokens: number, completionTokens: number, totalTokens: number, latencyMs: number, costUsd: number) {
@@ -67,11 +71,20 @@ export async function parseTransactionText(
           },
           categoryId: {
             type: SchemaType.STRING,
-            description: "O ID exato da categoria que melhor se encaixa"
+            description: "O ID exato da categoria que melhor se encaixa, ou string vazia se for criar uma nova."
           },
           type: {
             type: SchemaType.STRING,
             description: "Apenas a palavra INCOME para receitas/ganhos, ou EXPENSE para despesas/gastos"
+          },
+          newCategory: {
+            type: SchemaType.OBJECT,
+            description: "Preencha APENAS se nenhuma categoria existente fizer sentido. Cria uma nova.",
+            properties: {
+              name: { type: SchemaType.STRING, description: "Nome curto e direto (ex: Pets, Viagem)" },
+              color: { type: SchemaType.STRING, description: "Cor HEX (ex: #10b981)" }
+            },
+            required: ["name", "color"]
           }
         },
         required: ["amount", "description", "categoryId", "type"]
@@ -85,10 +98,13 @@ export async function parseTransactionText(
 
   const prompt = `
 Você é um interpretador financeiro. Sua tarefa é ler o texto do usuário e extrair os dados para estruturar uma transação.
-Aqui estão as categorias disponíveis no banco de dados:
+Aqui estão as categorias já cadastradas no banco de dados:
 ${categoriesContext}
 
-Se não encontrar uma categoria perfeita, escolha a que mais se aproxima ou lance na mais genérica.
+Regras estritas para categorias:
+1. Sempre priorize usar uma categoria já existente mapeando o ID em "categoryId".
+2. Você tem autonomia para criar uma NOVA categoria preenchendo o objeto "newCategory".
+3. SÓ crie uma categoria nova se o contexto da transação for muito específico e não se encaixar de jeito nenhum nas opções atuais. Não crie categorias sem motivo. Se criar, deixe "categoryId" como "".
 
 Texto do usuário: "${text}"
 `;

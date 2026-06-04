@@ -21,8 +21,21 @@ export async function createTransactionFromText(text: string, accountId: string)
     }
 
     // Verificação de segurança (garantir que o retorno não contenha nulos se o Gemini errar)
-    if (!parsedData.categoryId || !parsedData.amount || !parsedData.description) {
+    if ((!parsedData.categoryId && !parsedData.newCategory) || !parsedData.amount || !parsedData.description) {
          return { success: false, error: "A inteligência artificial não conseguiu estruturar todos os dados corretamente." };
+    }
+
+    let finalCategoryId = parsedData.categoryId;
+
+    // Se a IA decidiu criar uma nova categoria
+    if (parsedData.newCategory && !finalCategoryId) {
+      const newCat = await prisma.category.create({
+        data: {
+          name: parsedData.newCategory.name,
+          color: parsedData.newCategory.color
+        }
+      });
+      finalCategoryId = newCat.id;
     }
 
     // Insert transaction
@@ -32,7 +45,7 @@ export async function createTransactionFromText(text: string, accountId: string)
           title: parsedData.description || "Transação Inteligente",
           amount: parsedData.amount,
           type: parsedData.type,
-          categoryId: parsedData.categoryId,
+          categoryId: finalCategoryId,
           accountId,
           date: new Date(),
         }

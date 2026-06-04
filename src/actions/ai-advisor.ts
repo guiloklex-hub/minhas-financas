@@ -115,3 +115,23 @@ ${budgetStatus.join("\n")}
     return { success: false, error: errorMessage };
   }
 }
+
+export async function testGeminiConnection() {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return { success: false, message: "A chave da API (GEMINI_API_KEY) não foi encontrada." };
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    
+    // Teste simples e leve
+    await model.generateContent("Responda apenas com a palavra 'OK'");
+    
+    return { success: true, message: "Conexão estabelecida com sucesso!" };
+  } catch (e: any) {
+    console.error("Test connection failed:", e);
+    return { success: false, message: e.message || "Erro de conexão ou chave inválida." };
+  }
+}
