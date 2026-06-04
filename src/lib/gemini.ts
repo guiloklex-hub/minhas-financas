@@ -17,10 +17,11 @@ export async function parseTransactionText(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
+  const modelName = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
   
-  // O prompt especifica o uso do gemini-3.1-flash-lite
+  // O prompt especifica o uso do gemini-3.1-flash-lite (ou o que estiver no .env)
   const model = genAI.getGenerativeModel({
-    model: "gemini-3.1-flash-lite",
+    model: modelName,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
