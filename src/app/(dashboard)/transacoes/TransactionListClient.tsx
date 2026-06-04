@@ -33,6 +33,12 @@ export default function TransactionListClient({ initialTransactions, categories,
     return new Intl.DateTimeFormat('pt-BR').format(localDate);
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(transactions.length / itemsPerPage) || 1;
+  const currentTransactions = transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   function handleDelete(id: string) {
     if (!confirm("Tem certeza que deseja excluir esta transação?")) return;
     
@@ -40,7 +46,12 @@ export default function TransactionListClient({ initialTransactions, categories,
     startTransitionDelete(async () => {
       const res = await deleteTransaction(id);
       if (res.success) {
-        setTransactions(prev => prev.filter(t => t.id !== id));
+        setTransactions(prev => {
+          const newTx = prev.filter(t => t.id !== id);
+          const newTotalPages = Math.ceil(newTx.length / itemsPerPage) || 1;
+          if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
+          return newTx;
+        });
       } else {
         alert(res.error || "Erro ao excluir transação.");
       }
@@ -78,12 +89,12 @@ export default function TransactionListClient({ initialTransactions, categories,
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {transactions.length === 0 ? (
+              {currentTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-white/50">Nenhuma transação encontrada.</td>
                 </tr>
               ) : (
-                transactions.map((t) => (
+                currentTransactions.map((t) => (
                   <tr key={t.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-white/80">{formatDate(t.date)}</td>
                     <td className="px-6 py-4 font-medium">{t.title}</td>
@@ -129,6 +140,32 @@ export default function TransactionListClient({ initialTransactions, categories,
             </tbody>
           </table>
         </div>
+        {transactions.length > itemsPerPage && (
+          <div className="p-4 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between text-sm gap-4">
+            <span className="text-zinc-400">
+              Mostrando {(currentPage - 1) * itemsPerPage + 1} a {Math.min(currentPage * itemsPerPage, transactions.length)} de {transactions.length} transações
+            </span>
+            <div className="flex gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+              >
+                Anterior
+              </button>
+              <span className="px-4 py-1.5 flex items-center justify-center bg-black/20 rounded-md text-zinc-300 font-medium border border-white/5">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+              >
+                Próximo
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {editingTransaction && (

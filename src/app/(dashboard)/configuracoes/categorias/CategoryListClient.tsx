@@ -19,7 +19,12 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
     const res = await deleteCategory(id);
     
     if (res.success) {
-      setCategories(prev => prev.filter(c => c.id !== id));
+      setCategories(prev => {
+        const newCats = prev.filter(c => c.id !== id);
+        const newTotalPages = Math.ceil(newCats.length / itemsPerPage) || 1;
+        if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
+        return newCats;
+      });
     } else {
       setError(res.error || "Erro ao excluir.");
     }
@@ -36,13 +41,21 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
       const res = await createCategory(formData);
       
       if (res.success && res.data) {
-        setCategories(prev => [...prev, res.data as Category].sort((a, b) => a.name.localeCompare(b.name)));
+        setCategories(prev => {
+          const newCats = [...prev, res.data as Category].sort((a, b) => a.name.localeCompare(b.name));
+          return newCats;
+        });
         target.reset();
       } else {
         setError(res.error || "Erro ao criar.");
       }
     });
   }
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(categories.length / itemsPerPage) || 1;
+  const currentCategories = categories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-6">
@@ -89,7 +102,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800">
-            {categories.map((cat) => (
+            {currentCategories.map((cat) => (
               <tr key={cat.id} className="hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-800" style={{ color: cat.color || '#fff' }}>
@@ -121,6 +134,27 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
             )}
           </tbody>
         </table>
+        {categories.length > itemsPerPage && (
+          <div className="p-3 border-t border-zinc-800 flex items-center justify-between bg-black/20">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
+              className="px-3 py-1.5 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+            >
+              Anterior
+            </button>
+            <span className="text-xs text-zinc-400 font-medium">
+              {currentPage} de {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => p + 1)}
+              className="px-3 py-1.5 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+            >
+              Próximo
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

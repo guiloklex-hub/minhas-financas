@@ -5,8 +5,22 @@ import { signJwt, setSessionCookie, deleteSessionCookie } from "@/lib/auth"
 import bcrypt from "bcryptjs"
 import { redirect } from "next/navigation"
 
+export async function hasRegisteredUser(): Promise<boolean> {
+  try {
+    const count = await prisma.user.count();
+    return count > 0;
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function registerUser(formData: FormData): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const hasUsers = await hasRegisteredUser();
+    if (hasUsers) {
+      return { success: false, error: "Registro desativado: O sistema já possui um usuário cadastrado." };
+    }
+
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 

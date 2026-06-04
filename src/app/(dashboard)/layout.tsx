@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp } from "lucide-react";
+import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon } from "lucide-react";
+import { getCurrentUser } from "@/actions/profile";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-[var(--color-background)] text-[var(--color-foreground)] relative">
       {/* Sidebar (Desktop) */}
@@ -29,13 +31,27 @@ export default function DashboardLayout({
           <Link href="/investimentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-blue-400">
             <TrendingUp size={18} /> Investimentos
           </Link>
-          <Link href="/configuracoes/categorias" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
-            <Settings size={18} /> Configurações
-          </Link>
           <Link href="/insights" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-emerald-400">
             <Sparkles size={18} /> Insights
           </Link>
         </nav>
+
+        <div className="p-4 border-t border-[var(--color-border)]">
+          <Link href="/configuracoes" className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all group">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full border border-zinc-800 object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                <UserIcon size={18} className="text-zinc-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{user?.name || "Usuário"}</p>
+              <p className="text-xs text-zinc-500 truncate">Configurações</p>
+            </div>
+            <Settings size={16} className="text-zinc-600 group-hover:text-zinc-300 transition-colors" />
+          </Link>
+        </div>
       </aside>
       
       {/* Main Content */}
@@ -63,9 +79,13 @@ export default function DashboardLayout({
           <TrendingUp size={20} />
           <span className="text-[10px] mt-1 font-medium">Investir</span>
         </Link>
-        <Link href="/configuracoes/categorias" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
-          <Settings size={20} />
-          <span className="text-[10px] mt-1 font-medium">Configs</span>
+        <Link href="/configuracoes" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
+          ) : (
+            <UserIcon size={20} />
+          )}
+          <span className="text-[10px] mt-1 font-medium">Perfil</span>
         </Link>
         <Link href="/insights" className="flex flex-col items-center text-emerald-500 hover:text-emerald-400 transition-colors">
           <Sparkles size={20} />

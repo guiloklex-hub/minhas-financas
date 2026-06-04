@@ -75,13 +75,24 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
     });
   }
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(investments.length / itemsPerPage) || 1;
+  const currentInvestments = investments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   function handleDelete(id: string) {
     if (!confirm("Excluir este ativo?")) return;
     setDeletingId(id);
     startTransitionDelete(async () => {
       const res = await deleteInvestment(id);
       if (res.success) {
-        setInvestments(prev => prev.filter(i => i.id !== id));
+        setInvestments(prev => {
+          const newInv = prev.filter(i => i.id !== id);
+          const newTotalPages = Math.ceil(newInv.length / itemsPerPage) || 1;
+          if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
+          return newInv;
+        });
       }
       setDeletingId(null);
     });
@@ -232,11 +243,12 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
           </div>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-zinc-800">
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
               <h3 className="font-bold text-white">Sua Carteira</h3>
+              <span className="text-xs text-zinc-400">{investments.length} ativos</span>
             </div>
             <div className="divide-y divide-zinc-800">
-              {investments.map(inv => (
+              {currentInvestments.map(inv => (
                 <div key={inv.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                   <div>
                     <h4 className="font-medium text-white">{inv.name}</h4>
@@ -253,6 +265,27 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
                 <div className="p-8 text-center text-zinc-500 text-sm">Nenhum ativo cadastrado.</div>
               )}
             </div>
+            {investments.length > itemsPerPage && (
+              <div className="p-3 border-t border-zinc-800 flex items-center justify-between bg-black/20">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  className="px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+                >
+                  Anterior
+                </button>
+                <span className="text-xs text-zinc-400 font-medium">
+                  {currentPage} de {totalPages}
+                </span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  className="px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+                >
+                  Próximo
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

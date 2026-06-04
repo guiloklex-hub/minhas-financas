@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function ConfiguracoesRoot() {
-  redirect("/configuracoes/categorias");
+export default function ConfiguracoesPage() {
+  redirect("/configuracoes/perfil");
 }

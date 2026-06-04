@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Tags, Sparkles } from "lucide-react";
+import { Tags, Sparkles, User, Shield } from "lucide-react";
 
 export default function ConfiguracoesLayout({
   children,
@@ -12,6 +12,8 @@ export default function ConfiguracoesLayout({
   const pathname = usePathname();
 
   const tabs = [
+    { name: "Meu Perfil", href: "/configuracoes/perfil", icon: User },
+    { name: "Segurança", href: "/configuracoes/seguranca", icon: Shield },
     { name: "Categorias", href: "/configuracoes/categorias", icon: Tags },
     { name: "Status IA", href: "/configuracoes/status-ia", icon: Sparkles },
   ];
