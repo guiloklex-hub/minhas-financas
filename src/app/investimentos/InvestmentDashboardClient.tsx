@@ -149,7 +149,7 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
         <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
           <TrendingUp size={20} className="text-blue-500"/> Projeção de Juros Compostos (12 Meses)
         </h3>
-        <div className="h-[300px] w-full min-w-0">
+        <div className="w-full h-[300px] min-w-0 min-h-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart data={projectionData}>
               <defs>

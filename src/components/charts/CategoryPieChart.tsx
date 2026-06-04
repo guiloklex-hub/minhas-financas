@@ -22,8 +22,9 @@ export function CategoryPieChart({ data }: Props) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
       <h3 className="text-lg font-bold text-white mb-6">Despesas por Categoria</h3>
-      <ResponsiveContainer width="100%" height={300} minWidth={0}>
-        <PieChart>
+      <div className="w-full h-[300px] min-w-0 min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <PieChart>
           <Pie
             data={data}
             cx="50%"
@@ -44,8 +45,9 @@ export function CategoryPieChart({ data }: Props) {
             formatter={(value: string | number | readonly (string | number)[] | undefined) => [`R$ ${Number(value || 0).toFixed(2)}`, 'Valor']}
           />
           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '20px' }} />
-        </PieChart>
-      </ResponsiveContainer>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
