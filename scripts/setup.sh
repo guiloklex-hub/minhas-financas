@@ -17,6 +17,7 @@
 #   --no-build        Pular o build de produção
 #   --seed            Rodar o seed do banco (popula dados de exemplo)
 #   --no-backup       Não fazer backup do SQLite antes de migrar
+#   --no-pm2          Não iniciar/recarregar a aplicação via PM2 ao final
 #   -h, --help        Mostra esta ajuda
 #
 set -euo pipefail
@@ -46,6 +47,7 @@ DO_PULL=1
 DO_BUILD=1
 DO_SEED=0
 DO_BACKUP=1
+DO_PM2=1
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -56,7 +58,8 @@ while [ $# -gt 0 ]; do
     --no-build) DO_BUILD=0; shift ;;
     --seed)    DO_SEED=1; shift ;;
     --no-backup) DO_BACKUP=0; shift ;;
-    -h|--help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --no-pm2)  DO_PM2=0; shift ;;
+    -h|--help) sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "Opção desconhecida: $1 (use --help)" ;;
   esac
 done
@@ -210,6 +213,37 @@ else
   info "Build pulado (--no-build)."
 fi
 
+# ----- iniciar/recarregar com PM2 -------------------------------------------
+PM2_ACTIVE=0
+if [ "$DO_PM2" -eq 1 ]; then
+  if [ "$DO_BUILD" -eq 0 ] && [ ! -d .next ]; then
+    warn "Sem build (.next ausente) — pulando PM2. Rode sem --no-build para iniciar via PM2."
+  else
+    step "Iniciando/recarregando com PM2"
+    # Resolve o comando do PM2: usa o global; se ausente, tenta instalar; senão npx.
+    if command -v pm2 >/dev/null 2>&1; then
+      PM2="pm2"
+    else
+      info "PM2 não encontrado — instalando globalmente (npm i -g pm2)..."
+      if npm install -g pm2 >/dev/null 2>&1 && command -v pm2 >/dev/null 2>&1; then
+        PM2="pm2"
+      else
+        warn "Não foi possível instalar o PM2 globalmente — usando 'npx pm2'."
+        PM2="npx --yes pm2"
+      fi
+    fi
+    # Recarrega (zero-downtime) se já estiver rodando; senão, inicia.
+    if $PM2 reload ecosystem.config.js --update-env >/dev/null 2>&1; then
+      ok "Aplicação recarregada no PM2 (zero-downtime)."
+    else
+      $PM2 start ecosystem.config.js
+      ok "Aplicação iniciada no PM2."
+    fi
+    $PM2 save >/dev/null 2>&1 || true
+    PM2_ACTIVE=1
+  fi
+fi
+
 # ----- resumo ----------------------------------------------------------------
 step "Concluído (${MODE})"
 if [ -n "$PENDING" ]; then
@@ -217,10 +251,21 @@ if [ -n "$PENDING" ]; then
   printf "%b\n" "$PENDING"
   echo
 fi
-cat <<EOF
-${C_BOLD}Próximos passos:${C_RESET}
-  • Iniciar em produção:      npm run start
+printf "${C_BOLD}Próximos passos:${C_RESET}\n"
+if [ "$PM2_ACTIVE" -eq 1 ]; then
+  cat <<EOF
+  • App rodando via PM2 em http://localhost:3002
+  • Status / logs:       pm2 status · pm2 logs minhas-financas
+  • Reiniciar / parar:   pm2 restart minhas-financas · pm2 stop minhas-financas
+  • Iniciar no boot (1x, requer sudo): rode 'pm2 startup' e execute o comando exibido; depois 'pm2 save'
+EOF
+else
+  cat <<EOF
+  • Iniciar em produção:        npm run start
   • Iniciar em desenvolvimento: npm run dev
+EOF
+fi
+cat <<EOF
   • Cron diário (recorrências/alertas/câmbio):
       curl -H "Authorization: Bearer \$CRON_SECRET" http://localhost:3002/api/cron/daily
 $([ "$MODE" = "install" ] && echo "  • No 1º acesso, cadastre o usuário único na tela de registro.")
