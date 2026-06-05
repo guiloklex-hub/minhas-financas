@@ -222,7 +222,7 @@ ${C_BOLD}Próximos passos:${C_RESET}
   • Iniciar em produção:      npm run start
   • Iniciar em desenvolvimento: npm run dev
   • Cron diário (recorrências/alertas/câmbio):
-      curl -H "Authorization: Bearer \$CRON_SECRET" http://localhost:3000/api/cron/daily
+      curl -H "Authorization: Bearer \$CRON_SECRET" http://localhost:3002/api/cron/daily
 $([ "$MODE" = "install" ] && echo "  • No 1º acesso, cadastre o usuário único na tela de registro.")
 EOF
 ok "Tudo pronto."

@@ -70,6 +70,6 @@ Sugerimos dois modelos iniciais para suprir a demanda básica:
 
 ## Verification Plan
 
-*   O comando `npm run dev` deverá iniciar a aplicação na porta 3000 sem erros.
+*   O comando `npm run dev` deverá iniciar a aplicação na porta 3002 sem erros.
 *   A interface deverá carregar mostrando os cards de resumo financeiro zerados.
 *   Ao inserir uma transação pelo formulário, ela deve aparecer instantaneamente na tela, e as somas de saldo deverão refletir o novo valor (validando que Next.js, Prisma e SQLite estão integrados corretamente).

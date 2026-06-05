@@ -101,7 +101,7 @@ npx prisma db seed
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
+Acesse [http://localhost:3002](http://localhost:3002) no seu navegador.
 
 No primeiro acesso, cadastre o **único** usuário na tela de registro; depois disso o registro é desativado e o acesso passa a exigir login.
 

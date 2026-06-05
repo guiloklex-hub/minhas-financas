@@ -49,7 +49,7 @@ async function getBaseUrl(): Promise<string> {
   } catch {
     // ignora — usa fallback abaixo
   }
-  return (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return (process.env.APP_URL ?? "http://localhost:3002").replace(/\/$/, "");
 }
 
 // ── 2FA ──────────────────────────────────────────────────────────────────────
