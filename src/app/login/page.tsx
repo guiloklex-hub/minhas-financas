@@ -14,8 +14,10 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
-    hasRegisteredUser().then((hasUser) => setCanRegister(!hasUser));
+    hasRegisteredUser().then((hasUser) => {
+      setCanRegister(!hasUser);
+      setMounted(true);
+    });
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

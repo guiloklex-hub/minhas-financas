@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/actions/profile";
+import { getCurrentUser } from "@/lib/session";
 import SecurityFormClient from "./SecurityFormClient";
 import { redirect } from "next/navigation";
 

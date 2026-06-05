@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Transaction, Category, Account } from "@prisma/client";
 import { Edit2, Trash2, Loader2 } from "lucide-react";
-import { deleteTransaction } from "@/actions/transactions";
+import { deleteTransaction, deleteRecurrenceSeries } from "@/actions/transactions";
 import EditTransactionModal from "./EditTransactionModal";
 
 type TransactionWithRelations = Transaction & { 
@@ -39,19 +39,69 @@ export default function TransactionListClient({ initialTransactions, categories,
   const totalPages = Math.ceil(transactions.length / itemsPerPage) || 1;
   const currentTransactions = transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja excluir esta transação?")) return;
-    
-    setDeletingId(id);
-    startTransitionDelete(async () => {
-      const res = await deleteTransaction(id);
-      if (res.success) {
-        setTransactions(prev => {
-          const newTx = prev.filter(t => t.id !== id);
-          const newTotalPages = Math.ceil(newTx.length / itemsPerPage) || 1;
-          if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
-          return newTx;
+  function removeFromList(predicate: (t: TransactionWithRelations) => boolean) {
+    setTransactions(prev => {
+      const newTx = prev.filter(t => !predicate(t));
+      const newTotalPages = Math.ceil(newTx.length / itemsPerPage) || 1;
+      if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
+      return newTx;
+    });
+  }
+
+  function handleDelete(t: TransactionWithRelations) {
+    // Série recorrente: oferecer exclusão da série inteira.
+    if (t.recurrenceGroupId) {
+      const deleteWholeSeries = confirm(
+        "Esta transação faz parte de uma série recorrente.\n\n" +
+          "Clique em OK para excluir TODA a série recorrente, ou em Cancelar para excluir apenas esta transação."
+      );
+
+      if (deleteWholeSeries) {
+        const groupId = t.recurrenceGroupId;
+        setDeletingId(t.id);
+        startTransitionDelete(async () => {
+          const res = await deleteRecurrenceSeries(groupId);
+          if (res.success) {
+            removeFromList(tx => tx.recurrenceGroupId === groupId);
+          } else {
+            alert(res.error || "Erro ao excluir a série recorrente.");
+          }
+          setDeletingId(null);
         });
+        return;
+      }
+
+      // Caiu aqui: usuário escolheu excluir só esta. Segue para o fluxo padrão abaixo.
+      setDeletingId(t.id);
+      startTransitionDelete(async () => {
+        const res = await deleteTransaction(t.id);
+        if (res.success) {
+          removeFromList(tx => tx.id === t.id);
+        } else {
+          alert(res.error || "Erro ao excluir transação.");
+        }
+        setDeletingId(null);
+      });
+      return;
+    }
+
+    // Transferência: ambas as pernas serão removidas.
+    const confirmMessage = t.transferGroupId
+      ? "Esta é uma transferência. Excluí-la removerá AMBAS as pernas (saída e entrada). Deseja continuar?"
+      : "Tem certeza que deseja excluir esta transação?";
+
+    if (!confirm(confirmMessage)) return;
+
+    setDeletingId(t.id);
+    startTransitionDelete(async () => {
+      const res = await deleteTransaction(t.id);
+      if (res.success) {
+        if (t.transferGroupId) {
+          const groupId = t.transferGroupId;
+          removeFromList(tx => tx.transferGroupId === groupId);
+        } else {
+          removeFromList(tx => tx.id === t.id);
+        }
       } else {
         alert(res.error || "Erro ao excluir transação.");
       }
@@ -112,16 +162,16 @@ export default function TransactionListClient({ initialTransactions, categories,
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
-                        <button 
+                        <button
                           onClick={() => setEditingTransaction(t)}
-                          disabled={isPendingDelete && deletingId === t.id}
-                          className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
-                          title="Editar"
+                          disabled={Boolean(t.transferGroupId) || (isPendingDelete && deletingId === t.id)}
+                          className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-zinc-400 disabled:hover:bg-transparent"
+                          title={t.transferGroupId ? "Transferências não são editáveis individualmente" : "Editar"}
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
-                          onClick={() => handleDelete(t.id)}
+                        <button
+                          onClick={() => handleDelete(t)}
                           disabled={isPendingDelete && deletingId === t.id}
                           className="p-2 text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                           title="Excluir"

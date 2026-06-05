@@ -1,22 +1,20 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
 import { cookies } from "next/headers";
-
-const secretKey = process.env.JWT_SECRET || "minhas_financas_dev_secret_key_123!";
-const key = new TextEncoder().encode(secretKey);
+import { JWT_SECRET_KEY } from "./jwt-secret";
 
 export async function signJwt(payload: JWTPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(key);
+    .sign(JWT_SECRET_KEY);
 }
 
 export async function verifyJwt(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, key);
+    const { payload } = await jwtVerify(token, JWT_SECRET_KEY);
     return payload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

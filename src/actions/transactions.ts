@@ -4,33 +4,51 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { Transaction } from "@prisma/client"
 import { randomUUID } from "crypto"
+import { getSession } from "@/lib/session"
+import { parseRequiredString, parseMoney, parseDate } from "@/lib/validation"
+import { roundMoney } from "@/lib/money"
+import { addMonthsClamped } from "@/lib/date-utils"
 
 export async function createTransaction(formData: FormData): Promise<{ success: boolean; data?: Transaction | Transaction[]; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
-    const title = formData.get("title") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-    const type = formData.get("type") as string;
-    const dateStr = formData.get("date") as string;
-    const categoryId = formData.get("categoryId") as string;
-    const accountId = formData.get("accountId") as string;
-    
+    const titleRes = parseRequiredString(formData.get("title"), "Título");
+    if (!titleRes.ok) return { success: false, error: titleRes.error };
+
+    const amountRes = parseMoney(formData.get("amount"), "Valor");
+    if (!amountRes.ok) return { success: false, error: amountRes.error };
+
+    const typeRes = parseRequiredString(formData.get("type"), "Tipo");
+    if (!typeRes.ok) return { success: false, error: typeRes.error };
+
+    const dateRes = parseDate(formData.get("date"), "Data");
+    if (!dateRes.ok) return { success: false, error: dateRes.error };
+
+    const categoryRes = parseRequiredString(formData.get("categoryId"), "Categoria");
+    if (!categoryRes.ok) return { success: false, error: categoryRes.error };
+
+    const accountRes = parseRequiredString(formData.get("accountId"), "Conta");
+    if (!accountRes.ok) return { success: false, error: accountRes.error };
+
+    const title = titleRes.value;
+    const amount = roundMoney(amountRes.value);
+    const type = typeRes.value;
+    const date = dateRes.value;
+    const categoryId = categoryRes.value;
+    const accountId = accountRes.value;
+
     const isRecurring = formData.get("isRecurring") === "on";
     const recurrenceMonths = parseInt(formData.get("recurrenceMonths") as string) || 1;
-
-    if (!title || isNaN(amount) || !type || !dateStr || !categoryId || !accountId) {
-      return { success: false, error: "Todos os campos são obrigatórios ou inválidos." };
-    }
-
-    const date = new Date(dateStr);
 
     if (isRecurring && recurrenceMonths > 1) {
       const recurrenceGroupId = randomUUID();
       const transactionsToCreate = [];
 
       for (let i = 0; i < recurrenceMonths; i++) {
-        // Handle month wrapping correctly
-        const nextDate = new Date(date);
-        nextDate.setMonth(nextDate.getMonth() + i);
+        // Clamp de fim de mês evita overflow (ex.: 31/jan + 1 mês => 28/29 fev).
+        const nextDate = addMonthsClamped(date, i);
 
         transactionsToCreate.push({
           title: i === 0 ? title : `${title} (${i + 1}/${recurrenceMonths})`,
@@ -46,10 +64,11 @@ export async function createTransaction(formData: FormData): Promise<{ success: 
       await prisma.$transaction(
         transactionsToCreate.map(tx => prisma.transaction.create({ data: tx }))
       );
-      
+
       revalidatePath("/");
       revalidatePath("/transacoes");
-      
+      revalidatePath("/contas");
+
       return { success: true };
     } else {
       const transaction = await prisma.transaction.create({
@@ -65,6 +84,7 @@ export async function createTransaction(formData: FormData): Promise<{ success: 
 
       revalidatePath("/");
       revalidatePath("/transacoes");
+      revalidatePath("/contas");
 
       return { success: true, data: transaction };
     }
@@ -75,13 +95,27 @@ export async function createTransaction(formData: FormData): Promise<{ success: 
 }
 
 export async function deleteTransaction(id: string): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
-    await prisma.transaction.delete({
-      where: { id }
-    });
+    const tx = await prisma.transaction.findUnique({ where: { id } });
+    if (!tx) {
+      return { success: false, error: "Transação não encontrada." };
+    }
+
+    if (tx.transferGroupId) {
+      // Remove ambas as pernas da transferência.
+      await prisma.transaction.deleteMany({
+        where: { transferGroupId: tx.transferGroupId }
+      });
+    } else {
+      await prisma.transaction.delete({ where: { id } });
+    }
 
     revalidatePath("/");
     revalidatePath("/transacoes");
+    revalidatePath("/contas");
 
     return { success: true };
   } catch (error) {
@@ -91,38 +125,80 @@ export async function deleteTransaction(id: string): Promise<{ success: boolean;
 }
 
 export async function updateTransaction(id: string, formData: FormData): Promise<{ success: boolean; data?: Transaction; error?: string }> {
-  try {
-    const title = formData.get("title") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-    const type = formData.get("type") as string;
-    const dateStr = formData.get("date") as string;
-    const categoryId = formData.get("categoryId") as string;
-    const accountId = formData.get("accountId") as string;
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!title || isNaN(amount) || !type || !dateStr || !categoryId || !accountId) {
-      return { success: false, error: "Todos os campos são obrigatórios ou inválidos." };
+  try {
+    const tx = await prisma.transaction.findUnique({ where: { id } });
+    if (!tx) {
+      return { success: false, error: "Transação não encontrada." };
     }
 
-    const date = new Date(dateStr);
+    if (tx.transferGroupId) {
+      return { success: false, error: "Transferências não podem ser editadas individualmente. Exclua e recrie a transferência." };
+    }
+
+    const titleRes = parseRequiredString(formData.get("title"), "Título");
+    if (!titleRes.ok) return { success: false, error: titleRes.error };
+
+    const amountRes = parseMoney(formData.get("amount"), "Valor");
+    if (!amountRes.ok) return { success: false, error: amountRes.error };
+
+    const typeRes = parseRequiredString(formData.get("type"), "Tipo");
+    if (!typeRes.ok) return { success: false, error: typeRes.error };
+
+    const dateRes = parseDate(formData.get("date"), "Data");
+    if (!dateRes.ok) return { success: false, error: dateRes.error };
+
+    const categoryRes = parseRequiredString(formData.get("categoryId"), "Categoria");
+    if (!categoryRes.ok) return { success: false, error: categoryRes.error };
+
+    const accountRes = parseRequiredString(formData.get("accountId"), "Conta");
+    if (!accountRes.ok) return { success: false, error: accountRes.error };
 
     const transaction = await prisma.transaction.update({
       where: { id },
       data: {
-        title,
-        amount,
-        type,
-        date,
-        categoryId,
-        accountId,
+        title: titleRes.value,
+        amount: roundMoney(amountRes.value),
+        type: typeRes.value,
+        date: dateRes.value,
+        categoryId: categoryRes.value,
+        accountId: accountRes.value,
       }
     });
 
     revalidatePath("/");
     revalidatePath("/transacoes");
+    revalidatePath("/contas");
 
     return { success: true, data: transaction };
   } catch (error) {
     console.error("Erro ao atualizar transação:", error);
     return { success: false, error: "Erro interno ao atualizar transação." };
+  }
+}
+
+export async function deleteRecurrenceSeries(recurrenceGroupId: string): Promise<{ success: boolean; count?: number; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  try {
+    if (!recurrenceGroupId) {
+      return { success: false, error: "Grupo de recorrência inválido." };
+    }
+
+    const result = await prisma.transaction.deleteMany({
+      where: { recurrenceGroupId }
+    });
+
+    revalidatePath("/");
+    revalidatePath("/transacoes");
+    revalidatePath("/contas");
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Erro ao deletar série de recorrência:", error);
+    return { success: false, error: "Erro interno ao deletar série de recorrência." };
   }
 }

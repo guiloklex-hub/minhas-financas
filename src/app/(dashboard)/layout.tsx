@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon } from "lucide-react";
-import { getCurrentUser } from "@/actions/profile";
+import { getCurrentUser } from "@/lib/session";
 
 export default async function DashboardLayout({
   children,
@@ -39,7 +40,7 @@ export default async function DashboardLayout({
         <div className="p-4 border-t border-[var(--color-border)]">
           <Link href="/configuracoes" className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all group">
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full border border-zinc-800 object-cover" />
+              <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} unoptimized className="w-10 h-10 rounded-full border border-zinc-800 object-cover" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
                 <UserIcon size={18} className="text-zinc-400" />
@@ -81,7 +82,7 @@ export default async function DashboardLayout({
         </Link>
         <Link href="/configuracoes" className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
           {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
+            <Image src={user.avatarUrl} alt="Avatar" width={20} height={20} unoptimized className="w-5 h-5 rounded-full object-cover" />
           ) : (
             <UserIcon size={20} />
           )}

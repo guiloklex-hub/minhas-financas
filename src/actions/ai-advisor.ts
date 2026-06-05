@@ -3,8 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { logAiUsage } from "@/lib/gemini";
+import { getSession } from "@/lib/session";
 
 export async function generateFinancialAdvice(month: number, year: number) {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   const startTime = performance.now();
   let status = "SUCCESS";
   let errorMessage: string | null = null;
@@ -105,9 +109,9 @@ ${budgetStatus.join("\n")}
     await logAiUsage("Conselheiro", status, null, promptTokens, completionTokens, totalTokens, latency, costUsd);
 
     return { success: true, advice: parsed };
-  } catch (e: any) {
+  } catch (e) {
     status = "ERROR";
-    errorMessage = e.message || "Unknown error";
+    errorMessage = e instanceof Error ? e.message : "Unknown error";
     const latency = performance.now() - startTime;
     await logAiUsage("Conselheiro", status, errorMessage, promptTokens, completionTokens, totalTokens, latency, costUsd);
 
@@ -124,6 +128,9 @@ ${budgetStatus.join("\n")}
 }
 
 export async function testGeminiConnection() {
+  const session = await getSession();
+  if (!session) return { success: false, message: "Não autorizado. Faça login novamente." };
+
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -137,13 +144,19 @@ export async function testGeminiConnection() {
     await model.generateContent("Responda apenas com a palavra 'OK'");
     
     return { success: true, message: "Conexão estabelecida com sucesso!" };
-  } catch (e: any) {
+  } catch (e) {
     console.error("Test connection failed:", e);
-    return { success: false, message: e.message || "Erro de conexão ou chave inválida." };
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Erro de conexão ou chave inválida.",
+    };
   }
 }
 
 export async function simulateInvestmentScenario(prompt: string) {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   const startTime = performance.now();
   let status = "SUCCESS";
   let errorMessage: string | null = null;
@@ -213,9 +226,9 @@ Pergunta do Usuário: "${prompt}"
     await logAiUsage("Simulador E-Se", status, null, promptTokens, completionTokens, totalTokens, latency, costUsd);
 
     return { success: true, answer: responseText };
-  } catch (e: any) {
+  } catch (e) {
     status = "ERROR";
-    errorMessage = e.message || "Unknown error";
+    errorMessage = e instanceof Error ? e.message : "Unknown error";
     const latency = performance.now() - startTime;
     await logAiUsage("Simulador E-Se", status, errorMessage, promptTokens, completionTokens, totalTokens, latency, costUsd);
 

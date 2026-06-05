@@ -1,6 +1,8 @@
 "use server"
 
 import { prisma } from "@/lib/prisma";
+import { roundMoney } from "@/lib/money";
+import { getSession } from "@/lib/session";
 
 export type InsightsPayload = {
   mom: {
@@ -32,6 +34,8 @@ export type InsightsPayload = {
 };
 
 export async function getInsightsData(): Promise<InsightsPayload> {
+  await getSession();
+
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -48,6 +52,7 @@ export async function getInsightsData(): Promise<InsightsPayload> {
   const currentExpenses = await prisma.transaction.findMany({
     where: {
       type: "EXPENSE",
+      isTransfer: false,
       date: { gte: currentMonthStart, lte: currentMonthEnd }
     },
     include: { category: true }
@@ -57,12 +62,13 @@ export async function getInsightsData(): Promise<InsightsPayload> {
   const previousExpenses = await prisma.transaction.findMany({
     where: {
       type: "EXPENSE",
+      isTransfer: false,
       date: { gte: previousMonthStart, lte: previousMonthEnd }
     }
   });
 
-  const currentTotal = currentExpenses.reduce((acc, t) => acc + t.amount, 0);
-  const previousTotal = previousExpenses.reduce((acc, t) => acc + t.amount, 0);
+  const currentTotal = roundMoney(currentExpenses.reduce((acc, t) => acc + t.amount, 0));
+  const previousTotal = roundMoney(previousExpenses.reduce((acc, t) => acc + t.amount, 0));
 
   // 3. MoM Calculation
   let variation = 0;
@@ -98,15 +104,15 @@ export async function getInsightsData(): Promise<InsightsPayload> {
       categoryId: id,
       categoryName: data.name,
       color: data.color,
-      amount: data.amount
+      amount: roundMoney(data.amount)
     }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 3);
 
   // 5. Forecast Calculation
   const daysPassed = Math.max(1, currentDay);
-  const dailyAverage = currentTotal / daysPassed;
-  const estimatedEndOfMonth = dailyAverage * daysInMonth;
+  const dailyAverage = roundMoney(currentTotal / daysPassed);
+  const estimatedEndOfMonth = roundMoney(dailyAverage * daysInMonth);
   
   const formatCompact = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
   const forecastText = `Com base na sua média de gastos diária (${formatCompact(dailyAverage)}/dia), a projeção é que você encerre o mês com um total de ${formatCompact(estimatedEndOfMonth)}.`;
@@ -123,7 +129,7 @@ export async function getInsightsData(): Promise<InsightsPayload> {
 
   const budgetAlerts = [];
   for (const budget of budgets) {
-    const spentInCategory = categoryTotals[budget.categoryId]?.amount || 0;
+    const spentInCategory = roundMoney(categoryTotals[budget.categoryId]?.amount || 0);
     const usagePercentage = (spentInCategory / budget.amountLimit) * 100;
 
     if (usagePercentage >= 80) {

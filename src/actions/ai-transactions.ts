@@ -2,9 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { parseTransactionText } from "@/lib/gemini";
+import { getSession } from "@/lib/session";
+import { roundMoney } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 
 export async function createTransactionFromText(text: string, accountId: string) {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
     const categories = await prisma.category.findMany();
     if (categories.length === 0) {
@@ -38,25 +43,16 @@ export async function createTransactionFromText(text: string, accountId: string)
       finalCategoryId = newCat.id;
     }
 
-    // Insert transaction
-    await prisma.$transaction(async (tx) => {
-      await tx.transaction.create({
-        data: {
-          title: parsedData.description || "Transação Inteligente",
-          amount: parsedData.amount,
-          type: parsedData.type,
-          categoryId: finalCategoryId,
-          accountId,
-          date: new Date(),
-        }
-      });
-
-      // Update account balance
-      const balanceChange = parsedData.type === 'INCOME' ? parsedData.amount : -parsedData.amount;
-      await tx.account.update({
-        where: { id: accountId },
-        data: { initialBalance: { increment: balanceChange } }
-      });
+    // Insert transaction (o saldo é derivado das transações, não mutado aqui)
+    await prisma.transaction.create({
+      data: {
+        title: parsedData.description || "Transação Inteligente",
+        amount: roundMoney(parsedData.amount),
+        type: parsedData.type,
+        categoryId: finalCategoryId,
+        accountId,
+        date: new Date(),
+      }
     });
 
     revalidatePath("/transacoes");
@@ -65,8 +61,11 @@ export async function createTransactionFromText(text: string, accountId: string)
     revalidatePath("/");
 
     return { success: true, data: parsedData };
-  } catch (error: any) {
+  } catch (error) {
     console.error("AI Transaction Error:", error);
-    return { success: false, error: error.message || "Erro ao processar a transação com IA." };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Erro ao processar a transação com IA.",
+    };
   }
 }

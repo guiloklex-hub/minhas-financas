@@ -41,7 +41,8 @@ export default async function StatusIAPage() {
   }
 
   // Group chart data by Date (DD/MM)
-  const chartDataMap: Record<string, any> = {};
+  type ChartDatum = { date: string; "Lançamento Mágico": number; "Conselheiro": number };
+  const chartDataMap: Record<string, ChartDatum> = {};
   
   // Initialize last 5 days just to look nice even if empty
   for (let i = 4; i >= 0; i--) {

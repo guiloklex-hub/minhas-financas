@@ -3,18 +3,32 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
+import { getSession } from "@/lib/session"
+import { parseRequiredString, parseMoney, parseDate } from "@/lib/validation"
+import { roundMoney } from "@/lib/money"
 
 export async function createTransfer(formData: FormData): Promise<{ success: boolean; error?: string }> {
-  try {
-    const fromAccountId = formData.get("fromAccountId") as string;
-    const toAccountId = formData.get("toAccountId") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-    const dateStr = formData.get("date") as string;
-    const title = (formData.get("title") as string) || "Transferência";
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!fromAccountId || !toAccountId || isNaN(amount) || amount <= 0 || !dateStr) {
-      return { success: false, error: "Dados inválidos." };
-    }
+  try {
+    const fromRes = parseRequiredString(formData.get("fromAccountId"), "Conta de origem");
+    if (!fromRes.ok) return { success: false, error: fromRes.error };
+
+    const toRes = parseRequiredString(formData.get("toAccountId"), "Conta de destino");
+    if (!toRes.ok) return { success: false, error: toRes.error };
+
+    const amountRes = parseMoney(formData.get("amount"), "Valor", { min: 0.01 });
+    if (!amountRes.ok) return { success: false, error: amountRes.error };
+
+    const dateRes = parseDate(formData.get("date"), "Data");
+    if (!dateRes.ok) return { success: false, error: dateRes.error };
+
+    const fromAccountId = fromRes.value;
+    const toAccountId = toRes.value;
+    const amount = roundMoney(amountRes.value);
+    const parsedDate = dateRes.value;
+    const title = (formData.get("title") as string) || "Transferência";
 
     if (fromAccountId === toAccountId) {
       return { success: false, error: "A conta de origem e destino não podem ser as mesmas." };
@@ -35,7 +49,6 @@ export async function createTransfer(formData: FormData): Promise<{ success: boo
     }
 
     const transferGroupId = randomUUID();
-    const parsedDate = new Date(dateStr);
 
     // Run in a transaction
     await prisma.$transaction([

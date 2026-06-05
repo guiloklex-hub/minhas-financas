@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma"
+import { roundMoney } from "@/lib/money"
+import { computeAccountBalance } from "@/lib/account-balance"
 import { IncomeExpenseBarChart } from "@/components/charts/IncomeExpenseBarChart";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 
@@ -12,9 +14,12 @@ export default async function Dashboard() {
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-  // Fetch transactions for the current month to power the charts
+  // Fetch transactions for the current month to power the charts.
+  // Transferências (isTransfer) são movimentações entre contas próprias e NÃO
+  // contam como receita/despesa — por isso são excluídas das KPIs e dos gráficos.
   const currentMonthTransactions = await prisma.transaction.findMany({
     where: {
+      isTransfer: false,
       date: {
         gte: firstDayOfMonth,
         lte: lastDayOfMonth,
@@ -32,12 +37,14 @@ export default async function Dashboard() {
     .reduce((acc, t) => acc + t.amount, 0);
 
   const totalInitialBalance = accounts.reduce((acc, account) => acc + account.initialBalance, 0);
-  
-  // To get the total balance we actually need all transactions, not just the current month
+
+  // Para o saldo total precisamos de TODAS as transações (não só do mês atual).
+  // Aqui mantemos as transferências: como cada transferência tem uma perna de
+  // saída (EXPENSE) e uma de entrada (INCOME), elas se anulam no saldo global.
   const allTransactions = await prisma.transaction.findMany();
   const totalIncome = allTransactions.filter(t => t.type === "INCOME").reduce((acc, t) => acc + t.amount, 0);
   const totalExpense = allTransactions.filter(t => t.type === "EXPENSE").reduce((acc, t) => acc + t.amount, 0);
-  const balance = totalInitialBalance + totalIncome - totalExpense;
+  const balance = roundMoney(totalInitialBalance + totalIncome - totalExpense);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -111,10 +118,9 @@ export default async function Dashboard() {
         <h3 className="text-xl font-bold tracking-tight mb-4 text-white">Minhas Contas</h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {accounts.map(acc => {
-            const accIncome = acc.transactions.filter(t => t.type === "INCOME").reduce((sum, t) => sum + t.amount, 0);
-            const accExpense = acc.transactions.filter(t => t.type === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
-            const accBalance = acc.initialBalance + accIncome - accExpense;
-            
+            // Saldo por conta inclui transferências: cada perna afeta a conta de origem/destino.
+            const accBalance = computeAccountBalance(acc.initialBalance, acc.transactions);
+
             return (
               <div key={acc.id} className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm hover:border-zinc-700 transition-all duration-200">
                 <div className="flex justify-between items-start mb-4">

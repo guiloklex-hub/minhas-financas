@@ -3,16 +3,32 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { Budget } from "@prisma/client"
+import { getSession } from "@/lib/session"
+import { parseRequiredString, parseMoney } from "@/lib/validation"
 
 export async function upsertBudget(formData: FormData): Promise<{ success: boolean; data?: Budget; error?: string }> {
-  try {
-    const categoryId = formData.get("categoryId") as string;
-    const amountLimit = parseFloat(formData.get("amountLimit") as string);
-    const month = parseInt(formData.get("month") as string);
-    const year = parseInt(formData.get("year") as string);
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!categoryId || isNaN(amountLimit) || isNaN(month) || isNaN(year)) {
-      return { success: false, error: "Todos os campos são obrigatórios." };
+  try {
+    const categoryRes = parseRequiredString(formData.get("categoryId"), "Categoria");
+    if (!categoryRes.ok) return { success: false, error: categoryRes.error };
+    const categoryId = categoryRes.value;
+
+    const amountRes = parseMoney(formData.get("amountLimit"), "Limite", { min: 0 });
+    if (!amountRes.ok) return { success: false, error: amountRes.error };
+    const amountLimit = amountRes.value;
+
+    const monthRaw = formData.get("month");
+    const month = typeof monthRaw === "string" ? Number(monthRaw) : NaN;
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      return { success: false, error: "Mês deve ser um inteiro entre 1 e 12." };
+    }
+
+    const yearRaw = formData.get("year");
+    const year = typeof yearRaw === "string" ? Number(yearRaw) : NaN;
+    if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+      return { success: false, error: "Ano deve ser um inteiro entre 2000 e 2100." };
     }
 
     // Upsert logic: search by categoryId, month, and year. If it doesn't exist, create it. If it exists, update amountLimit.
@@ -45,10 +61,10 @@ export async function upsertBudget(formData: FormData): Promise<{ success: boole
 
     revalidatePath("/orcamentos");
     revalidatePath("/");
-    
+
     return { success: true, data: budget };
-  } catch (error) {
-    console.error("Erro ao definir orçamento:", error);
+  } catch {
+    console.error("Erro ao definir orçamento.");
     return { success: false, error: "Erro interno ao definir orçamento." };
   }
 }

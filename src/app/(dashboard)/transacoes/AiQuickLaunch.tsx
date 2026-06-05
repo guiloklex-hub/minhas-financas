@@ -44,7 +44,7 @@ export default function AiQuickLaunch({ accounts }: Props) {
       </div>
       
       <p className="text-zinc-400 text-sm mb-6">
-        Descreva sua transação naturalmente. Ex: "Gastei 50 com gasolina no HB20" ou "Recebi 5000 de salário".
+        Descreva sua transação naturalmente. Ex: &quot;Gastei 50 com gasolina no HB20&quot; ou &quot;Recebi 5000 de salário&quot;.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

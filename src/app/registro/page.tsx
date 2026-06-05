@@ -13,10 +13,11 @@ export default function RegisterPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
     hasRegisteredUser().then((hasUser) => {
       if (hasUser) {
         router.push("/login");
+      } else {
+        setMounted(true);
       }
     });
   }, [router]);

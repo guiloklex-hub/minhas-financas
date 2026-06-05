@@ -9,7 +9,7 @@ export async function hasRegisteredUser(): Promise<boolean> {
   try {
     const count = await prisma.user.count();
     return count > 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

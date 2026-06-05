@@ -15,6 +15,12 @@ interface Log {
   date: string;
 }
 
+interface ChartPoint {
+  date: string;
+  "Lançamento Mágico": number;
+  "Conselheiro": number;
+}
+
 interface Props {
   metrics: {
     totalCalls: number;
@@ -25,7 +31,7 @@ interface Props {
     p50: number;
     p95: number;
   };
-  chartData: any[];
+  chartData: ChartPoint[];
   recentLogs: Log[];
 }
 
@@ -51,9 +57,9 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
         setTestStatus('ERROR');
         setTestMessage(res.message);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setTestStatus('ERROR');
-      setTestMessage('Erro inesperado.');
+      setTestMessage(e instanceof Error ? e.message : 'Erro inesperado.');
     }
     
     // Reset status after 3 seconds if success

@@ -128,9 +128,9 @@ Texto do usuário: "${text}"
     await logAiUsage("Lançamento Mágico", status, null, promptTokens, completionTokens, totalTokens, latency, costUsd);
     
     return parsed;
-  } catch (e: any) {
+  } catch (e) {
     status = "ERROR";
-    errorMessage = e.message || "Failed to parse JSON";
+    errorMessage = e instanceof Error ? e.message : "Failed to parse JSON";
     const latency = performance.now() - startTime;
     await logAiUsage("Lançamento Mágico", status, errorMessage, promptTokens, completionTokens, totalTokens, latency, costUsd);
     

@@ -15,6 +15,11 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn()
 }));
 
+// Sessão sempre autenticada por padrão (a action agora exige guarda de sessão)
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ userId: 'u1', email: 'teste@example.com' })
+}));
+
 describe('actions/accounts.ts', () => {
   describe('createAccount', () => {
     it('deve criar uma conta corretamente chamando o Prisma', async () => {
@@ -59,7 +64,7 @@ describe('actions/accounts.ts', () => {
       const result = await createAccount(formData);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Nome e tipo são obrigatórios.');
+      expect(result.error).toBe('Nome é obrigatório.');
       expect(prismaMock.account.create).not.toHaveBeenCalled();
     });
   });

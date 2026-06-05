@@ -6,7 +6,7 @@ import { calculateCompoundInterest, calculateBrazilianTaxes } from "@/lib/financ
 import { simulateInvestmentScenario } from "@/actions/ai-advisor";
 import { createInvestment, deleteInvestment } from "@/actions/investments";
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from "recharts";
 import { TrendingUp, Plus, Trash2, Loader2, Sparkles, Send, ShieldAlert, Landmark, DollarSign } from "lucide-react";
 
@@ -105,10 +105,10 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
     setSimResult("");
     startTransitionSimulate(async () => {
       const res = await simulateInvestmentScenario(prompt);
-      if (res.success && res.answer) {
-        setSimResult(res.answer);
+      if (res.success) {
+        setSimResult(res.answer ?? "");
       } else {
-        setSimResult("Erro na simulação: " + (res as any).error);
+        setSimResult("Erro na simulação: " + (res.error || "erro desconhecido"));
       }
     });
   }
@@ -186,7 +186,7 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
               <Tooltip 
                 contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
                 itemStyle={{ color: '#fff' }}
-                formatter={(value: any) => [`R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Patrimônio']}
+                formatter={(value) => [`R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Patrimônio']}
               />
               <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
             </AreaChart>
@@ -312,7 +312,7 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
                 <Sparkles size={48} className="text-purple-500" />
                 <p className="text-sm text-zinc-400 max-w-[250px]">
-                  Pergunte: "Devo sacar 5 mil do Tesouro Selic hoje ou pegar um empréstimo a 2% ao mês?"
+                  Pergunte: &quot;Devo sacar 5 mil do Tesouro Selic hoje ou pegar um empréstimo a 2% ao mês?&quot;
                 </p>
               </div>
             )}

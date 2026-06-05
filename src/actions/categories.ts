@@ -3,29 +3,40 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { Category } from "@prisma/client"
+import { getSession } from "@/lib/session"
+import { parseRequiredString } from "@/lib/validation"
 
 export async function createCategory(formData: FormData): Promise<{ success: boolean; data?: Category; error?: string }> {
-  try {
-    const name = formData.get("name") as string;
-    const color = formData.get("color") as string;
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!name) {
-      return { success: false, error: "O nome da categoria é obrigatório." };
+  try {
+    const nameRes = parseRequiredString(formData.get("name"), "Nome");
+    if (!nameRes.ok) return { success: false, error: nameRes.error };
+
+    const colorRaw = formData.get("color");
+    let color = "#52525b"; // default zinc-600
+    if (typeof colorRaw === "string" && colorRaw.trim() !== "") {
+      const trimmed = colorRaw.trim();
+      if (!/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
+        return { success: false, error: "Cor inválida. Use o formato #RRGGBB." };
+      }
+      color = trimmed;
     }
 
     const category = await prisma.category.create({
       data: {
-        name,
-        color: color || "#52525b", // default zinc-600
+        name: nameRes.value,
+        color,
       }
     });
 
     revalidatePath("/");
     revalidatePath("/transacoes");
-    
+
     return { success: true, data: category };
-  } catch (error) {
-    console.error("Erro ao criar categoria:", error);
+  } catch {
+    console.error("Erro ao criar categoria.");
     return { success: false, error: "Erro interno ao criar categoria." };
   }
 }
@@ -37,6 +48,9 @@ export async function getCategories() {
 }
 
 export async function deleteCategory(id: string) {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
     const usage = await prisma.transaction.count({
       where: { categoryId: id }
@@ -60,7 +74,7 @@ export async function deleteCategory(id: string) {
 
     revalidatePath("/configuracoes/categorias");
     return { success: true };
-  } catch (error: any) {
+  } catch {
     return { success: false, error: "Erro ao excluir categoria." };
   }
 }

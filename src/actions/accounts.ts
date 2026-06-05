@@ -3,28 +3,35 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { Account } from "@prisma/client"
+import { getSession } from "@/lib/session"
+import { parseRequiredString, parseMoney } from "@/lib/validation"
 
 export async function createAccount(formData: FormData): Promise<{ success: boolean; data?: Account; error?: string }> {
-  try {
-    const name = formData.get("name") as string;
-    const type = formData.get("type") as string;
-    const initialBalance = parseFloat(formData.get("initialBalance") as string) || 0;
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!name || !type) {
-      return { success: false, error: "Nome e tipo são obrigatórios." };
-    }
+  try {
+    const nameRes = parseRequiredString(formData.get("name"), "Nome");
+    if (!nameRes.ok) return { success: false, error: nameRes.error };
+
+    const typeRes = parseRequiredString(formData.get("type"), "Tipo");
+    if (!typeRes.ok) return { success: false, error: typeRes.error };
+
+    const balanceRes = parseMoney(formData.get("initialBalance"), "Saldo inicial", { min: -1_000_000_000 });
+    if (!balanceRes.ok) return { success: false, error: balanceRes.error };
 
     const account = await prisma.account.create({
       data: {
-        name,
-        type,
-        initialBalance,
+        name: nameRes.value,
+        type: typeRes.value,
+        initialBalance: balanceRes.value,
       }
     });
 
     revalidatePath("/");
+    revalidatePath("/contas");
     revalidatePath("/transacoes");
-    
+
     return { success: true, data: account };
   } catch (error) {
     console.error("Erro ao criar conta:", error);
@@ -33,18 +40,26 @@ export async function createAccount(formData: FormData): Promise<{ success: bool
 }
 
 export async function updateAccount(id: string, formData: FormData): Promise<{ success: boolean; data?: Account; error?: string }> {
-  try {
-    const name = formData.get("name") as string;
-    const type = formData.get("type") as string;
-    const initialBalance = parseFloat(formData.get("initialBalance") as string);
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
 
-    if (!name || !type || isNaN(initialBalance)) {
-      return { success: false, error: "Dados inválidos para atualizar a conta." };
-    }
+  try {
+    const nameRes = parseRequiredString(formData.get("name"), "Nome");
+    if (!nameRes.ok) return { success: false, error: nameRes.error };
+
+    const typeRes = parseRequiredString(formData.get("type"), "Tipo");
+    if (!typeRes.ok) return { success: false, error: typeRes.error };
+
+    const balanceRes = parseMoney(formData.get("initialBalance"), "Saldo inicial", { min: -1_000_000_000 });
+    if (!balanceRes.ok) return { success: false, error: balanceRes.error };
 
     const account = await prisma.account.update({
       where: { id },
-      data: { name, type, initialBalance }
+      data: {
+        name: nameRes.value,
+        type: typeRes.value,
+        initialBalance: balanceRes.value,
+      }
     });
 
     revalidatePath("/");
@@ -59,6 +74,9 @@ export async function updateAccount(id: string, formData: FormData): Promise<{ s
 }
 
 export async function updateAccountBalance(id: string, initialBalance: number): Promise<{ success: boolean; data?: Account; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
     const account = await prisma.account.update({
       where: { id },
@@ -76,15 +94,37 @@ export async function updateAccountBalance(id: string, initialBalance: number): 
 }
 
 export async function deleteAccount(id: string): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
   try {
-    // Verificar se há transações na conta antes de excluir? 
-    // Em um cenário real, talvez não devêssemos excluir contas com histórico. 
-    // Por enquanto, excluímos transações em cascata ou informamos o erro se o schema não suportar.
-    
-    // Deleta transações associadas para evitar erro de foreign key
-    await prisma.transaction.deleteMany({ where: { accountId: id } });
-    
-    await prisma.account.delete({ where: { id } });
+    // Coleta os grupos de transferência das transações desta conta para que a
+    // outra perna (em outra conta) também seja removida, evitando saldo
+    // desbalanceado.
+    const rows = await prisma.transaction.findMany({
+      where: { accountId: id },
+      select: { transferGroupId: true },
+    });
+
+    const groupIds = Array.from(
+      new Set(
+        rows
+          .map((r) => r.transferGroupId)
+          .filter((g): g is string => g !== null)
+      )
+    );
+
+    await prisma.$transaction([
+      prisma.transaction.deleteMany({
+        where: {
+          OR: [
+            { accountId: id },
+            { transferGroupId: { in: groupIds } },
+          ],
+        },
+      }),
+      prisma.account.delete({ where: { id } }),
+    ]);
 
     revalidatePath("/");
     revalidatePath("/contas");

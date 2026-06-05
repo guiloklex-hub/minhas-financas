@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
+import { JWT_SECRET_KEY } from '@/lib/jwt-secret'
 
-const secretKey = process.env.JWT_SECRET || "minhas_financas_dev_secret_key_123!";
-const key = new TextEncoder().encode(secretKey);
-
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get("session")?.value;
 
   if (!sessionCookie) {
@@ -14,15 +12,15 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Valida a assinatura do token
-    await jwtVerify(sessionCookie, key);
+    await jwtVerify(sessionCookie, JWT_SECRET_KEY);
     return NextResponse.next();
-  } catch (error) {
+  } catch {
     // Se for inválido, expirado ou forjado, redireciona para login
     return NextResponse.redirect(new URL('/login', request.url));
   }
 }
 
-// Configura o middleware para proteger todas as rotas
+// Configura o proxy (antigo middleware) para proteger todas as rotas
 // EXCLUINDO: /login, /registro, api (se público), estáticos do next, imagens
 export const config = {
   matcher: [

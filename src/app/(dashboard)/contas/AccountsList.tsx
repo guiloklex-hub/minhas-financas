@@ -5,20 +5,22 @@ import { Account } from "@prisma/client";
 import AccountForm from "./AccountForm";
 import TransferForm from "./TransferForm";
 
+type AccountWithBalance = Account & { currentBalance: number };
+
 interface AccountsListProps {
-  initialAccounts: Account[];
+  initialAccounts: AccountWithBalance[];
 }
 
 export default function AccountsList({ initialAccounts }: AccountsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isTransferFormOpen, setIsTransferFormOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<AccountWithBalance | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
-  const handleEdit = (account: Account) => {
+  const handleEdit = (account: AccountWithBalance) => {
     setSelectedAccount(account);
     setIsFormOpen(true);
     setIsTransferFormOpen(false);
@@ -96,14 +98,19 @@ export default function AccountsList({ initialAccounts }: AccountsListProps) {
                 </span>
               </div>
             </div>
-            <p className="text-2xl font-bold">
-              {formatCurrency(account.initialBalance)}
-            </p>
+            <div>
+              <p className={`text-2xl font-bold ${account.currentBalance >= 0 ? '' : 'text-rose-500'}`}>
+                {formatCurrency(account.currentBalance)}
+              </p>
+              <p className="text-xs text-white/40 mt-1">
+                Saldo inicial: {formatCurrency(account.initialBalance)}
+              </p>
+            </div>
           </div>
         ))}
         {initialAccounts.length === 0 && !isFormOpen && (
           <div className="col-span-full py-12 text-center text-white/50 border border-dashed border-[var(--color-border)] rounded-xl">
-            Nenhuma conta cadastrada. Clique em "Nova Conta" para começar.
+            Nenhuma conta cadastrada. Clique em &quot;Nova Conta&quot; para começar.
           </div>
         )}
       </div>

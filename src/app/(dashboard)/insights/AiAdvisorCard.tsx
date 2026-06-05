@@ -14,13 +14,13 @@ export function AiAdvisorCard({ month, year }: { month: number; year: number }) 
     setError(null);
     try {
       const res = await generateFinancialAdvice(month, year);
-      if (res.success && res.advice) {
-        setAdvice(res.advice);
+      if (res.success) {
+        setAdvice(res.advice ?? []);
       } else {
-        setError((res as any).error || "Ocorreu um erro ao gerar os conselhos.");
+        setError(res.error || "Ocorreu um erro ao gerar os conselhos.");
       }
-    } catch (err) {
-      setError("Falha na comunicação com o servidor.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Falha na comunicação com o servidor.");
     } finally {
       setLoading(false);
     }
