@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/generated/prisma/client"
 import TransactionForm from "./TransactionForm"
 import CsvImporter from "./CsvImporter"
 import AiQuickLaunch from "./AiQuickLaunch"

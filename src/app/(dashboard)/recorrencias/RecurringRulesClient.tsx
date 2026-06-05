@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react";
-import { RecurringRule } from "@prisma/client";
+import { RecurringRule } from "@/generated/prisma/client";
 import {
   Plus,
   Pencil,

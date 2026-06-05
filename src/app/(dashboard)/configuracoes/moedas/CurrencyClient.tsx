@@ -8,7 +8,7 @@ import {
 } from "@/actions/exchange-rates";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { Plus, Trash2, Loader2, Pencil, Check, X, ArrowRightLeft, RefreshCw } from "lucide-react";
-import { ExchangeRate } from "@prisma/client";
+import { ExchangeRate } from "@/generated/prisma/client";
 
 function toDateInput(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;

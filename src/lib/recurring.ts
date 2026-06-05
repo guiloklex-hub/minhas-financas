@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { roundMoney } from "@/lib/money";
 import { addMonthsClamped } from "@/lib/date-utils";
-import type { RecurringRule } from "@prisma/client";
+import type { RecurringRule } from "@/generated/prisma/client";
 
 /**
  * Limite de iterações por regra em um único processamento. Evita laço infinito

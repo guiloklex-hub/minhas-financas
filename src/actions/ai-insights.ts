@@ -9,7 +9,7 @@ import { logAiUsage } from "@/lib/gemini";
 import { isAiBudgetExceeded } from "@/lib/ai-budget";
 import { detectAnomalies, type Anomaly } from "@/lib/anomaly";
 import { forecastCashFlow, type ForecastPoint } from "@/lib/forecast";
-import type { MonthlyInsight } from "@prisma/client";
+import type { MonthlyInsight } from "@/generated/prisma/client";
 
 /** Métricas determinísticas que embasam (e nunca dependem de) a narração da IA. */
 export type InsightMetrics = {

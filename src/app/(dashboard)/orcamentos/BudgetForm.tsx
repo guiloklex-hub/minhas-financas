@@ -2,7 +2,7 @@
 
 import { useTransition } from "react"
 import { upsertBudget } from "@/actions/budgets"
-import { Category } from "@prisma/client"
+import { Category } from "@/generated/prisma/client"
 
 export default function BudgetForm({ categories }: { categories: Category[] }) {
   const [isPending, startTransition] = useTransition();

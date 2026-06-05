@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { importTransactionsFromCsv } from "@/actions/importer";
-import { Category, Account } from "@prisma/client";
+import { Category, Account } from "@/generated/prisma/client";
 
 export default function CsvImporter({ categories, accounts }: { categories: Category[], accounts: Account[] }) {
   const [isUploading, setIsUploading] = useState(false);

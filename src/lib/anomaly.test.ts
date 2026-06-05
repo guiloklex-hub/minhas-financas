@@ -7,7 +7,7 @@ vi.mock('@/lib/prisma', async () => {
 });
 
 import { prismaMock } from './__mocks__/prisma';
-import type { Category, Transaction } from '@prisma/client';
+import type { Category, Transaction } from '@/generated/prisma/client';
 import { detectAnomalies } from './anomaly';
 
 // Transaction com a relation `category` carregada (a lib usa include: { category: true }).

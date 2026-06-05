@@ -23,10 +23,12 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 
 - **Framework**: Next.js 16 (App Router)
 - **Linguagem**: TypeScript
-- **Banco de Dados**: SQLite
-- **ORM**: Prisma
+- **Banco de Dados**: SQLite (via driver adapter `better-sqlite3` — módulo nativo)
+- **ORM**: Prisma 7 (generator `prisma-client`, client gerado em `src/generated/prisma`)
 - **Estilização**: Tailwind CSS v4
 - **IA**: Google Gemini (`@google/generative-ai`)
+
+> **Prisma 7:** o client é gerado em `src/generated/prisma` (não em `node_modules`) — rode `npx prisma generate` após clonar (o `npm run setup` faz isso). A conexão usa um driver adapter; `DATABASE_URL` aponta para `file:./prisma/dev.db`. Em ambientes com `ignore-scripts`, pode ser preciso compilar o `better-sqlite3` (`npm rebuild better-sqlite3`).
 
 ## 🛠️ Instalação e Execução
 
@@ -71,6 +73,7 @@ Crie um arquivo `.env` na raiz com:
 
 | Variável | Obrigatória | Descrição |
 |---|---|---|
+| `DATABASE_URL` | Sim | Caminho do SQLite. Padrão: `file:./prisma/dev.db`. |
 | `JWT_SECRET` | **Sim (em produção)** | Segredo de assinatura do JWT de sessão. Sem ela a aplicação **não inicia em produção** (não há fallback). Em desenvolvimento, usa um segredo inseguro apenas para conveniência. |
 | `GEMINI_API_KEY` | Para os recursos de IA | Chave da API do Google Gemini (Insights / categorização / chatbot / OCR). |
 | `GEMINI_MODEL` | Não | Modelo Gemini a usar (padrão: `gemini-3.1-flash-lite`). |

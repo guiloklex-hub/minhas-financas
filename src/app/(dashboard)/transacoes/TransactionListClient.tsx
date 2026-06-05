@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Transaction, Category, Account } from "@prisma/client";
+import { Transaction, Category, Account } from "@/generated/prisma/client";
 import { Edit2, Trash2, Loader2, Search, Filter, X, ArrowRightLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle, Download } from "lucide-react";
 import { deleteTransaction, deleteRecurrenceSeries, toggleReconciled } from "@/actions/transactions";
 import EditTransactionModal from "./EditTransactionModal";

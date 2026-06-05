@@ -127,6 +127,17 @@ else
 fi
 ok "Dependências instaladas."
 
+# Prisma 7 usa o driver adapter better-sqlite3 (módulo nativo). Em ambientes com
+# ignore-scripts ativo o binário pode não ser compilado no install — garantimos aqui.
+if [ ! -f node_modules/better-sqlite3/build/Release/better_sqlite3.node ]; then
+  warn "Binário nativo do better-sqlite3 ausente — compilando..."
+  if ( cd node_modules/better-sqlite3 && npx --yes node-gyp rebuild --release >/dev/null 2>&1 ); then
+    ok "better-sqlite3 compilado."
+  else
+    warn "Falha ao compilar better-sqlite3 — verifique build tools (python3/make/g++)."
+  fi
+fi
+
 # ----- .env ------------------------------------------------------------------
 step "Configurando variáveis de ambiente (.env)"
 if [ ! -f .env ]; then

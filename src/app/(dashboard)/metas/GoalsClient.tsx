@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Goal } from "@prisma/client";
+import { Goal } from "@/generated/prisma/client";
 import {
   Plus,
   Pencil,

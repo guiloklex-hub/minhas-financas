@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { updateTransfer } from "@/actions/transfers";
-import { Transaction } from "@prisma/client";
+import { Transaction } from "@/generated/prisma/client";
 import { X, Loader2, ArrowRightLeft } from "lucide-react";
 
 interface Props {

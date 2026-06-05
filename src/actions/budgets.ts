@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { Budget } from "@prisma/client"
+import { Budget } from "@/generated/prisma/client"
 import { getSession } from "@/lib/session"
 import { parseRequiredString, parseMoney } from "@/lib/validation"
 

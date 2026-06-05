@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Account } from "@prisma/client";
+import { Account } from "@/generated/prisma/client";
 import { createTransfer } from "@/actions/transfers";
 
 interface Props {

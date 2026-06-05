@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Account } from "@prisma/client";
+import { Account } from "@/generated/prisma/client";
 import AccountForm from "./AccountForm";
 import TransferForm from "./TransferForm";
 

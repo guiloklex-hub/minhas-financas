@@ -17,8 +17,8 @@ Gerenciador de finanças pessoais **single-user**, com interface moderna/premium
 | Camada | Tecnologia |
 |---|---|
 | Framework | Next.js 16.2 (App Router, React 19.2) |
-| Linguagem | TypeScript (`strict: true`) |
-| Banco | SQLite + Prisma ORM (v5) |
+| Linguagem | TypeScript 6 (`strict: true`) |
+| Banco | SQLite + Prisma ORM **v7** (driver adapter `@prisma/adapter-better-sqlite3`) |
 | Auth | JWT via `jose` (Edge-safe) + `bcryptjs` (hash de senha) |
 | UI | Tailwind CSS v4 + Lucide Icons + Recharts |
 | IA | Google Gemini (`@google/generative-ai`) |
@@ -80,7 +80,7 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [date-utils.ts](src/lib/date-utils.ts) | `addMonthsClamped` — soma meses com clamp de fim de mês. |
 | [validation.ts](src/lib/validation.ts) | `parseRequiredString`, `parseMoney`, `parseDate` (`ValidationResult<T>`). |
 | [financial-math.ts](src/lib/financial-math.ts) | `calculateCompoundInterest`, `calculateBrazilianTaxes` (IR/IOF). |
-| [prisma.ts](src/lib/prisma.ts) | Singleton do Prisma Client. **Sempre importar daqui.** |
+| [prisma.ts](src/lib/prisma.ts) | Singleton do Prisma Client (v7: instanciado com driver adapter better-sqlite3; marcado `server-only`). **Sempre importar daqui.** |
 | [gemini.ts](src/lib/gemini.ts) | Cliente Gemini + `logAiUsage`. |
 | [ai-budget.ts](src/lib/ai-budget.ts) | `isAiBudgetExceeded()` / `getAiSpendThisMonthUsd()` — **guardrail de custo de IA** (checar antes de toda chamada ao Gemini). |
 | [notifications.ts](src/lib/notifications.ts) | `createNotification(...)` — orquestrador único (sino in-app + Web Push best-effort). |
@@ -93,7 +93,8 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [recurring.ts](src/lib/recurring.ts) | `runRecurringRules()` — materializa `RecurringRule` em transações (chamado pelo cron). |
 | [categorization.ts](src/lib/categorization.ts) | `suggestCategoryIdByHistory` — auto-categorização **determinística** (sem IA). |
 | [anomaly.ts](src/lib/anomaly.ts) / [forecast.ts](src/lib/forecast.ts) | Detecção de anomalias e previsão de fluxo (números no código). |
-| [currency.ts](src/lib/currency.ts) | Multi-moeda: `convert`, `formatMoney`, `getLatestRate`. |
+| [currency.ts](src/lib/currency.ts) | Multi-moeda **puro/client-safe**: `SUPPORTED_CURRENCIES`, `formatMoney`, `getCurrencySymbol`, `isSupportedCurrency` (sem Prisma — pode ser importado por Client Components). |
+| [currency-rates.ts](src/lib/currency-rates.ts) | **Server-only** (usa Prisma): `getLatestRate`, `convert`. Não importar em Client Components. |
 | [exchange-rate-fetch.ts](src/lib/exchange-rate-fetch.ts) | `refreshExchangeRatesFromApi()` — busca cotações na AwesomeAPI (`EXCHANGE_RATE_API_URL`) e faz upsert em `ExchangeRate` (chamado pelo cron e pela tela de Moedas). |
 | [openbanking.ts](src/lib/openbanking.ts) | Scaffold Open Banking (Pluggy) — gated por credenciais. |
 
@@ -248,13 +249,16 @@ Para evitar `"The width(-1) and height(-1) of chart should be greater than 0"`:
 
 ---
 
-## Banco de Dados
+## Banco de Dados (Prisma 7)
 
-- **Singleton:** sempre `import { prisma } from "@/lib/prisma"`. Nunca instanciar `PrismaClient` diretamente.
-- **Após alterar `schema.prisma`:** `npx prisma migrate dev --name <nome>` (e regenerar o client).
+- **Singleton:** sempre `import { prisma } from "@/lib/prisma"`. Nunca instanciar `PrismaClient` diretamente. O `prisma.ts` é `server-only` e instancia o client com o **driver adapter** `PrismaBetterSqlite3` (não há mais `url` no `schema.prisma`).
+- **Client gerado:** o `prisma-client` generator emite em `src/generated/prisma` (gitignored). **Importe tipos/PrismaClient de `@/generated/prisma/client`** — não de `@prisma/client`. Rode `npx prisma generate` após clonar (o `setup.sh` faz isso).
+- **Config do CLI:** `prisma.config.ts` (raiz) carrega `.env` (via `dotenv`) e define `datasource.url` + `seed`. `DATABASE_URL` aponta para `file:./prisma/dev.db`.
+- **Após alterar `schema.prisma`:** `npx prisma migrate dev --name <nome>` (dev) ou `migrate deploy` (instalação) — depois `npx prisma generate`.
+- **Fronteira client/server:** módulos que importam `prisma` (ou `@/lib/prisma`) são server-only. Não importe-os de Client Components — separe helpers puros (ver `currency.ts` vs `currency-rates.ts`). O adapter nativo quebra o bundle do browser se vazar.
 - **IDs:** todos os models usam `@default(uuid())`.
 - **Atomicidade:** use `prisma.$transaction` quando múltiplas operações precisam ser atômicas (transferências, exclusão de conta com pernas, séries recorrentes).
-- **Models:** `User`, `Account`, `Category`, `Budget`, `Transaction` (campos `isTransfer`, `transferGroupId`, `recurrenceGroupId`), `Investment`, `AiUsageLog`.
+- **Models:** `User`, `Account`, `Category`, `Budget`, `Transaction` (`isTransfer`, `transferGroupId`, `recurrenceGroupId`, `notes`, `tags`, `reconciled`), `Investment`, `AiUsageLog`, `RecurringRule`, `Goal`, `Notification`, `PushSubscription`, `AuditLog`, `MonthlyInsight`, `ExchangeRate`.
 
 ---
 

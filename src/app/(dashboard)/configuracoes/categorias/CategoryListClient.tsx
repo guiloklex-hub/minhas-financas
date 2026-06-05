@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { createCategory, deleteCategory, updateCategory, reorderCategories } from "@/actions/categories";
 import { Plus, Trash2, Tag, Loader2, Pencil, Check, X, ArrowUp, ArrowDown } from "lucide-react";
-import { Category } from "@prisma/client";
+import { Category } from "@/generated/prisma/client";
 
 export default function CategoryListClient({ initialCategories }: { initialCategories: Category[] }) {
   const [categories, setCategories] = useState(initialCategories);

@@ -16,7 +16,7 @@ vi.mock('@/lib/session', () => ({
 
 import { prismaMock } from '../lib/__mocks__/prisma';
 import { getSession } from '@/lib/session';
-import type { Transaction } from '@prisma/client';
+import type { Transaction } from '@/generated/prisma/client';
 import {
   createTransaction,
   deleteTransaction,

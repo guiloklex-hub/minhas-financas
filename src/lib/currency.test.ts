@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getLatestRate, convert, formatMoney, getCurrencySymbol } from "./currency";
+import { getLatestRate, convert } from "./currency-rates";
+import { formatMoney, getCurrencySymbol } from "./currency";
 import { prismaMock } from "./__mocks__/prisma";
-import type { ExchangeRate } from "@prisma/client";
+import type { ExchangeRate } from "@/generated/prisma/client";
 
 // Substitui o Prisma importado em currency.ts pelo nosso mock.
 vi.mock("@/lib/prisma", async () => {

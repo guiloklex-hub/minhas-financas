@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { Investment } from "@prisma/client";
+import { Investment } from "@/generated/prisma/client";
 import { calculateCompoundInterest, calculateBrazilianTaxes } from "@/lib/financial-math";
 import { simulateInvestmentScenario } from "@/actions/ai-advisor";
 import { createInvestment, updateInvestment, deleteInvestment } from "@/actions/investments";

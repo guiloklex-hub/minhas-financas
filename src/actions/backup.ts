@@ -11,7 +11,7 @@ import type {
   Investment,
   RecurringRule,
   Goal,
-} from "@prisma/client";
+} from "@/generated/prisma/client";
 
 /**
  * Forma esperada do arquivo de backup gerado por GET /api/backup.

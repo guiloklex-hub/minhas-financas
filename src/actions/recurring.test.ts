@@ -16,7 +16,7 @@ vi.mock('@/lib/session', () => ({
 
 import { prismaMock } from '../lib/__mocks__/prisma';
 import { getSession } from '@/lib/session';
-import type { RecurringRule } from '@prisma/client';
+import type { RecurringRule } from '@/generated/prisma/client';
 import {
   createRecurringRule,
   updateRecurringRule,

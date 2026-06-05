@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { RecurringRule } from "@prisma/client"
+import { RecurringRule } from "@/generated/prisma/client"
 import { getSession } from "@/lib/session"
 import { parseRequiredString, parseMoney, parseDate } from "@/lib/validation"
 import { roundMoney } from "@/lib/money"

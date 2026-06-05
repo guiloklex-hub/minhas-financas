@@ -6,7 +6,7 @@ vi.mock('@/lib/prisma', async () => {
 });
 
 import { prismaMock } from './__mocks__/prisma';
-import type { RecurringRule, Transaction } from '@prisma/client';
+import type { RecurringRule, Transaction } from '@/generated/prisma/client';
 import { forecastCashFlow } from './forecast';
 
 function buildRule(overrides: Partial<RecurringRule> = {}): RecurringRule {

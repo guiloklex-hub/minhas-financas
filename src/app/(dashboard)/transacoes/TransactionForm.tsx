@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react"
 import { createTransaction } from "@/actions/transactions"
-import { Category, Account } from "@prisma/client"
+import { Category, Account } from "@/generated/prisma/client"
 
 export default function TransactionForm({ categories, accounts }: { categories: Category[], accounts: Account[] }) {
   const [isPending, startTransition] = useTransition();

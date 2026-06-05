@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { createTransactionFromText } from "@/actions/ai-transactions";
-import { Account } from "@prisma/client";
+import { Account } from "@/generated/prisma/client";
 
 interface Props {
   accounts: Account[];

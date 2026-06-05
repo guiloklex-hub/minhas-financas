@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { createAccount, updateAccount, deleteAccount } from "@/actions/accounts";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
-import { Account } from "@prisma/client";
+import { Account } from "@/generated/prisma/client";
 
 interface AccountFormProps {
   account?: Account | null;

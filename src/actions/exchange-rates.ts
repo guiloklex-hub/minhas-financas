@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { ExchangeRate } from "@prisma/client"
+import { ExchangeRate } from "@/generated/prisma/client"
 import { getSession } from "@/lib/session"
 import { parseDate, parseMoney } from "@/lib/validation"
 import { isSupportedCurrency } from "@/lib/currency"

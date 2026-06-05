@@ -13,7 +13,7 @@ vi.mock('@/lib/session', () => ({
 
 import { prismaMock } from '../lib/__mocks__/prisma';
 import { getSession } from '@/lib/session';
-import type { Category, Transaction } from '@prisma/client';
+import type { Category, Transaction } from '@/generated/prisma/client';
 import { createTransfer, updateTransfer } from './transfers';
 
 function buildCategory(overrides: Partial<Category> = {}): Category {

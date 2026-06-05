@@ -18,7 +18,7 @@ import { prismaMock } from '../lib/__mocks__/prisma';
 import { getSession } from '@/lib/session';
 import { parseTransactionText } from '@/lib/gemini';
 import type { ParsedTransaction } from '@/lib/gemini';
-import type { Account, Category, Transaction } from '@prisma/client';
+import type { Account, Category, Transaction } from '@/generated/prisma/client';
 import { createTransactionFromText } from './ai-transactions';
 
 function buildCategory(overrides: Partial<Category> = {}): Category {
