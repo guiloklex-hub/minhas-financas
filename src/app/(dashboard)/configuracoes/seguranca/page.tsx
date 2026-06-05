@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import SecurityFormClient from "./SecurityFormClient";
 import { redirect } from "next/navigation";
 
@@ -8,14 +9,19 @@ export default async function SegurancaPage() {
     redirect("/login");
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { twoFactorEnabled: true },
+  });
+
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8 max-w-2xl">
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-white">Segurança</h3>
-        <p className="text-sm text-zinc-400">Altere sua senha de acesso ao sistema.</p>
+        <p className="text-sm text-zinc-400">Altere sua senha e gerencie a verificação em duas etapas.</p>
       </div>
 
-      <SecurityFormClient />
+      <SecurityFormClient twoFactorEnabled={dbUser?.twoFactorEnabled ?? false} />
     </div>
   );
 }

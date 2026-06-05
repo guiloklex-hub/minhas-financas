@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, Cpu, CircleDollarSign, AlertTriangle, Timer, Users, Crown, Sparkles, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { Activity, Cpu, CircleDollarSign, AlertTriangle, Timer, Users, Crown, Sparkles, CheckCircle2, Loader2, XCircle, Wallet } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { testGeminiConnection } from "@/actions/ai-advisor";
 
@@ -33,9 +33,13 @@ interface Props {
   };
   chartData: ChartPoint[];
   recentLogs: Log[];
+  budget: {
+    spendThisMonthUsd: number;
+    monthlyBudgetUsd: number | null;
+  };
 }
 
-export default function StatusDashboardClient({ metrics, chartData, recentLogs }: Props) {
+export default function StatusDashboardClient({ metrics, chartData, recentLogs, budget }: Props) {
   const [testStatus, setTestStatus] = useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [testMessage, setTestMessage] = useState('');
 
@@ -45,6 +49,17 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value);
   };
+
+  const formatUsd = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value);
+  };
+
+  const hasBudget = budget.monthlyBudgetUsd !== null && budget.monthlyBudgetUsd > 0;
+  const budgetPercent = hasBudget ? (budget.spendThisMonthUsd / (budget.monthlyBudgetUsd as number)) * 100 : 0;
+  const budgetExceeded = hasBudget && budgetPercent >= 100;
+  const budgetBarPercent = Math.min(budgetPercent, 100);
+  const budgetBarColor = budgetPercent >= 100 ? 'bg-rose-500' : budgetPercent >= 80 ? 'bg-amber-500' : 'bg-emerald-500';
+  const budgetTextColor = budgetPercent >= 100 ? 'text-rose-400' : budgetPercent >= 80 ? 'text-amber-400' : 'text-emerald-400';
 
   const handleTestConnection = async () => {
     setTestStatus('LOADING');
@@ -87,6 +102,56 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs }
           </h2>
           <p className="text-zinc-400 mt-1">Uso, custo estimado, erros e saúde da integração de IA</p>
         </div>
+      </div>
+
+      {/* Orçamento de IA (mês corrente) */}
+      <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
+              <Wallet size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Orçamento de IA (mês)</h3>
+              <p className="text-[11px] text-zinc-500">Gasto estimado vs. teto mensal configurado (USD)</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold text-white">
+              {formatUsd(budget.spendThisMonthUsd)}
+              {hasBudget ? (
+                <span className="text-zinc-500 font-medium"> / {formatUsd(budget.monthlyBudgetUsd as number)}</span>
+              ) : null}
+            </div>
+            <div className="text-[11px] font-semibold">
+              {hasBudget ? (
+                <span className={budgetTextColor}>{budgetPercent.toFixed(0)}% utilizado</span>
+              ) : (
+                <span className="text-zinc-500">sem limite</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {hasBudget ? (
+          <div className="mt-4 w-full h-2.5 rounded-full bg-zinc-800 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${budgetBarColor}`}
+              style={{ width: `${budgetBarPercent}%` }}
+            />
+          </div>
+        ) : (
+          <p className="mt-4 text-xs text-zinc-400">
+            Defina <span className="font-mono text-zinc-300">AI_MONTHLY_BUDGET_USD</span> para ativar o teto mensal de gasto com IA.
+          </p>
+        )}
+
+        {budgetExceeded ? (
+          <div className="mt-4 flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+            <AlertTriangle size={16} />
+            Limite mensal de gasto com IA atingido — as chamadas ao Gemini estão bloqueadas até o próximo mês.
+          </div>
+        ) : null}
       </div>
 
       {/* Grid: 5 Top Cards */}

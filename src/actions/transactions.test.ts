@@ -22,6 +22,7 @@ import {
   deleteTransaction,
   updateTransaction,
   deleteRecurrenceSeries,
+  toggleReconciled,
 } from './transactions';
 
 // Helper para montar um Transaction completo (campos preenchidos com defaults sensatos).
@@ -32,6 +33,9 @@ function buildTransaction(overrides: Partial<Transaction> = {}): Transaction {
     amount: 100,
     type: 'EXPENSE',
     date: new Date('2024-01-31T00:00:00.000Z'),
+    notes: null,
+    tags: null,
+    reconciled: false,
     isTransfer: false,
     transferGroupId: null,
     recurrenceGroupId: null,
@@ -73,6 +77,8 @@ describe('actions/transactions.ts', () => {
       fd.set('date', '2024-01-31T00:00:00');
       fd.append('isRecurring', 'on');
       fd.append('recurrenceMonths', '3');
+      fd.append('notes', 'parcela mensal');
+      fd.append('tags', ' assinatura , casa ');
 
       const result = await createTransaction(fd);
 
@@ -84,7 +90,15 @@ describe('actions/transactions.ts', () => {
       // Inspeciona as datas passadas em cada create.
       // Tipamos cada argumento como o shape de `create` para evitar `any` implícito
       // e sem depender de tipos gerados do Prisma além do necessário.
-      type CreateArg = { data: { date: Date; title: string; recurrenceGroupId: string } };
+      type CreateArg = {
+        data: {
+          date: Date;
+          title: string;
+          recurrenceGroupId: string;
+          notes: string | null;
+          tags: string | null;
+        };
+      };
       const calls = prismaMock.transaction.create.mock.calls as unknown as Array<[CreateArg]>;
       const dates = calls.map((c) => c[0].data.date);
 
@@ -112,6 +126,12 @@ describe('actions/transactions.ts', () => {
       const groupIds = calls.map((c) => c[0].data.recurrenceGroupId);
       expect(groupIds[0]).toBeTruthy();
       expect(new Set(groupIds).size).toBe(1);
+
+      // notes/tags (normalizadas) propagam para todas as parcelas da série.
+      for (const c of calls) {
+        expect(c[0].data.notes).toBe('parcela mensal');
+        expect(c[0].data.tags).toBe('assinatura,casa');
+      }
     });
   });
 
@@ -134,8 +154,72 @@ describe('actions/transactions.ts', () => {
           date: expect.any(Date),
           categoryId: 'cat-1',
           accountId: 'acc-1',
+          notes: null,
+          tags: null,
         },
       });
+    });
+
+    it('persiste notes e tags normalizadas ao criar', async () => {
+      const created = buildTransaction({ notes: 'comprei a prazo', tags: 'casa,contas' });
+      prismaMock.transaction.create.mockResolvedValue(created);
+
+      const fd = buildSimpleFormData();
+      fd.append('notes', '  comprei a prazo  ');
+      // Espaços extras, vazios e duplicata devem ser normalizados para "casa,contas".
+      fd.append('tags', ' casa ,  contas , , casa ');
+
+      const result = await createTransaction(fd);
+
+      expect(result.success).toBe(true);
+      expect(prismaMock.transaction.create).toHaveBeenCalledTimes(1);
+      expect(prismaMock.transaction.create).toHaveBeenCalledWith({
+        data: {
+          title: 'Mercado',
+          amount: 100,
+          type: 'EXPENSE',
+          date: expect.any(Date),
+          categoryId: 'cat-1',
+          accountId: 'acc-1',
+          notes: 'comprei a prazo',
+          tags: 'casa,contas',
+        },
+      });
+    });
+
+    it('grava null em notes/tags quando ausentes ou vazias', async () => {
+      prismaMock.transaction.create.mockResolvedValue(buildTransaction());
+
+      const fd = buildSimpleFormData();
+      fd.append('notes', '   ');
+      fd.append('tags', ' , , ');
+
+      const result = await createTransaction(fd);
+
+      expect(result.success).toBe(true);
+      expect(prismaMock.transaction.create).toHaveBeenCalledWith({
+        data: {
+          title: 'Mercado',
+          amount: 100,
+          type: 'EXPENSE',
+          date: expect.any(Date),
+          categoryId: 'cat-1',
+          accountId: 'acc-1',
+          notes: null,
+          tags: null,
+        },
+      });
+    });
+
+    it('rejeita notes acima de 2000 caracteres', async () => {
+      const fd = buildSimpleFormData();
+      fd.append('notes', 'x'.repeat(2001));
+
+      const result = await createTransaction(fd);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Observações devem ter no máximo 2000 caracteres.');
+      expect(prismaMock.transaction.create).not.toHaveBeenCalled();
     });
 
     it('retorna erro quando o título está ausente', async () => {
@@ -220,6 +304,36 @@ describe('actions/transactions.ts', () => {
           date: expect.any(Date),
           categoryId: 'cat-1',
           accountId: 'acc-1',
+          notes: null,
+          tags: null,
+        },
+      });
+    });
+
+    it('atualiza notes e tags normalizadas', async () => {
+      prismaMock.transaction.findUnique.mockResolvedValue(buildTransaction());
+      prismaMock.transaction.update.mockResolvedValue(
+        buildTransaction({ notes: 'pago', tags: 'casa,fixo' }),
+      );
+
+      const fd = buildSimpleFormData();
+      fd.append('notes', '  pago  ');
+      fd.append('tags', ' casa , fixo , casa ');
+
+      const result = await updateTransaction('tx-1', fd);
+
+      expect(result.success).toBe(true);
+      expect(prismaMock.transaction.update).toHaveBeenCalledWith({
+        where: { id: 'tx-1' },
+        data: {
+          title: 'Mercado',
+          amount: 100,
+          type: 'EXPENSE',
+          date: expect.any(Date),
+          categoryId: 'cat-1',
+          accountId: 'acc-1',
+          notes: 'pago',
+          tags: 'casa,fixo',
         },
       });
     });
@@ -328,6 +442,63 @@ describe('actions/transactions.ts', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Não autorizado. Faça login novamente.');
       expect(prismaMock.transaction.deleteMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('toggleReconciled', () => {
+    it('alterna de false para true', async () => {
+      prismaMock.transaction.findUnique.mockResolvedValue(
+        buildTransaction({ reconciled: false }),
+      );
+      const updated = buildTransaction({ reconciled: true });
+      prismaMock.transaction.update.mockResolvedValue(updated);
+
+      const result = await toggleReconciled('tx-1');
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(updated);
+      expect(prismaMock.transaction.update).toHaveBeenCalledTimes(1);
+      expect(prismaMock.transaction.update).toHaveBeenCalledWith({
+        where: { id: 'tx-1' },
+        data: { reconciled: true },
+      });
+    });
+
+    it('alterna de true para false', async () => {
+      prismaMock.transaction.findUnique.mockResolvedValue(
+        buildTransaction({ reconciled: true }),
+      );
+      const updated = buildTransaction({ reconciled: false });
+      prismaMock.transaction.update.mockResolvedValue(updated);
+
+      const result = await toggleReconciled('tx-1');
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(updated);
+      expect(prismaMock.transaction.update).toHaveBeenCalledWith({
+        where: { id: 'tx-1' },
+        data: { reconciled: false },
+      });
+    });
+
+    it('retorna erro quando a transação não existe', async () => {
+      prismaMock.transaction.findUnique.mockResolvedValue(null);
+
+      const result = await toggleReconciled('inexistente');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Transação não encontrada.');
+      expect(prismaMock.transaction.update).not.toHaveBeenCalled();
+    });
+
+    it('retorna "Não autorizado..." quando não há sessão', async () => {
+      vi.mocked(getSession).mockResolvedValueOnce(null);
+
+      const result = await toggleReconciled('tx-1');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Não autorizado. Faça login novamente.');
+      expect(prismaMock.transaction.findUnique).not.toHaveBeenCalled();
     });
   });
 });

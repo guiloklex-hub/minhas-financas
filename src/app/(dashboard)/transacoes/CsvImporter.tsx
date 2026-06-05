@@ -6,6 +6,7 @@ import { Category, Account } from "@prisma/client";
 
 export default function CsvImporter({ categories, accounts }: { categories: Category[], accounts: Account[] }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [autoCategorize, setAutoCategorize] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   async function handleImport(e: React.FormEvent<HTMLFormElement>) {
@@ -14,15 +15,21 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
     setMessage(null);
 
     const formData = new FormData(e.currentTarget);
+    // No modo automático, sobrescreve a categoria pelo marcador especial — o
+    // server resolve a categoria de cada linha pelo histórico.
+    if (autoCategorize) {
+      formData.set("categoryId", "__auto__");
+    }
     const result = await importTransactionsFromCsv(formData);
 
     if (result.success) {
-      setMessage({ text: `${result.count} transações importadas com sucesso!`, type: "success" });
+      setMessage({ text: result.message || `${result.count} transações importadas com sucesso!`, type: "success" });
       (e.target as HTMLFormElement).reset();
+      setAutoCategorize(false);
     } else {
       setMessage({ text: result.error || "Erro na importação.", type: "error" });
     }
-    
+
     setIsUploading(false);
   }
 
@@ -60,18 +67,31 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="csvCategoryId" className="block text-sm font-medium mb-1 text-zinc-300">Categoria Padrão</label>
-          <select required id="csvCategoryId" name="categoryId" className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
-            <option value="">Selecione...</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
+        {!autoCategorize && (
+          <div>
+            <label htmlFor="csvCategoryId" className="block text-sm font-medium mb-1 text-zinc-300">Categoria Padrão</label>
+            <select required id="csvCategoryId" name="categoryId" className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+              <option value="">Selecione...</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
-      <button 
+      <label className="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={autoCategorize}
+          onChange={e => setAutoCategorize(e.target.checked)}
+          className="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-emerald-600 focus:ring-emerald-500"
+        />
+        Auto-categorizar pelo histórico
+        <span className="text-zinc-500">(usa transações anteriores; sem categoria padrão)</span>
+      </label>
+
+      <button
         type="submit" 
         disabled={isUploading}
         className="mt-4 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"

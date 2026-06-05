@@ -1,12 +1,22 @@
 import { getInsightsData } from "@/actions/insights";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Wallet, Flame } from "lucide-react";
 import { AiAdvisorCard } from "./AiAdvisorCard";
+import { AnomaliesCard } from "./AnomaliesCard";
+import { ForecastCard, MonthlyInsightSummary } from "./ForecastCard";
+import { detectAnomalies } from "@/lib/anomaly";
+import { forecastCashFlow } from "@/lib/forecast";
+import { getLatestMonthlyInsight } from "@/actions/ai-insights";
 
 export default async function InsightsPage() {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  const data = await getInsightsData();
+  const [data, anomalies, cashFlowForecast, latestInsight] = await Promise.all([
+    getInsightsData(),
+    detectAnomalies(),
+    forecastCashFlow(3),
+    getLatestMonthlyInsight(),
+  ]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -24,6 +34,15 @@ export default async function InsightsPage() {
       </div>
 
       <AiAdvisorCard month={currentMonth} year={currentYear} />
+
+      <MonthlyInsightSummary
+        month={currentMonth}
+        year={currentYear}
+        initialSummary={latestInsight?.summary ?? null}
+        initialCreatedAt={
+          latestInsight ? new Date(latestInsight.createdAt).toLocaleString("pt-BR") : null
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* MoM Card */}
@@ -50,6 +69,12 @@ export default async function InsightsPage() {
           <p className="text-sm text-zinc-400 mt-4 leading-relaxed">{forecast.text}</p>
         </div>
       </div>
+
+      {/* Anomalias por categoria (drill-down para /transacoes) */}
+      <AnomaliesCard anomalies={anomalies} />
+
+      {/* Projeção de fluxo de caixa dos próximos 3 meses */}
+      <ForecastCard data={cashFlowForecast} />
 
       {/* Budget Alerts */}
       {budgetAlerts.length > 0 && (

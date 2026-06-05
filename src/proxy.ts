@@ -33,6 +33,6 @@ export const config = {
      * - login
      * - registro
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|login|registro).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|icon.svg|login|registro|esqueci-senha|redefinir-senha).*)',
   ],
 }

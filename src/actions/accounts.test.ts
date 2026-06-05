@@ -28,6 +28,7 @@ describe('actions/accounts.ts', () => {
         name: 'Nubank',
         type: 'CREDIT',
         initialBalance: 0,
+        currency: 'BRL',
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -50,7 +51,8 @@ describe('actions/accounts.ts', () => {
         data: {
           name: 'Nubank',
           type: 'CREDIT',
-          initialBalance: 0
+          initialBalance: 0,
+          currency: 'BRL'
         }
       });
     });

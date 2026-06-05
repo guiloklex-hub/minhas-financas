@@ -10,7 +10,7 @@ interface Props {
   categories: Category[];
   accounts: Account[];
   onClose: () => void;
-  onSuccess: (updatedTx: Transaction) => void;
+  onSuccess: () => void;
 }
 
 export default function EditTransactionModal({ transaction, categories, accounts, onClose, onSuccess }: Props) {
@@ -24,8 +24,8 @@ export default function EditTransactionModal({ transaction, categories, accounts
     
     startTransition(async () => {
       const result = await updateTransaction(transaction.id, formData);
-      if (result.success && result.data) {
-        onSuccess(result.data as Transaction);
+      if (result.success) {
+        onSuccess();
         onClose();
       } else {
         setError(result.error || "Erro ao salvar as alterações.");
@@ -130,10 +130,10 @@ export default function EditTransactionModal({ transaction, categories, accounts
             </div>
             <div>
               <label htmlFor="accountId" className="block text-sm font-medium mb-1 text-zinc-300">Conta / Carteira</label>
-              <select 
-                required 
-                id="accountId" 
-                name="accountId" 
+              <select
+                required
+                id="accountId"
+                name="accountId"
                 defaultValue={transaction.accountId}
                 className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
               >
@@ -143,6 +143,31 @@ export default function EditTransactionModal({ transaction, categories, accounts
                 ))}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium mb-1 text-zinc-300">Tags</label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              defaultValue={transaction.tags ?? ""}
+              className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+              placeholder="Separadas por vírgula. Ex: casa, contas"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium mb-1 text-zinc-300">Observações</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows={3}
+              maxLength={2000}
+              defaultValue={transaction.notes ?? ""}
+              className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors resize-y"
+              placeholder="Detalhes adicionais (opcional)"
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">

@@ -5,6 +5,12 @@ import { revalidatePath } from "next/cache"
 import { Account } from "@prisma/client"
 import { getSession } from "@/lib/session"
 import { parseRequiredString, parseMoney } from "@/lib/validation"
+import { isSupportedCurrency } from "@/lib/currency"
+
+/** Lê e valida a moeda do formulário, com fallback para BRL. */
+function parseCurrency(value: FormDataEntryValue | null): string {
+  return typeof value === "string" && isSupportedCurrency(value) ? value : "BRL";
+}
 
 export async function createAccount(formData: FormData): Promise<{ success: boolean; data?: Account; error?: string }> {
   const session = await getSession();
@@ -25,6 +31,7 @@ export async function createAccount(formData: FormData): Promise<{ success: bool
         name: nameRes.value,
         type: typeRes.value,
         initialBalance: balanceRes.value,
+        currency: parseCurrency(formData.get("currency")),
       }
     });
 
@@ -59,6 +66,7 @@ export async function updateAccount(id: string, formData: FormData): Promise<{ s
         name: nameRes.value,
         type: typeRes.value,
         initialBalance: balanceRes.value,
+        currency: parseCurrency(formData.get("currency")),
       }
     });
 

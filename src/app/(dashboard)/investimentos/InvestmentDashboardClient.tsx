@@ -4,11 +4,19 @@ import { useState, useMemo, useTransition } from "react";
 import { Investment } from "@prisma/client";
 import { calculateCompoundInterest, calculateBrazilianTaxes } from "@/lib/financial-math";
 import { simulateInvestmentScenario } from "@/actions/ai-advisor";
-import { createInvestment, deleteInvestment } from "@/actions/investments";
-import { 
+import { createInvestment, updateInvestment, deleteInvestment } from "@/actions/investments";
+import { roundMoney } from "@/lib/money";
+import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from "recharts";
-import { TrendingUp, Plus, Trash2, Loader2, Sparkles, Send, ShieldAlert, Landmark, DollarSign } from "lucide-react";
+import { TrendingUp, Plus, Trash2, Loader2, Sparkles, Send, ShieldAlert, Landmark, DollarSign, Pencil, X } from "lucide-react";
+
+function toDateInputValue(date: Date | string | null): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString().split("T")[0];
+}
 
 export default function InvestmentDashboardClient({ initialInvestments }: { initialInvestments: Investment[] }) {
   const [investments, setInvestments] = useState<Investment[]>(initialInvestments);
@@ -16,6 +24,13 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
   const [createError, setCreateError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isPendingDelete, startTransitionDelete] = useTransition();
+
+  // Edição: quando definido, o formulário entra em modo de edição preenchido
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editingInvestment = useMemo(
+    () => investments.find((inv) => inv.id === editingId) ?? null,
+    [investments, editingId]
+  );
   
   // Chatbot State
   const [prompt, setPrompt] = useState("");
@@ -57,22 +72,42 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
   const estimatedTaxes12Months = calculateBrazilianTaxes(grossProfit12Months, 365);
   const netProfit12Months = grossProfit12Months - estimatedTaxes12Months;
 
-  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    
+
     const formData = new FormData(e.currentTarget);
     const target = e.currentTarget;
+    const editId = editingId;
+
     startTransitionCreate(async () => {
-      const res = await createInvestment(formData);
-      
+      const res = editId
+        ? await updateInvestment(editId, formData)
+        : await createInvestment(formData);
+
       if (res.success && res.data) {
-        setInvestments(prev => [res.data as Investment, ...prev]);
-        target.reset();
+        const saved = res.data as Investment;
+        if (editId) {
+          setInvestments(prev => prev.map(inv => (inv.id === saved.id ? saved : inv)));
+          setEditingId(null);
+        } else {
+          setInvestments(prev => [saved, ...prev]);
+          target.reset();
+        }
       } else {
-        setCreateError(res.error || "Erro ao criar investimento");
+        setCreateError(res.error || (editId ? "Erro ao atualizar investimento" : "Erro ao criar investimento"));
         setTimeout(() => setCreateError(""), 5000);
       }
     });
+  }
+
+  function startEdit(id: string) {
+    setCreateError("");
+    setEditingId(id);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setCreateError("");
   }
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,6 +122,7 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
     startTransitionDelete(async () => {
       const res = await deleteInvestment(id);
       if (res.success) {
+        if (editingId === id) setEditingId(null);
         setInvestments(prev => {
           const newInv = prev.filter(i => i.id !== id);
           const newTotalPages = Math.ceil(newInv.length / itemsPerPage) || 1;
@@ -198,16 +234,29 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
         {/* Formulário e Lista de Ativos */}
         <div className="space-y-6">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Novo Ativo</h3>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">
+                {editingInvestment ? "Editar Ativo" : "Novo Ativo"}
+              </h3>
+              {editingInvestment && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors"
+                >
+                  <X size={14} /> Cancelar
+                </button>
+              )}
+            </div>
+            <form key={editingInvestment?.id ?? "new"} onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Nome (Ex: Tesouro Selic)</label>
-                  <input name="name" required className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <input name="name" required defaultValue={editingInvestment?.name ?? ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Tipo</label>
-                  <select name="type" required className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white">
+                  <select name="type" required defaultValue={editingInvestment?.type ?? "FIXED_INCOME"} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white">
                     <option value="FIXED_INCOME">Renda Fixa</option>
                     <option value="VARIABLE_INCOME">Renda Variável</option>
                     <option value="CRYPTO">Criptomoeda</option>
@@ -215,24 +264,30 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Aporte Inicial (R$)</label>
-                  <input name="initialAmount" type="number" step="0.01" required className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <input name="initialAmount" type="number" step="0.01" required defaultValue={editingInvestment ? String(editingInvestment.initialAmount) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
+                {editingInvestment && (
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">Valor Atual (R$)</label>
+                    <input name="currentAmount" type="number" step="0.01" required defaultValue={String(editingInvestment.currentAmount)} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Taxa Anual (Ex: 10.5 para 10,5%)</label>
-                  <input name="yieldRate" type="number" step="0.01" required className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <input name="yieldRate" type="number" step="0.01" required defaultValue={editingInvestment ? String(roundMoney(editingInvestment.yieldRate * 100)) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Data Início</label>
-                  <input name="startDate" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <input name="startDate" type="date" required defaultValue={editingInvestment ? toDateInputValue(editingInvestment.startDate) : new Date().toISOString().split('T')[0]} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1">Vencimento (Opcional)</label>
-                  <input name="maturityDate" type="date" className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <input name="maturityDate" type="date" defaultValue={editingInvestment ? toDateInputValue(editingInvestment.maturityDate) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
                 </div>
               </div>
               <button disabled={isPendingCreate} className="w-full h-[42px] bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
-                {isPendingCreate ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                Cadastrar Investimento
+                {isPendingCreate ? <Loader2 size={16} className="animate-spin" /> : editingInvestment ? <Pencil size={16} /> : <Plus size={16} />}
+                {editingInvestment ? "Salvar Alterações" : "Cadastrar Investimento"}
               </button>
               {createError && (
                 <div className="p-3 mt-3 rounded-lg text-sm font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30">
@@ -249,16 +304,21 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
             </div>
             <div className="divide-y divide-zinc-800">
               {currentInvestments.map(inv => (
-                <div key={inv.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                <div key={inv.id} className={`p-4 flex items-center justify-between transition-colors ${editingId === inv.id ? "bg-white/5 ring-1 ring-inset ring-blue-500/40" : "hover:bg-white/5"}`}>
                   <div>
                     <h4 className="font-medium text-white">{inv.name}</h4>
                     <p className="text-xs text-zinc-400 mt-1">
                       R$ {inv.currentAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} • {(inv.yieldRate * 100).toFixed(2)}% a.a.
                     </p>
                   </div>
-                  <button onClick={() => handleDelete(inv.id)} disabled={isPendingDelete && deletingId === inv.id} className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors">
-                    {isPendingDelete && deletingId === inv.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={16}/>}
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => startEdit(inv.id)} className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors" aria-label="Editar investimento">
+                      <Pencil size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(inv.id)} disabled={isPendingDelete && deletingId === inv.id} className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors" aria-label="Excluir investimento">
+                      {isPendingDelete && deletingId === inv.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={16}/>}
+                    </button>
+                  </div>
                 </div>
               ))}
               {investments.length === 0 && (

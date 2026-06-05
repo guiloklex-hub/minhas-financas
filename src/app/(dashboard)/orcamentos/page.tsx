@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import BudgetForm from "./BudgetForm"
+import DeleteBudgetButton from "./DeleteBudgetButton"
 
 export default async function OrcamentosPage() {
   const categories = await prisma.category.findMany();
@@ -60,9 +61,12 @@ export default async function OrcamentosPage() {
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: b.category.color || '#fff' }}></div>
                       {b.category.name}
                     </h4>
-                    <span className="text-sm font-medium text-white/70">
-                      {formatCurrency(spent)} / {formatCurrency(b.amountLimit)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-white/70">
+                        {formatCurrency(spent)} / {formatCurrency(b.amountLimit)}
+                      </span>
+                      <DeleteBudgetButton id={b.id} categoryName={b.category.name} />
+                    </div>
                   </div>
                   
                   <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">

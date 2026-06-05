@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react"
 import { authenticateUser, hasRegisteredUser } from "@/actions/auth"
 import { useRouter } from "next/navigation"
-import { Loader2, Lock, Mail, ShieldCheck } from "lucide-react"
+import { Loader2, Lock, Mail, ShieldCheck, KeyRound } from "lucide-react"
 import Link from "next/link"
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [canRegister, setCanRegister] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     const formData = new FormData(e.currentTarget);
-    
+
     startTransition(async () => {
       const result = await authenticateUser(formData);
       if (result.success) {
@@ -32,7 +33,16 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       } else {
-        setError(result.error || "Erro ao realizar login");
+        if (result.requiresTwoFactor) {
+          setRequiresTwoFactor(true);
+        }
+        if (result.error) {
+          setError(result.error);
+        } else if (result.requiresTwoFactor) {
+          setError("");
+        } else {
+          setError("Erro ao realizar login");
+        }
       }
     });
   }
@@ -85,9 +95,9 @@ export default function LoginPage() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                       <Lock size={18} />
                     </div>
-                    <input 
-                      type="password" 
-                      name="password" 
+                    <input
+                      type="password"
+                      name="password"
                       required
                       className="w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-zinc-600"
                       placeholder="••••••••"
@@ -95,13 +105,42 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
+                {requiresTwoFactor && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-zinc-400 ml-1">Código de verificação (2FA)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                        <KeyRound size={18} />
+                      </div>
+                      <input
+                        type="text"
+                        name="token"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        autoFocus
+                        className="w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm tracking-[0.4em] placeholder:tracking-normal placeholder:text-zinc-600"
+                        placeholder="000000"
+                      />
+                    </div>
+                    <p className="text-xs text-zinc-500 ml-1 pt-1">Digite o código de 6 dígitos do seu app autenticador.</p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
                   disabled={isPending}
                   className="w-full h-12 mt-4 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {isPending ? <Loader2 size={18} className="animate-spin" /> : "Entrar na Conta"}
+                  {isPending ? <Loader2 size={18} className="animate-spin" /> : (requiresTwoFactor ? "Verificar e Entrar" : "Entrar na Conta")}
                 </button>
+
+                <div className="text-center">
+                  <Link href="/esqueci-senha" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors">
+                    Esqueci minha senha
+                  </Link>
+                </div>
               </form>
 
               {canRegister && (

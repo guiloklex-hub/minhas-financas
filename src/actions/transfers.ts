@@ -90,3 +90,68 @@ export async function createTransfer(formData: FormData): Promise<{ success: boo
     return { success: false, error: "Erro interno ao processar a transferência." };
   }
 }
+
+export async function updateTransfer(
+  transferGroupId: string,
+  formData: FormData
+): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  try {
+    const titleRes = parseRequiredString(formData.get("title"), "Título");
+    // Título é opcional: cai para "Transferência" quando ausente/vazio.
+    const title = titleRes.ok ? titleRes.value : "Transferência";
+
+    const amountRes = parseMoney(formData.get("amount"), "Valor", { min: 0.01 });
+    if (!amountRes.ok) return { success: false, error: amountRes.error };
+
+    const dateRes = parseDate(formData.get("date"), "Data");
+    if (!dateRes.ok) return { success: false, error: dateRes.error };
+
+    const amount = roundMoney(amountRes.value);
+    const parsedDate = dateRes.value;
+
+    // Busca as duas pernas da transferência.
+    const legs = await prisma.transaction.findMany({
+      where: { transferGroupId },
+    });
+
+    const expenseLeg = legs.find((l) => l.type === "EXPENSE");
+    const incomeLeg = legs.find((l) => l.type === "INCOME");
+
+    if (legs.length !== 2 || !expenseLeg || !incomeLeg) {
+      return { success: false, error: "Transferência não encontrada." };
+    }
+
+    // Atualiza ambas as pernas atomicamente, sem trocar as contas (mantém o
+    // accountId de cada perna).
+    await prisma.$transaction([
+      prisma.transaction.update({
+        where: { id: expenseLeg.id },
+        data: {
+          title: `${title} (Saída)`,
+          amount,
+          date: parsedDate,
+        },
+      }),
+      prisma.transaction.update({
+        where: { id: incomeLeg.id },
+        data: {
+          title: `${title} (Entrada)`,
+          amount,
+          date: parsedDate,
+        },
+      }),
+    ]);
+
+    revalidatePath("/");
+    revalidatePath("/contas");
+    revalidatePath("/transacoes");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao atualizar transferência:", error);
+    return { success: false, error: "Erro interno ao processar a transferência." };
+  }
+}

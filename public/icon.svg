@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Minhas Finanças">
+  <rect width="512" height="512" rx="112" fill="#09090b" />
+  <rect x="40" y="40" width="432" height="432" rx="84" fill="#0f1714" />
+  <text
+    x="50%"
+    y="50%"
+    dy="0.04em"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"
+    font-weight="700"
+    font-size="248"
+    fill="#34d399"
+  >R$</text>
+</svg>

@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { prisma } from "@/lib/prisma";
+import { isAiBudgetExceeded } from "@/lib/ai-budget";
 
 export type ParsedTransaction = {
   amount: number;
@@ -47,6 +48,13 @@ export async function parseTransactionText(
   if (!apiKey) {
     status = "ERROR";
     errorMessage = "GEMINI_API_KEY não configurada.";
+    await logAiUsage("Lançamento Mágico", status, errorMessage, 0, 0, 0, performance.now() - startTime, 0);
+    throw new Error(errorMessage);
+  }
+
+  if (await isAiBudgetExceeded()) {
+    status = "BLOCKED";
+    errorMessage = "Limite mensal de gasto com IA atingido.";
     await logAiUsage("Lançamento Mágico", status, errorMessage, 0, 0, 0, performance.now() - startTime, 0);
     throw new Error(errorMessage);
   }

@@ -68,6 +68,16 @@ export default function TransactionForm({ categories, accounts }: { categories: 
         </div>
       </div>
 
+      <div>
+        <label htmlFor="tags" className="block text-sm font-medium mb-1">Tags</label>
+        <input type="text" id="tags" name="tags" className="w-full bg-black/50 border border-[var(--color-border)] rounded-md p-2 focus:outline-none focus:border-white/50 transition-colors" placeholder="Separadas por vírgula. Ex: casa, contas" />
+      </div>
+
+      <div>
+        <label htmlFor="notes" className="block text-sm font-medium mb-1">Observações</label>
+        <textarea id="notes" name="notes" rows={3} maxLength={2000} className="w-full bg-black/50 border border-[var(--color-border)] rounded-md p-2 focus:outline-none focus:border-white/50 transition-colors resize-y" placeholder="Detalhes adicionais (opcional)" />
+      </div>
+
       <div className="flex flex-col gap-4 p-4 border border-[var(--color-border)] rounded-md bg-black/20">
         <label className="flex items-center gap-2 cursor-pointer">
           <input 

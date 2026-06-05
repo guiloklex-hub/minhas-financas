@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getAiMonthlyBudgetUsd, getAiSpendThisMonthUsd } from "@/lib/ai-budget";
 import StatusDashboardClient from "./StatusDashboardClient";
 
 export default async function StatusIAPage() {
@@ -69,6 +70,10 @@ export default async function StatusIAPage() {
   // Sort by date strings (simple assuming same year, month/day order won't break if strictly last 30d without year crossover, but let's keep it simple)
   const chartData = Object.values(chartDataMap);
 
+  // Guardrail de custo de IA (mês corrente)
+  const aiSpendThisMonth = await getAiSpendThisMonthUsd();
+  const aiMonthlyBudget = getAiMonthlyBudgetUsd();
+
   const recentLogs = logs.map(l => ({
     id: l.id,
     feature: l.feature,
@@ -92,6 +97,10 @@ export default async function StatusIAPage() {
       }}
       chartData={chartData}
       recentLogs={recentLogs}
+      budget={{
+        spendThisMonthUsd: aiSpendThisMonth,
+        monthlyBudgetUsd: aiMonthlyBudget,
+      }}
     />
   );
 }

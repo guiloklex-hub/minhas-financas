@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createAccount, updateAccount, deleteAccount } from "@/actions/accounts";
+import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { Account } from "@prisma/client";
 
 interface AccountFormProps {
@@ -93,7 +94,24 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       </div>
 
       <div>
-        <label htmlFor="initialBalance" className="block text-sm font-medium text-white/70 mb-1">Saldo Inicial (R$)</label>
+        <label htmlFor="currency" className="block text-sm font-medium text-white/70 mb-1">Moeda</label>
+        <select
+          id="currency"
+          name="currency"
+          required
+          defaultValue={account?.currency || "BRL"}
+          className="w-full px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
+        >
+          {SUPPORTED_CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.symbol} — {c.code} ({c.name})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="initialBalance" className="block text-sm font-medium text-white/70 mb-1">Saldo Inicial</label>
         <input 
           type="number" 
           id="initialBalance" 

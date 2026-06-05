@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import Link from "next/link";
 import { Account } from "@prisma/client";
 import AccountForm from "./AccountForm";
 import TransferForm from "./TransferForm";
@@ -85,8 +86,8 @@ export default function AccountsList({ initialAccounts }: AccountsListProps) {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {initialAccounts.map(account => (
-          <div 
-            key={account.id} 
+          <div
+            key={account.id}
             className="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm hover:border-emerald-500/30 transition-all duration-200 cursor-pointer flex flex-col justify-between h-32"
             onClick={() => handleEdit(account)}
           >
@@ -98,13 +99,22 @@ export default function AccountsList({ initialAccounts }: AccountsListProps) {
                 </span>
               </div>
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${account.currentBalance >= 0 ? '' : 'text-rose-500'}`}>
-                {formatCurrency(account.currentBalance)}
-              </p>
-              <p className="text-xs text-white/40 mt-1">
-                Saldo inicial: {formatCurrency(account.initialBalance)}
-              </p>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className={`text-2xl font-bold ${account.currentBalance >= 0 ? '' : 'text-rose-500'}`}>
+                  {formatCurrency(account.currentBalance)}
+                </p>
+                <p className="text-xs text-white/40 mt-1">
+                  Saldo inicial: {formatCurrency(account.initialBalance)}
+                </p>
+              </div>
+              <Link
+                href={`/contas/${account.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors"
+              >
+                Ver extrato
+              </Link>
             </div>
           </div>
         ))}

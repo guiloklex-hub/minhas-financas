@@ -3,12 +3,17 @@
 import { prisma } from "@/lib/prisma";
 import { parseTransactionText } from "@/lib/gemini";
 import { getSession } from "@/lib/session";
+import { isAiBudgetExceeded } from "@/lib/ai-budget";
 import { roundMoney } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 
 export async function createTransactionFromText(text: string, accountId: string) {
   const session = await getSession();
   if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  if (await isAiBudgetExceeded()) {
+    return { success: false, error: "Limite mensal de gasto com IA atingido." };
+  }
 
   try {
     const categories = await prisma.category.findMany();

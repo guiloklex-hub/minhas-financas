@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Tags, Sparkles, User, Shield } from "lucide-react";
+import { Tags, Sparkles, User, Shield, DatabaseBackup, Coins, ScrollText } from "lucide-react";
 
 export default function ConfiguracoesLayout({
   children,
@@ -14,7 +14,10 @@ export default function ConfiguracoesLayout({
   const tabs = [
     { name: "Meu Perfil", href: "/configuracoes/perfil", icon: User },
     { name: "Segurança", href: "/configuracoes/seguranca", icon: Shield },
+    { name: "Auditoria", href: "/configuracoes/auditoria", icon: ScrollText },
     { name: "Categorias", href: "/configuracoes/categorias", icon: Tags },
+    { name: "Moedas", href: "/configuracoes/moedas", icon: Coins },
+    { name: "Backup", href: "/configuracoes/backup", icon: DatabaseBackup },
     { name: "Status IA", href: "/configuracoes/status-ia", icon: Sparkles },
   ];
 

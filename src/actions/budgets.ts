@@ -68,3 +68,20 @@ export async function upsertBudget(formData: FormData): Promise<{ success: boole
     return { success: false, error: "Erro interno ao definir orçamento." };
   }
 }
+
+export async function deleteBudget(id: string): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  try {
+    await prisma.budget.delete({ where: { id } });
+
+    revalidatePath("/orcamentos");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch {
+    console.error("Erro ao excluir orçamento.");
+    return { success: false, error: "Erro interno ao excluir orçamento." };
+  }
+}

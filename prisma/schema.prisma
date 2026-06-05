@@ -13,28 +13,47 @@ model User {
   password  String
   name      String?
   avatarUrl String?
+
+  // 2FA (TOTP)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+
+  // Recuperação de senha
+  resetToken        String?
+  resetTokenExpires DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Account {
-  id             String        @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  type           String        // "CHECKING", "CREDIT", "CASH"
-  initialBalance Float         @default(0)
+  type           String   // "CHECKING", "CREDIT", "CASH"
+  initialBalance Float    @default(0)
+  currency       String   @default("BRL")
+
   transactions   Transaction[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  recurringRules RecurringRule[]
+  goals          Goal[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Category {
-  id           String        @id @default(uuid())
+  id           String  @id @default(uuid())
   name         String
   color        String?
-  transactions Transaction[]
-  budgets      Budget[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  icon         String?
+  sortOrder    Int     @default(0)
+
+  transactions   Transaction[]
+  budgets        Budget[]
+  recurringRules RecurringRule[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Budget {
@@ -54,19 +73,27 @@ model Transaction {
   amount     Float
   type       String   // "INCOME" ou "EXPENSE"
   date       DateTime
-  
-  isTransfer      Boolean  @default(false)
-  transferGroupId String?
+
+  notes      String?
+  tags       String?  // lista separada por vírgula
+  reconciled Boolean  @default(false)
+
+  isTransfer        Boolean @default(false)
+  transferGroupId   String?
   recurrenceGroupId String?
-  
+
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
-  
+
   accountId  String
   account    Account  @relation(fields: [accountId], references: [id])
-  
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([date])
+  @@index([accountId])
+  @@index([categoryId])
 }
 
 model AiUsageLog {
@@ -83,14 +110,107 @@ model AiUsageLog {
 }
 
 model Investment {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
-  type          String   // "FIXED_INCOME", "VARIABLE_INCOME", "CRYPTO"
+  type          String    // "FIXED_INCOME", "VARIABLE_INCOME", "CRYPTO"
   initialAmount Float
   currentAmount Float
-  yieldRate     Float    // Taxa anual, ex: 0.105 para 10.5%
+  yieldRate     Float     // Taxa anual, ex: 0.105 para 10.5%
   startDate     DateTime
   maturityDate  DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Regra de recorrência: o cron diário gera Transaction quando nextRunDate <= hoje.
+model RecurringRule {
+  id          String    @id @default(uuid())
+  title       String
+  amount      Float
+  type        String    // "INCOME" | "EXPENSE"
+  frequency   String    // "WEEKLY" | "MONTHLY" | "YEARLY"
+  dayOfMonth  Int?      // usado em MONTHLY/YEARLY (com clamp de fim de mês)
+  nextRunDate DateTime
+  lastRunDate DateTime?
+  isActive    Boolean   @default(true)
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Meta financeira (ex.: reserva de emergência).
+model Goal {
+  id            String    @id @default(uuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Notificação in-app (sino).
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  body      String
+  url       String?
+  type      String   @default("INFO") // INFO | WARNING | SUCCESS | DANGER
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+}
+
+// Inscrição de Web Push (VAPID), multi-dispositivo.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
+// Trilha de auditoria de ações sensíveis.
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  entity    String?
+  entityId  String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// Resumo mensal gerado proativamente pela IA (persistido).
+model MonthlyInsight {
+  id        String   @id @default(uuid())
+  month     Int
+  year      Int
+  summary   String
+  payload   String?  // JSON com as métricas que embasaram o resumo
+  createdAt DateTime @default(now())
+
+  @@unique([month, year])
+}
+
+// Cotação de câmbio (multi-moeda). Alimentada manualmente ou por fonte externa.
+model ExchangeRate {
+  id    String   @id @default(uuid())
+  base  String   // ex.: "USD"
+  quote String   // ex.: "BRL"
+  rate  Float
+  date  DateTime @default(now())
+
+  @@unique([base, quote, date])
 }

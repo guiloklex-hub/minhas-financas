@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { logAiUsage } from "@/lib/gemini";
 import { getSession } from "@/lib/session";
+import { isAiBudgetExceeded } from "@/lib/ai-budget";
 
 export async function generateFinancialAdvice(month: number, year: number) {
   const session = await getSession();
@@ -18,6 +19,18 @@ export async function generateFinancialAdvice(month: number, year: number) {
   let costUsd = 0;
 
   try {
+    // Guardrail de custo: não chama o Gemini se o teto mensal foi atingido.
+    if (await isAiBudgetExceeded()) {
+      return {
+        success: true,
+        advice: [
+          "O limite mensal de gasto com IA foi atingido — as dicas inteligentes estão pausadas até o próximo mês.",
+          "Mantenha um fundo de emergência equivalente a pelo menos 6 meses de gastos básicos.",
+          "Monitore constantemente suas maiores despesas para identificar oportunidades rápidas de economia.",
+        ],
+      };
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY não configurada.");
@@ -137,6 +150,10 @@ export async function testGeminiConnection() {
       return { success: false, message: "A chave da API (GEMINI_API_KEY) não foi encontrada." };
     }
 
+    if (await isAiBudgetExceeded()) {
+      return { success: false, message: "Limite mensal de gasto com IA atingido." };
+    }
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     
@@ -166,6 +183,14 @@ export async function simulateInvestmentScenario(prompt: string) {
   let costUsd = 0;
 
   try {
+    // Guardrail de custo: não chama o Gemini se o teto mensal foi atingido.
+    if (await isAiBudgetExceeded()) {
+      return {
+        success: true,
+        answer: "O limite mensal de gasto com IA foi atingido, então o simulador inteligente está pausado até o próximo mês. Para simulações manuais, lembre-se de que o IR regressivo de renda fixa inicia em 22.5% (até 180 dias) e cai até 15% (acima de 720 dias).",
+      };
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY não configurada.");

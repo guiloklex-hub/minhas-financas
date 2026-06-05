@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon } from "lucide-react";
+import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon, Repeat, Target, BarChart3, Bot } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
+import NotificationBell from "@/components/NotificationBell";
+import PushManager from "@/components/PushManager";
 
 export default async function DashboardLayout({
   children,
@@ -13,8 +15,9 @@ export default async function DashboardLayout({
     <div className="min-h-full flex flex-col md:flex-row bg-[var(--color-background)] text-[var(--color-foreground)] relative">
       {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex w-64 border-r border-[var(--color-border)] bg-[var(--color-card)] flex-col h-screen sticky top-0">
-        <div className="p-6 border-b border-[var(--color-border)]">
+        <div className="p-6 border-b border-[var(--color-border)] flex items-center justify-between gap-2">
           <h1 className="text-xl font-bold tracking-tight">Finanças</h1>
+          <NotificationBell />
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <Link href="/" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
@@ -26,14 +29,26 @@ export default async function DashboardLayout({
           <Link href="/transacoes" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
             <ArrowLeftRight size={18} /> Transações
           </Link>
+          <Link href="/recorrencias" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
+            <Repeat size={18} /> Recorrências
+          </Link>
           <Link href="/orcamentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
             <PieChart size={18} /> Orçamentos
+          </Link>
+          <Link href="/metas" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
+            <Target size={18} /> Metas
           </Link>
           <Link href="/investimentos" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-blue-400">
             <TrendingUp size={18} /> Investimentos
           </Link>
+          <Link href="/relatorios" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
+            <BarChart3 size={18} /> Relatórios
+          </Link>
           <Link href="/insights" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-emerald-400">
             <Sparkles size={18} /> Insights
+          </Link>
+          <Link href="/assistente" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors text-purple-400">
+            <Bot size={18} /> Assistente IA
           </Link>
         </nav>
 
@@ -57,7 +72,25 @@ export default async function DashboardLayout({
       
       {/* Main Content */}
       <main className="flex-1 p-4 pb-24 md:p-10 md:pb-10 overflow-y-auto">
+        {/* Top bar (Mobile) — sino + atalhos para Recorrências e Metas */}
+        <div className="md:hidden flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Link href="/recorrencias" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-sm text-zinc-300 hover:text-white transition-colors">
+              <Repeat size={16} /> Recorrências
+            </Link>
+            <Link href="/metas" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-sm text-zinc-300 hover:text-white transition-colors">
+              <Target size={16} /> Metas
+            </Link>
+            <Link href="/assistente" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-sm text-purple-400 hover:text-purple-300 transition-colors">
+              <Bot size={16} /> IA
+            </Link>
+          </div>
+          <NotificationBell />
+        </div>
         <div className="max-w-5xl mx-auto">
+          <div className="mb-4 flex justify-end">
+            <PushManager />
+          </div>
           {children}
         </div>
       </main>
