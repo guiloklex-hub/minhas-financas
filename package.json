@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest"
+    "test": "vitest",
+    "setup": "bash scripts/setup.sh",
+    "update": "bash scripts/setup.sh"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

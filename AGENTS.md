@@ -27,16 +27,21 @@ Gerenciador de finanças pessoais **single-user**, com interface moderna/premium
 ### Comandos
 
 ```bash
+npm run setup    # Instalar OU atualizar o sistema (scripts/setup.sh — auto-detecta)
+npm run update   # Alias de setup (para instalações existentes)
 npm run dev      # Servidor de desenvolvimento
 npm run build    # Build de produção
 npm run start    # Servir produção (após build)
 npm run lint     # ESLint
 npm run test     # Vitest
 
-npx prisma migrate dev --name <nome>   # Aplicar mudança de schema
+npx prisma migrate dev --name <nome>   # Aplicar mudança de schema (desenvolvimento)
+npx prisma migrate deploy              # Aplicar migrações existentes (instalação/CI)
 npx prisma db seed                     # Popular dados (prisma/seed.ts)
 npx prisma studio                      # GUI do banco
 ```
+
+> **Instalação/atualização:** [scripts/setup.sh](scripts/setup.sh) detecta install vs update, faz backup do SQLite antes de migrar, gera segredos no `.env` e roda `migrate deploy`. Veja `--help`.
 
 ---
 

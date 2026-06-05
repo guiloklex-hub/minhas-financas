@@ -30,7 +30,25 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 
 ## 🛠️ Instalação e Execução
 
-### Pré-requisitos
+### ⚡ Automatizada (recomendado)
+
+Há um script inteligente que **instala ou atualiza** o sistema, detectando o cenário automaticamente:
+
+```bash
+# Instalação nova (clona e configura tudo):
+git clone https://github.com/guiloklex-hub/minhas-financas.git
+cd minhas-financas
+npm run setup        # ou: bash scripts/setup.sh
+
+# Atualização de uma instalação existente (dentro da pasta do projeto):
+npm run update       # git pull + deps + migrações + build
+```
+
+O script: valida pré-requisitos (Node 20+), atualiza o código (`git pull --ff-only`, pulando se houver alterações locais), instala dependências (`npm ci`), cria o `.env` a partir do `.env.example` **gerando `JWT_SECRET`/`CRON_SECRET`**, faz **backup do SQLite** antes de migrar, roda `prisma migrate deploy` + `generate`, builda e lista as variáveis opcionais ainda pendentes. Opções: `--no-build`, `--seed`, `--no-pull`, `--no-backup`, `--dir`, `--repo`, `--branch` (veja `bash scripts/setup.sh --help`).
+
+### Manual
+
+#### Pré-requisitos
 - Node.js (v20 ou superior)
 - npm ou yarn
 
