@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import {
   upsertExchangeRate,
   deleteExchangeRate,
+  refreshExchangeRates,
 } from "@/actions/exchange-rates";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
-import { Plus, Trash2, Loader2, Pencil, Check, X, ArrowRightLeft } from "lucide-react";
+import { Plus, Trash2, Loader2, Pencil, Check, X, ArrowRightLeft, RefreshCw } from "lucide-react";
 import { ExchangeRate } from "@prisma/client";
 
 function toDateInput(date: Date | string): string {
@@ -38,7 +39,23 @@ export default function CurrencyClient({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRate, setEditRate] = useState("");
 
+  const [isRefreshing, startRefreshTransition] = useTransition();
+  const [refreshMsg, setRefreshMsg] = useState("");
+
   const today = toDateInput(new Date());
+
+  function handleRefresh() {
+    setRefreshMsg("");
+    startRefreshTransition(async () => {
+      const res = await refreshExchangeRates();
+      if (res.success && res.data) {
+        setRates(res.data);
+        setRefreshMsg(res.message ?? "Cotações atualizadas.");
+      } else {
+        setRefreshMsg(res.error ?? "Erro ao atualizar cotações.");
+      }
+    });
+  }
 
   function reload(updated: ExchangeRate) {
     setRates((prev) => {
@@ -123,11 +140,29 @@ export default function CurrencyClient({
   return (
     <div className="space-y-6">
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-1">Nova Cotação</h3>
-        <p className="text-sm text-zinc-400 mb-4">
-          Cadastre manualmente a taxa de conversão entre duas moedas. Uma unidade
-          da moeda de origem equivale à taxa informada na moeda de destino.
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <h3 className="text-lg font-bold text-white">Nova Cotação</h3>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Buscar cotações na API externa (AwesomeAPI)"
+            className="shrink-0 flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors disabled:opacity-50"
+          >
+            {isRefreshing ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <RefreshCw size={15} />
+            )}
+            Atualizar cotações
+          </button>
+        </div>
+        <p className="text-sm text-zinc-400 mb-2">
+          Cadastre manualmente a taxa de conversão entre duas moedas, ou use
+          &quot;Atualizar cotações&quot; para buscar automaticamente da API externa.
+          Uma unidade da moeda de origem equivale à taxa informada na moeda de destino.
         </p>
+        {refreshMsg && <p className="text-xs text-zinc-400 mb-4">{refreshMsg}</p>}
         <form
           onSubmit={handleCreate}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"

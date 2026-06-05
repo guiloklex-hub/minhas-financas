@@ -89,6 +89,7 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [categorization.ts](src/lib/categorization.ts) | `suggestCategoryIdByHistory` — auto-categorização **determinística** (sem IA). |
 | [anomaly.ts](src/lib/anomaly.ts) / [forecast.ts](src/lib/forecast.ts) | Detecção de anomalias e previsão de fluxo (números no código). |
 | [currency.ts](src/lib/currency.ts) | Multi-moeda: `convert`, `formatMoney`, `getLatestRate`. |
+| [exchange-rate-fetch.ts](src/lib/exchange-rate-fetch.ts) | `refreshExchangeRatesFromApi()` — busca cotações na AwesomeAPI (`EXCHANGE_RATE_API_URL`) e faz upsert em `ExchangeRate` (chamado pelo cron e pela tela de Moedas). |
 | [openbanking.ts](src/lib/openbanking.ts) | Scaffold Open Banking (Pluggy) — gated por credenciais. |
 
 ---

@@ -1,5 +1,6 @@
 import { isAuthorizedCron } from "@/lib/cron";
 import { runRecurringRules } from "@/lib/recurring";
+import { refreshExchangeRatesFromApi } from "@/lib/exchange-rate-fetch";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -42,6 +43,9 @@ export async function GET(req: Request) {
 
   // a) Recorrências vencidas viram transações.
   const { created: recurringCreated } = await runRecurringRules(now);
+
+  // a.2) Atualiza cotações de câmbio (best-effort; no-op sem EXCHANGE_RATE_API_URL).
+  const ratesResult = await refreshExchangeRatesFromApi(now);
 
   // Início do dia de hoje, base da dedupe diária por título.
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -120,5 +124,5 @@ export async function GET(req: Request) {
     });
   }
 
-  return Response.json({ recurringCreated, budgetAlerts, maturityAlerts });
+  return Response.json({ recurringCreated, exchangeRatesUpdated: ratesResult.updated, budgetAlerts, maturityAlerts });
 }

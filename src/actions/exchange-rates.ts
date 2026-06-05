@@ -6,6 +6,25 @@ import { ExchangeRate } from "@prisma/client"
 import { getSession } from "@/lib/session"
 import { parseDate, parseMoney } from "@/lib/validation"
 import { isSupportedCurrency } from "@/lib/currency"
+import { refreshExchangeRatesFromApi } from "@/lib/exchange-rate-fetch"
+
+/**
+ * Atualiza as cotações a partir da API externa (AwesomeAPI), configurada em
+ * `EXCHANGE_RATE_API_URL`. Best-effort: retorna mensagem clara se não configurada.
+ */
+export async function refreshExchangeRates(): Promise<{ success: boolean; message?: string; error?: string; data?: ExchangeRate[] }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  const result = await refreshExchangeRatesFromApi();
+  if (!result.ok) {
+    return { success: false, error: result.error ?? "Não foi possível atualizar as cotações." };
+  }
+
+  revalidatePath("/configuracoes/moedas");
+  const rates = await prisma.exchangeRate.findMany({ orderBy: { date: "desc" } });
+  return { success: true, message: `${result.updated} cotação(ões) atualizada(s).`, data: rates };
+}
 
 /**
  * Cria ou atualiza uma cotação de câmbio (base→quote em uma data).
