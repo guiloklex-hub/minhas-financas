@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { roundMoney } from "@/lib/money"
 import { computeAccountBalance } from "@/lib/account-balance"
+import { getCardSpendByCategory } from "@/lib/card-spend";
 import { IncomeExpenseBarChart } from "@/components/charts/IncomeExpenseBarChart";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 
@@ -28,13 +29,23 @@ export default async function Dashboard() {
     include: { category: true }
   });
 
+  // Gasto do cartão do mês (compras vivem fora da tabela Transaction; o
+  // pagamento da fatura é isTransfer e não conta aqui — sem dupla contagem).
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const cardSpendByCategory = await getCardSpendByCategory(firstDayOfMonth, nextMonthStart);
+  const cardSpendTotal = Array.from(cardSpendByCategory.values()).reduce((a, b) => a + b, 0);
+  const categoriesList = await prisma.category.findMany({ select: { id: true, name: true, color: true } });
+  const categoryById = new Map(categoriesList.map((c) => [c.id, c]));
+
   const income = currentMonthTransactions
     .filter(t => t.type === "INCOME")
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const expense = currentMonthTransactions
-    .filter(t => t.type === "EXPENSE")
-    .reduce((acc, t) => acc + t.amount, 0);
+  const expense = roundMoney(
+    currentMonthTransactions
+      .filter(t => t.type === "EXPENSE")
+      .reduce((acc, t) => acc + t.amount, 0) + cardSpendTotal
+  );
 
   const totalInitialBalance = accounts.reduce((acc, account) => acc + account.initialBalance, 0);
 
@@ -71,7 +82,17 @@ export default async function Dashboard() {
       return acc;
     }, {} as Record<string, { name: string, value: number, color: string }>);
 
-  const pieChartData = Object.values(expensesByCategory);
+  // Soma o gasto do cartão por categoria no gráfico de pizza.
+  for (const [categoryId, amount] of cardSpendByCategory) {
+    const cat = categoryId ? categoryById.get(categoryId) : undefined;
+    const catName = cat?.name || "Sem Categoria";
+    if (!expensesByCategory[catName]) {
+      expensesByCategory[catName] = { name: catName, value: 0, color: cat?.color || "#52525b" };
+    }
+    expensesByCategory[catName].value += amount;
+  }
+
+  const pieChartData = Object.values(expensesByCategory).filter((c) => c.value > 0);
 
   return (
     <div className="space-y-8 pb-12">

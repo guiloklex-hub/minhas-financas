@@ -40,6 +40,7 @@ function buildTx(overrides: Partial<TxWithCategory> = {}): TxWithCategory {
     isTransfer: false,
     transferGroupId: null,
     recurrenceGroupId: null,
+    creditCardInvoiceId: null,
     categoryId: category.id,
     accountId: 'acc-1',
     createdAt: new Date('2024-04-10T12:00:00.000Z'),

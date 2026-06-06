@@ -51,8 +51,8 @@ npx prisma studio                      # GUI do banco
 src/
   actions/        # Server Actions ("use server") — TODAS as mutações de dados
   app/
-    (dashboard)/  # Páginas autenticadas: contas (+[id] extrato), transacoes,
-                  #   recorrencias, orcamentos, metas, investimentos, insights,
+    (dashboard)/  # Páginas autenticadas: contas (+[id] extrato), cartoes (+[id] faturas),
+                  #   transacoes, recorrencias, orcamentos, metas, investimentos, insights,
                   #   relatorios (+imprimir), assistente, configuracoes
                   #   (perfil, seguranca, categorias, moedas, backup, auditoria, status-ia)
     api/          # Route handlers: cron/daily, notifications, push/subscribe,
@@ -77,6 +77,10 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [session.ts](src/lib/session.ts) | `getSession()` (payload do JWT) e `getCurrentUser()` (usuário do banco). **Guarda de sessão das actions.** |
 | [money.ts](src/lib/money.ts) | `roundMoney(v)` e `sumMoney(vs)` — toda aritmética monetária. |
 | [account-balance.ts](src/lib/account-balance.ts) | `computeAccountBalance` / `computeAccountBalances` — saldo derivado. |
+| [credit-card.ts](src/lib/credit-card.ts) | Lógica pura do cartão: competência, datas de fatura, `installmentSplit`, melhor dia, `computeCardSummary`. |
+| [credit-card-service.ts](src/lib/credit-card-service.ts) | **Server-only**: `ensureInvoice`, `invoiceItemsTotal`, `closeInvoiceInternal` (reutilizável pelo cron). |
+| [card-spend.ts](src/lib/card-spend.ts) | **Server-only**: gasto do cartão por categoria/total (integração com relatórios sem dupla contagem). |
+| [credit-card-cron.ts](src/lib/credit-card-cron.ts) | **Server-only**: rotinas diárias do cartão (fechar/vencer faturas, alertas). |
 | [date-utils.ts](src/lib/date-utils.ts) | `addMonthsClamped` — soma meses com clamp de fim de mês. |
 | [validation.ts](src/lib/validation.ts) | `parseRequiredString`, `parseMoney`, `parseDate` (`ValidationResult<T>`). |
 | [financial-math.ts](src/lib/financial-math.ts) | `calculateCompoundInterest`, `calculateBrazilianTaxes` (IR/IOF). |
@@ -140,6 +144,26 @@ if (!session) return { success: false, error: "Não autorizado. Faça login nova
   - Ao excluir uma conta, as pernas correspondentes em outras contas também são removidas (evita saldo desbalanceado).
 - **Transferências NÃO são receita/despesa.** Excluir `isTransfer: true` das KPIs/relatórios de receita e despesa (Dashboard, Insights). No **saldo global** elas podem permanecer (as duas pernas se anulam); no **saldo por conta** elas contam (cada perna afeta uma conta).
 - **Recorrência:** transações de uma série compartilham `recurrenceGroupId`; datas calculadas com `addMonthsClamped` (31/jan + 1 mês → 28/29 fev). Há `deleteRecurrenceSeries(groupId)` para excluir a série inteira.
+
+### Regra #3.1: Cartão de Crédito (entidade separada)
+
+O cartão é uma entidade própria — **não** uma `Account`. Models: `CreditCard` (limite, `closingDay`, `dueDay`, bandeira, `paymentAccountId`, recompensa, anuidade), `CreditCardTransaction` (uma linha por parcela), `CreditCardInvoice` (fatura por competência) e `CardRewardLedger` (pontos).
+
+- **Lógica pura em [credit-card.ts](src/lib/credit-card.ts)** (testada): `getInvoiceCompetence`, `getInvoiceDates`, `installmentSplit` (última parcela absorve o resto), `computeBestPurchaseDay`, `computeCardSummary`. Tudo em UTC com clamp de fim de mês. Helpers server-side com Prisma em [credit-card-service.ts](src/lib/credit-card-service.ts) (`ensureInvoice`, `invoiceItemsTotal`, `closeInvoiceInternal`).
+- **Saldo devido é derivado** das `CreditCardTransaction`: `Σ(PURCHASE+FEE+INTEREST+ADJUSTMENT) − Σ(REFUND) − pago`. Nunca persistir saldo; `totalAmount` da fatura é snapshot só no fechamento.
+- **Compra parcelada:** N `CreditCardTransaction` (uma por competência via `addMonthsClamped`), agrupadas por `installmentGroupId`, dentro de `prisma.$transaction`.
+- **Pagamento de fatura** (`payInvoice`) cria uma `Transaction` EXPENSE na conta pagadora com `isTransfer=true` + `creditCardInvoiceId` (abate o saldo da conta, **fora das KPIs de despesa** — a despesa real é a compra no cartão). **Nunca contar o pagamento como despesa** (evita dupla contagem).
+- **Sem dupla contagem nos relatórios:** o gasto do cartão entra em Dashboard/Insights/Relatórios/alertas de orçamento via [card-spend.ts](src/lib/card-spend.ts) (`getCardSpendByCategory`/`getCardSpendTotal`/`getCardSpendForCategory`). Compras vivem fora de `Transaction`, então precisam ser somadas explicitamente.
+- **Recompensas:** `createCardPurchase` credita pontos uma vez sobre o total (não por parcela) via `recordReward` (`CardRewardLedger`, `points` assinado, `balanceAfter` calculado). Resgate/ajuste em [card-rewards.ts](src/actions/card-rewards.ts). **Melhor dia de compra** = `computeBestPurchaseDay(closingDay)` (puro).
+- **Assinaturas e projeção (determinístico, sem IA):** [subscriptions.ts](src/lib/subscriptions.ts) (`detectSubscriptions` — agrupa por `normalizeTitle`, exige cadência mensal + valor similar) e [credit-card-forecast.ts](src/lib/credit-card-forecast.ts) (`forecastInvoices` — parcelas comprometidas + média histórica de gasto avulso). Ambos com testes co-localizados.
+- **Rotativo:** `computeRevolvingInterest(outstanding, rate)` (puro). O cron lança `INTEREST` uma vez sobre o saldo de fatura vencida (dedupe por título `Juros rotativo {mm/yyyy}`).
+- **IA do cartão (números sempre calculados em código; IA só redige/extrai/concilia, com guardrail `isAiBudgetExceeded` + `logAiUsage` + fallback):**
+  - Coach da fatura — [ai-card-coach.ts](src/actions/ai-card-coach.ts) (`analyzeInvoice`): métricas em código → Gemini redige 3-5 insights.
+  - Lançamento mágico parcelado — [ai-card-purchase.ts](src/actions/ai-card-purchase.ts) (`createCardPurchaseFromText`): IA extrai descrição/total/parcelas; parcelas e categoria são determinísticas; delega a `createCardPurchase`.
+  - OCR/conciliação de fatura — [ai-invoice-ocr.ts](src/actions/ai-invoice-ocr.ts) (`reconcileInvoiceImage`): multimodal extrai linhas (magic-bytes), conciliação em [invoice-reconcile.ts](src/lib/invoice-reconcile.ts) (`reconcileInvoice`, puro/testado). Não grava — só aponta divergências.
+  - Chat — [ai-chat.ts](src/actions/ai-chat.ts) inclui resumo dos cartões no contexto (RAG só com agregados).
+- **Cron** ([credit-card-cron.ts](src/lib/credit-card-cron.ts) via `/api/cron/daily`): fecha faturas vencidas (snapshot + abre a próxima), marca `OVERDUE`, alerta vencimento próximo e limite > 80%, e lança a **anuidade** uma vez por ano no mês de aniversário do cadastro (dedupe por título `Anuidade {ano}`).
+- **Nunca exportar função sem guarda de sessão de um arquivo `"use server"`** (viraria endpoint RPC público). Lógica reutilizável pelo cron vive em libs server-only; as actions com guarda chamam essas libs.
 
 ---
 
@@ -258,7 +282,7 @@ Para evitar `"The width(-1) and height(-1) of chart should be greater than 0"`:
 - **Fronteira client/server:** módulos que importam `prisma` (ou `@/lib/prisma`) são server-only. Não importe-os de Client Components — separe helpers puros (ver `currency.ts` vs `currency-rates.ts`). O adapter nativo quebra o bundle do browser se vazar.
 - **IDs:** todos os models usam `@default(uuid())`.
 - **Atomicidade:** use `prisma.$transaction` quando múltiplas operações precisam ser atômicas (transferências, exclusão de conta com pernas, séries recorrentes).
-- **Models:** `User`, `Account`, `Category`, `Budget`, `Transaction` (`isTransfer`, `transferGroupId`, `recurrenceGroupId`, `notes`, `tags`, `reconciled`), `Investment`, `AiUsageLog`, `RecurringRule`, `Goal`, `Notification`, `PushSubscription`, `AuditLog`, `MonthlyInsight`, `ExchangeRate`.
+- **Models:** `User`, `Account`, `Category`, `Budget`, `Transaction` (`isTransfer`, `transferGroupId`, `recurrenceGroupId`, `notes`, `tags`, `reconciled`, `creditCardInvoiceId`), `Investment`, `AiUsageLog`, `RecurringRule`, `Goal`, `Notification`, `PushSubscription`, `AuditLog`, `MonthlyInsight`, `ExchangeRate`, `CreditCard`, `CreditCardTransaction`, `CreditCardInvoice`, `CardRewardLedger`.
 
 ---
 

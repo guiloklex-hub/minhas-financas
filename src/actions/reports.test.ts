@@ -33,6 +33,7 @@ function buildTransaction(overrides: Partial<Transaction> = {}): Transaction {
     isTransfer: false,
     transferGroupId: null,
     recurrenceGroupId: null,
+    creditCardInvoiceId: null,
     categoryId: 'cat-1',
     accountId: 'acc-1',
     createdAt: new Date('2024-01-15T12:00:00.000Z'),
@@ -48,6 +49,8 @@ function mockFindMany(rows: Transaction[]) {
 
 beforeEach(() => {
   getSessionMock.mockResolvedValue({ userId: 'u1', email: 'e@e.com' });
+  // Sem cartão por padrão nos cenários existentes (gasto do cartão = 0).
+  prismaMock.creditCardTransaction.findMany.mockResolvedValue([]);
 });
 
 describe('actions/reports.ts — getCashFlow', () => {

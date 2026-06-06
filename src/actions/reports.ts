@@ -30,6 +30,10 @@ export type CategoryBreakdownItem = {
 
 const MIN_YEAR = 2000;
 const MAX_YEAR = 2100;
+
+// Tipos de lançamento do cartão que contam como gasto. REFUND abate o total.
+const CARD_SPEND_TYPES = ["PURCHASE", "FEE", "INTEREST", "ADJUSTMENT", "REFUND"];
+const cardSign = (type: string): number => (type === "REFUND" ? -1 : 1);
 // Intervalo máximo aceito em consultas por data (em milissegundos). ~5 anos.
 const MAX_RANGE_MS = 5 * 366 * 24 * 60 * 60 * 1000;
 
@@ -130,6 +134,17 @@ export async function getCashFlow(fromISO: string, toISO: string): Promise<CashF
     else if (tx.type === "EXPENSE") bucket.expense += tx.amount;
   }
 
+  // Soma o gasto do cartão como despesa (compras vivem fora de Transaction).
+  const cardTxns = await prisma.creditCardTransaction.findMany({
+    where: { type: { in: CARD_SPEND_TYPES }, date: { gte: from, lte: end } },
+    select: { amount: true, type: true, date: true },
+  });
+  for (const c of cardTxns) {
+    const bucket = buckets.get(monthKey(c.date));
+    if (!bucket) continue;
+    bucket.expense += cardSign(c.type) * c.amount;
+  }
+
   let cumulative = 0;
   const result: CashFlowPoint[] = [];
   for (const [month, bucket] of buckets) {
@@ -185,6 +200,18 @@ export async function getYearComparison(year: number): Promise<YearComparisonPoi
     else if (tx.type === "EXPENSE") bucket.expense += tx.amount;
   }
 
+  // Soma o gasto do cartão como despesa nos buckets de cada ano.
+  const cardTxns = await prisma.creditCardTransaction.findMany({
+    where: { type: { in: CARD_SPEND_TYPES }, date: { gte: start, lte: end } },
+    select: { amount: true, type: true, date: true },
+  });
+  for (const c of cardTxns) {
+    const cYear = c.date.getUTCFullYear();
+    const target = cYear === year ? current : cYear === previousYear ? previous : null;
+    if (!target) continue;
+    target[c.date.getUTCMonth()].expense += cardSign(c.type) * c.amount;
+  }
+
   return Array.from({ length: 12 }, (_, i) => ({
     month: `${String(i + 1).padStart(2, "0")}/${year}`,
     currentYear: {
@@ -235,6 +262,22 @@ export async function getCategoryBreakdown(
         color: tx.category.color,
         amount: tx.amount,
       });
+    }
+  }
+
+  // Soma o gasto do cartão por categoria (compras vivem fora de Transaction).
+  const cardTxns = await prisma.creditCardTransaction.findMany({
+    where: { type: { in: CARD_SPEND_TYPES }, date: { gte: from, lte: end }, categoryId: { not: null } },
+    include: { category: true },
+  });
+  for (const c of cardTxns) {
+    if (!c.category || !c.categoryId) continue;
+    const existing = totals.get(c.categoryId);
+    const delta = cardSign(c.type) * c.amount;
+    if (existing) {
+      existing.amount += delta;
+    } else {
+      totals.set(c.categoryId, { name: c.category.name, color: c.category.color, amount: delta });
     }
   }
 

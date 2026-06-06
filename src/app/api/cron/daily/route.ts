@@ -2,6 +2,8 @@ import { isAuthorizedCron } from "@/lib/cron";
 import { runRecurringRules } from "@/lib/recurring";
 import { refreshExchangeRatesFromApi } from "@/lib/exchange-rate-fetch";
 import { createNotification } from "@/lib/notifications";
+import { runCreditCardJobs } from "@/lib/credit-card-cron";
+import { getCardSpendForCategory } from "@/lib/card-spend";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -78,7 +80,9 @@ export async function GET(req: Request) {
       },
     });
 
-    const spent = spentAgg._sum.amount ?? 0;
+    // Inclui o gasto do cartão na categoria (compras vivem fora de Transaction).
+    const cardSpent = await getCardSpendForCategory(budget.categoryId, monthStart, nextMonthStart);
+    const spent = (spentAgg._sum.amount ?? 0) + cardSpent;
     const usage = (spent / budget.amountLimit) * 100;
     if (usage < 80) continue;
 
@@ -124,5 +128,15 @@ export async function GET(req: Request) {
     });
   }
 
-  return Response.json({ recurringCreated, exchangeRatesUpdated: ratesResult.updated, budgetAlerts, maturityAlerts });
+  // d) Faturas de cartão: fechamento, vencidas e alertas de limite/vencimento.
+  const { invoicesClosed, cardAlerts } = await runCreditCardJobs(now);
+
+  return Response.json({
+    recurringCreated,
+    exchangeRatesUpdated: ratesResult.updated,
+    budgetAlerts,
+    maturityAlerts,
+    invoicesClosed,
+    cardAlerts,
+  });
 }

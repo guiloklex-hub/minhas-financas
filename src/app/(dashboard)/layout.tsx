@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon, Repeat, Target, BarChart3, Bot } from "lucide-react";
+import { Home, WalletCards, ArrowLeftRight, PieChart, Sparkles, Settings, TrendingUp, User as UserIcon, Repeat, Target, BarChart3, Bot, CreditCard } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import NotificationBell from "@/components/NotificationBell";
 import PushManager from "@/components/PushManager";
@@ -25,6 +25,9 @@ export default async function DashboardLayout({
           </Link>
           <Link href="/contas" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
             <WalletCards size={18} /> Contas
+          </Link>
+          <Link href="/cartoes" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
+            <CreditCard size={18} /> Cartões
           </Link>
           <Link href="/transacoes" className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors">
             <ArrowLeftRight size={18} /> Transações

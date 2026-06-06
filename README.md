@@ -7,6 +7,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 ## ✨ Módulos
 
 - **Contas** — saldo inicial imutável; o saldo atual é derivado (inicial + receitas − despesas). Extrato por conta e multi-moeda.
+- **Cartões de Crédito** — entidade própria (`CreditCard`) com limite, fechamento, vencimento e bandeira. Compras parceladas caem nas faturas certas por competência; faturas fecham/vencem via cron; pagamento da fatura é uma transferência (não conta como despesa). Gasto do cartão aparece nos relatórios/orçamentos por categoria.
 - **Transações** — receitas/despesas categorizadas, com filtros + busca + paginação, tags, observações e conciliação.
 - **Transferências** — par de transações entre contas ligadas por `transferGroupId` (criadas/editadas/excluídas em conjunto).
 - **Recorrências** — regras (`RecurringRule`) que o cron materializa em transações no dia certo.
@@ -15,6 +16,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 - **Investimentos** — acompanhamento, projeções (juros compostos + IR/IOF) e simulador "E-se?".
 - **Relatórios** — fluxo de caixa, comparativo anual (YoY), drill-down, exportação CSV/impressão e backup/restore.
 - **Insights / IA** (Google Gemini) — categorização aprendida, lançamento mágico, conselheiro, detecção de anomalias, previsão de fluxo, resumo mensal, chatbot financeiro e leitura de comprovante (OCR), com guardrails de custo.
+- **IA do cartão** — coach da fatura (insights), lançamento mágico parcelado ("parcelei em 10x de 350"), conciliação por foto da fatura (OCR) e contexto do cartão no assistente. Recursos determinísticos: detecção de assinaturas, projeção de faturas, melhor dia de compra e juros do rotativo.
 - **Notificações** — sino in-app + Web Push (VAPID) + e-mail (SMTP).
 - **Segurança** — login com rate limiting, 2FA (TOTP), recuperação de senha e trilha de auditoria.
 - **PWA** — instalável e com notificações push.

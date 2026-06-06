@@ -37,6 +37,9 @@ model Account {
   recurringRules RecurringRule[]
   goals          Goal[]
 
+  // Cartões que usam esta conta como pagamento padrão da fatura.
+  creditCards    CreditCard[] @relation("CardPaymentAccount")
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -48,9 +51,10 @@ model Category {
   icon         String?
   sortOrder    Int     @default(0)
 
-  transactions   Transaction[]
-  budgets        Budget[]
-  recurringRules RecurringRule[]
+  transactions           Transaction[]
+  budgets                Budget[]
+  recurringRules         RecurringRule[]
+  creditCardTransactions CreditCardTransaction[]
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -81,6 +85,10 @@ model Transaction {
   isTransfer        Boolean @default(false)
   transferGroupId   String?
   recurrenceGroupId String?
+
+  // Quando esta transação é o pagamento de uma fatura de cartão (EXPENSE +
+  // isTransfer=true na conta pagadora), aponta para a fatura quitada.
+  creditCardInvoiceId String?
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -213,4 +221,116 @@ model ExchangeRate {
   date  DateTime @default(now())
 
   @@unique([base, quote, date])
+}
+
+// Cartão de crédito (entidade separada das contas). O saldo devido é derivado
+// das CreditCardTransaction; faturas são materializadas por competência.
+model CreditCard {
+  id          String  @id @default(uuid())
+  name        String
+  brand       String? // VISA | MASTERCARD | ELO | AMEX | HIPERCARD | OTHER
+  lastFour    String?
+  color       String?
+  creditLimit Float   @default(0)
+  closingDay  Int     // dia de fechamento da fatura (1-31, com clamp)
+  dueDay      Int     // dia de vencimento da fatura (1-31, com clamp)
+  currency    String  @default("BRL")
+
+  // Conta padrão usada para pagar a fatura.
+  paymentAccountId String?
+  paymentAccount   Account? @relation("CardPaymentAccount", fields: [paymentAccountId], references: [id])
+
+  rewardType String @default("NONE") // NONE | CASHBACK | POINTS | MILES
+  rewardRate Float  @default(0)      // pontos/cashback por unidade gasta
+  annualFee  Float  @default(0)
+
+  archived Boolean @default(false)
+
+  transactions CreditCardTransaction[]
+  invoices     CreditCardInvoice[]
+  rewards      CardRewardLedger[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Lançamento do cartão. Compras parceladas geram uma linha por parcela,
+// agrupadas por installmentGroupId, cada uma datada na sua competência.
+model CreditCardTransaction {
+  id       String   @id @default(uuid())
+  cardId   String
+  card     CreditCard @relation(fields: [cardId], references: [id])
+  title    String
+  amount   Float    // valor desta parcela (na moeda do cartão)
+  date     DateTime // data da compra (origem da competência)
+  type     String   @default("PURCHASE") // PURCHASE | REFUND | FEE | INTEREST | ADJUSTMENT
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  notes String?
+  tags  String?
+
+  // Parcelamento
+  installmentGroupId String?
+  installmentNumber  Int?
+  installmentTotal   Int?
+
+  // Fatura (competência) a que pertence
+  invoiceId String?
+  invoice   CreditCardInvoice? @relation(fields: [invoiceId], references: [id])
+
+  // Compra internacional (snapshot)
+  fxCurrency String?
+  fxAmount   Float?
+  iofAmount  Float?
+
+  rewardPoints Float @default(0)
+
+  isSubscription    Boolean @default(false)
+  recurrenceGroupId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cardId])
+  @@index([date])
+  @@index([invoiceId])
+}
+
+// Fatura por competência. totalAmount é snapshot no fechamento.
+model CreditCardInvoice {
+  id            String   @id @default(uuid())
+  cardId        String
+  card          CreditCard @relation(fields: [cardId], references: [id])
+  referenceMonth Int
+  referenceYear  Int
+  closingDate   DateTime
+  dueDate       DateTime
+  status        String   @default("OPEN") // OPEN | CLOSED | PAID | PARTIAL | OVERDUE
+  totalAmount   Float    @default(0)
+  paidAmount    Float    @default(0)
+  paymentGroupId String?
+
+  items CreditCardTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cardId, referenceMonth, referenceYear])
+}
+
+// Ledger imutável de recompensas (pontos/cashback/milhas).
+model CardRewardLedger {
+  id            String   @id @default(uuid())
+  cardId        String
+  card          CreditCard @relation(fields: [cardId], references: [id])
+  transactionId String?
+  type          String   // EARN | REDEEM | EXPIRE | ADJUST
+  points        Float
+  balanceAfter  Float
+  description   String?
+  createdAt     DateTime @default(now())
+
+  @@index([cardId])
 }

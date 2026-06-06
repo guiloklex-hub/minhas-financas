@@ -44,6 +44,7 @@ function buildTransaction(overrides: Partial<Transaction> = {}): Transaction {
     isTransfer: false,
     transferGroupId: null,
     recurrenceGroupId: null,
+    creditCardInvoiceId: null,
     categoryId: 'cat-1',
     accountId: 'acc-1',
     createdAt: new Date('2026-01-05T00:00:00.000Z'),
