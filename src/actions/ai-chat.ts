@@ -7,6 +7,7 @@ import { logAiUsage } from "@/lib/gemini";
 import { isAiBudgetExceeded } from "@/lib/ai-budget";
 import { roundMoney, sumMoney } from "@/lib/money";
 import { computeAccountBalances } from "@/lib/account-balance";
+import { computeCardSummary } from "@/lib/credit-card";
 
 const FALLBACK_ANSWER =
   "Assistente indisponível no momento. Tente novamente em alguns instantes.";
@@ -130,6 +131,34 @@ export async function askFinancialQuestion(question: string): Promise<AskResult>
       };
     });
 
+    // Resumo dos cartões (devido, fatura atual, limite disponível, vencimento).
+    const cards = await prisma.creditCard.findMany({
+      where: { archived: false },
+      include: {
+        transactions: { select: { type: true, amount: true, date: true } },
+        invoices: { select: { paidAmount: true } },
+      },
+    });
+    const cardsSummary = cards.map((card) => {
+      const paidTotal = card.invoices.reduce((acc, i) => acc + i.paidAmount, 0);
+      const s = computeCardSummary({
+        creditLimit: card.creditLimit,
+        closingDay: card.closingDay,
+        dueDay: card.dueDay,
+        transactions: card.transactions,
+        paidTotal,
+        now,
+      });
+      return {
+        nome: card.name,
+        faturaAtual: s.currentInvoiceTotal,
+        totalDevido: s.totalOwed,
+        limiteDisponivel: s.availableLimit,
+        utilizacaoPct: s.usagePercent,
+        proximoVencimento: s.nextDueDate.toISOString().slice(0, 10),
+      };
+    });
+
     // Contexto JSON entregue à IA. Todos os valores em BRL, já arredondados.
     const context = {
       moeda: "BRL",
@@ -148,6 +177,7 @@ export async function askFinancialQuestion(question: string): Promise<AskResult>
       saldosPorConta: accountBalances,
       saldoTotal: totalBalance,
       orcamentosDoMes: budgetStatus,
+      cartoesDeCredito: cardsSummary,
     };
 
     const prompt = `Você é um assistente financeiro pessoal que responde em português do Brasil.
