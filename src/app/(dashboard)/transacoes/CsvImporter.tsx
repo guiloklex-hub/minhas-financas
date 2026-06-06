@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useTransition } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Plus, Check, X } from "lucide-react";
 import { analyzeCsvForImport, confirmCsvImport, type AnalyzedRow, type CsvCategorizeMode } from "@/actions/importer";
+import { createCategory } from "@/actions/categories";
 import { Category, Account } from "@/generated/prisma/client";
 
 type EditableRow = AnalyzedRow & { categoryId: string };
@@ -26,6 +27,9 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
+  // Lista de categorias em estado: cresce quando o usuário cria uma no preview.
+  const [categoryList, setCategoryList] = useState<Category[]>(categories);
+
   // Etapa 1 (config)
   const [accountId, setAccountId] = useState("");
   const [mode, setMode] = useState<CsvCategorizeMode>("ai");
@@ -36,7 +40,12 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
   const [counts, setCounts] = useState<Counts | null>(null);
   const [aiUsed, setAiUsed] = useState(false);
 
-  const categoryName = (id: string) => categories.find((c) => c.id === id)?.name ?? "—";
+  // Criação rápida de categoria por linha.
+  const [creatingRow, setCreatingRow] = useState<number | null>(null);
+  const [newCatName, setNewCatName] = useState("");
+  const [catPending, setCatPending] = useState(false);
+
+  const categoryName = (id: string) => categoryList.find((c) => c.id === id)?.name ?? "—";
 
   function handleAnalyze(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -91,10 +100,41 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
     setRows((prev) => (prev ? prev.map((r, i) => (i === index ? { ...r, categoryId } : r)) : prev));
   }
 
+  function openCreate(index: number) {
+    setCreatingRow(index);
+    setNewCatName("");
+  }
+
+  function cancelCreate() {
+    setCreatingRow(null);
+    setNewCatName("");
+  }
+
+  // Cria a categoria (cor automática), adiciona à lista e atribui à linha.
+  async function handleCreateCategory(index: number) {
+    const name = newCatName.trim();
+    if (!name || catPending) return;
+    setCatPending(true);
+    setMessage(null);
+    const fd = new FormData();
+    fd.set("name", name);
+    const result = await createCategory(fd);
+    setCatPending(false);
+    if (result.success && result.data) {
+      const created = result.data;
+      setCategoryList((prev) => [...prev, created]);
+      updateRowCategory(index, created.id);
+      cancelCreate();
+    } else {
+      setMessage({ text: result.error || "Erro ao criar categoria.", type: "error" });
+    }
+  }
+
   function resetToConfig() {
     setRows(null);
     setCounts(null);
     setMessage(null);
+    cancelCreate();
   }
 
   return (
@@ -147,7 +187,7 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
               <label htmlFor="csvDefaultCat" className="block text-sm font-medium mb-1 text-zinc-300">Categoria padrão (fallback)</label>
               <select required id="csvDefaultCat" value={defaultCategoryId} onChange={(e) => setDefaultCategoryId(e.target.value)} className={selectClass}>
                 <option value="">Selecione...</option>
-                {categories.map((c) => (
+                {categoryList.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
@@ -209,16 +249,54 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
                       {r.type === "EXPENSE" ? "-" : ""}{formatBRL(r.amount)}
                     </td>
                     <td className="px-3 py-2">
-                      <select
-                        value={r.categoryId}
-                        onChange={(e) => updateRowCategory(i, e.target.value)}
-                        className="bg-zinc-950 border border-zinc-800 rounded-md p-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
-                        title={categoryName(r.categoryId)}
-                      >
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
+                      {creatingRow === i ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            autoFocus
+                            value={newCatName}
+                            onChange={(e) => setNewCatName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") { e.preventDefault(); handleCreateCategory(i); }
+                              if (e.key === "Escape") { e.preventDefault(); cancelCreate(); }
+                            }}
+                            placeholder="Nova categoria"
+                            className="w-36 bg-zinc-950 border border-zinc-800 rounded-md p-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleCreateCategory(i)}
+                            disabled={catPending || !newCatName.trim()}
+                            className="p-1.5 rounded-md text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-40"
+                            title="Criar e atribuir"
+                          >
+                            {catPending ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                          </button>
+                          <button type="button" onClick={cancelCreate} className="p-1.5 rounded-md text-zinc-400 hover:bg-white/10" title="Cancelar">
+                            <X size={15} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={r.categoryId}
+                            onChange={(e) => updateRowCategory(i, e.target.value)}
+                            className="bg-zinc-950 border border-zinc-800 rounded-md p-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+                            title={categoryName(r.categoryId)}
+                          >
+                            {categoryList.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => openCreate(i)}
+                            className="p-1.5 rounded-md text-emerald-400 hover:bg-emerald-500/15"
+                            title="Nova categoria"
+                          >
+                            <Plus size={15} />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
