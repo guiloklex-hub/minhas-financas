@@ -17,7 +17,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 - **Investimentos** — acompanhamento, projeções (juros compostos + IR/IOF) e simulador "E-se?".
 - **Relatórios** — fluxo de caixa, comparativo anual (YoY), drill-down, exportação CSV/impressão e backup/restore.
 - **Insights / IA** (Google Gemini) — categorização aprendida, lançamento mágico, conselheiro, detecção de anomalias, previsão de fluxo, resumo mensal, chatbot financeiro e leitura de comprovante (OCR), com guardrails de custo.
-- **IA do cartão** — coach da fatura (insights), lançamento mágico parcelado ("parcelei em 10x de 350"), conciliação por foto da fatura (OCR) e contexto do cartão no assistente. Recursos determinísticos: detecção de assinaturas, projeção de faturas, melhor dia de compra e juros do rotativo.
+- **IA do cartão** — coach da fatura (insights), lançamento mágico parcelado ("parcelei em 10x de 350"), conciliação por foto da fatura (OCR), **import automático de fatura (PDF/imagem)** que lê os lançamentos com IA e os adiciona ao cartão (com pré-visualização, dedup, categorização e mapeamento de cartões virtuais) e contexto do cartão no assistente. Recursos determinísticos: detecção de assinaturas, projeção de faturas, melhor dia de compra e juros do rotativo.
 - **Import de CSV com IA** — ao importar um extrato (`Data,Título,Valor`), o sistema categoriza cada lançamento de forma híbrida (histórico grátis + IA só no restante) e mostra uma **pré-visualização editável** antes de confirmar; linhas sem sugestão caem numa categoria padrão escolhida na tela.
 - **Notificações** — sino in-app + Web Push (VAPID) + e-mail (SMTP).
 - **Segurança** — login com rate limiting, 2FA (TOTP), recuperação de senha e trilha de auditoria.
