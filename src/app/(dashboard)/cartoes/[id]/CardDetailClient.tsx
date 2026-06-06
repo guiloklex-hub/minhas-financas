@@ -16,6 +16,8 @@ import { ScanLine } from "lucide-react";
 import CardPurchaseForm from "./CardPurchaseForm";
 import PayInvoiceForm from "./PayInvoiceForm";
 import RewardRedeemForm from "./RewardRedeemForm";
+import VirtualCardForm from "./VirtualCardForm";
+import { Layers, Pencil } from "lucide-react";
 
 type InvoiceItem = {
   id: string;
@@ -27,6 +29,18 @@ type InvoiceItem = {
   installmentTotal: number | null;
   categoryName: string | null;
   categoryColor: string | null;
+  virtualCardId: string | null;
+  virtualCardName: string | null;
+  virtualCardColor: string | null;
+};
+
+type VirtualCardView = {
+  id: string;
+  name: string;
+  lastFour: string | null;
+  color: string | null;
+  spendingLimit: number | null;
+  used: number;
 };
 
 type InvoiceView = {
@@ -105,6 +119,7 @@ export default function CardDetailClient({
   categories,
   subscriptions,
   forecast,
+  virtualCards,
 }: {
   card: CardView;
   summary: Summary;
@@ -113,12 +128,17 @@ export default function CardDetailClient({
   categories: Option[];
   subscriptions: SubscriptionView[];
   forecast: ForecastPoint[];
+  virtualCards: VirtualCardView[];
 }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [showPurchase, setShowPurchase] = useState(false);
   const [showPay, setShowPay] = useState(false);
   const [showRedeem, setShowRedeem] = useState(false);
+  const [showVcForm, setShowVcForm] = useState(false);
+  const [editingVc, setEditingVc] = useState<VirtualCardView | null>(null);
+  // Filtro da fatura por cartão: "ALL" | "PHYSICAL" | <virtualCardId>
+  const [cardFilter, setCardFilter] = useState<string>("ALL");
   const [insights, setInsights] = useState<string[] | null>(null);
   const [coachPending, startCoach] = useTransition();
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -167,18 +187,38 @@ export default function CardDetailClient({
     else setOcrError(result.error || "Erro ao ler a fatura.");
   };
 
-  const pieData = invoice
-    ? Object.values(
-        invoice.items
-          .filter((it) => it.type !== "REFUND")
-          .reduce((acc, it) => {
-            const name = it.categoryName || "Sem categoria";
-            if (!acc[name]) acc[name] = { name, value: 0, color: it.categoryColor || "#52525b" };
-            acc[name].value += it.amount;
-            return acc;
-          }, {} as Record<string, { name: string; value: number; color: string }>)
-      )
+  // Itens da fatura filtrados pelo cartão selecionado (físico/virtual).
+  const visibleItems = invoice
+    ? invoice.items.filter((it) => {
+        if (cardFilter === "ALL") return true;
+        if (cardFilter === "PHYSICAL") return !it.virtualCardId;
+        return it.virtualCardId === cardFilter;
+      })
     : [];
+
+  const pieData = Object.values(
+    visibleItems
+      .filter((it) => it.type !== "REFUND")
+      .reduce((acc, it) => {
+        const name = it.categoryName || "Sem categoria";
+        if (!acc[name]) acc[name] = { name, value: 0, color: it.categoryColor || "#52525b" };
+        acc[name].value += it.amount;
+        return acc;
+      }, {} as Record<string, { name: string; value: number; color: string }>)
+  );
+
+  // Total por cartão (físico + cada virtual) na fatura selecionada.
+  const sign = (t: string) => (t === "REFUND" ? -1 : 1);
+  const physicalTotal = invoice
+    ? invoice.items.filter((it) => !it.virtualCardId).reduce((a, it) => a + sign(it.type) * it.amount, 0)
+    : 0;
+  const totalsByVirtual = new Map<string, number>();
+  if (invoice) {
+    for (const it of invoice.items) {
+      if (!it.virtualCardId) continue;
+      totalsByVirtual.set(it.virtualCardId, (totalsByVirtual.get(it.virtualCardId) ?? 0) + sign(it.type) * it.amount);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -281,10 +321,76 @@ export default function CardDetailClient({
         <CardPurchaseForm
           cardId={card.id}
           categories={categories}
+          virtualCards={virtualCards.map((v) => ({ id: v.id, name: v.name }))}
           onSuccess={() => { setShowPurchase(false); router.refresh(); }}
           onCancel={() => setShowPurchase(false)}
         />
       )}
+
+      {/* Cartões virtuais */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <Layers size={18} className="text-sky-400" />
+            <h3 className="text-lg font-semibold text-white">Cartões virtuais</h3>
+          </div>
+          <button
+            onClick={() => { setEditingVc(null); setShowVcForm((s) => !s); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-md transition-all"
+          >
+            <Plus size={15} /> Novo cartão virtual
+          </button>
+        </div>
+
+        {showVcForm && (
+          <div className="mb-4">
+            <VirtualCardForm
+              cardId={card.id}
+              virtualCard={editingVc}
+              onSuccess={() => { setShowVcForm(false); setEditingVc(null); router.refresh(); }}
+              onCancel={() => { setShowVcForm(false); setEditingVc(null); }}
+            />
+          </div>
+        )}
+
+        {virtualCards.length === 0 ? (
+          <p className="text-sm text-zinc-500">Nenhum cartão virtual. Crie um para separar gastos (ex.: assinaturas) na mesma fatura.</p>
+        ) : (
+          <ul className="space-y-3">
+            {virtualCards.map((vc) => {
+              const pct = vc.spendingLimit && vc.spendingLimit > 0 ? Math.min(100, (vc.used / vc.spendingLimit) * 100) : null;
+              return (
+                <li key={vc.id} className="flex items-center gap-3">
+                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: vc.color || "#38bdf8" }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-white truncate">
+                        {vc.name}
+                        {vc.lastFour && <span className="text-zinc-500"> •••• {vc.lastFour}</span>}
+                      </p>
+                      <span className="text-sm text-zinc-300 whitespace-nowrap">
+                        {fmt(vc.used)}{vc.spendingLimit ? ` / ${fmt(vc.spendingLimit)}` : ""}
+                      </span>
+                    </div>
+                    {pct !== null && (
+                      <div className="w-full bg-white/10 rounded-full h-1.5 mt-1 overflow-hidden">
+                        <div className={`h-1.5 rounded-full ${usageColor(pct)}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => { setEditingVc(vc); setShowVcForm(true); }}
+                    className="p-1.5 rounded-md text-zinc-400 hover:bg-white/10 shrink-0"
+                    title="Editar cartão virtual"
+                  >
+                    <Pencil size={15} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
       {showPay && invoice && (
         <PayInvoiceForm
@@ -307,7 +413,7 @@ export default function CardDetailClient({
           <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
             <button
               disabled={index >= invoices.length - 1}
-              onClick={() => { setIndex((i) => Math.min(invoices.length - 1, i + 1)); setInsights(null); setOcrResult(null); setOcrError(null); }}
+              onClick={() => { setIndex((i) => Math.min(invoices.length - 1, i + 1)); setInsights(null); setOcrResult(null); setOcrError(null); setCardFilter("ALL"); }}
               className="p-2 rounded-md hover:bg-white/10 disabled:opacity-30 transition-colors"
               aria-label="Fatura anterior"
             >
@@ -327,7 +433,7 @@ export default function CardDetailClient({
             </div>
             <button
               disabled={index <= 0}
-              onClick={() => { setIndex((i) => Math.max(0, i - 1)); setInsights(null); setOcrResult(null); setOcrError(null); }}
+              onClick={() => { setIndex((i) => Math.max(0, i - 1)); setInsights(null); setOcrResult(null); setOcrError(null); setCardFilter("ALL"); }}
               className="p-2 rounded-md hover:bg-white/10 disabled:opacity-30 transition-colors"
               aria-label="Próxima fatura"
             >
@@ -335,9 +441,37 @@ export default function CardDetailClient({
             </button>
           </div>
 
+          {/* Filtro + totais por cartão (quando há virtuais) */}
+          {virtualCards.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setCardFilter("ALL")}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "ALL" ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setCardFilter("PHYSICAL")}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "PHYSICAL" ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+              >
+                Físico · {fmt(physicalTotal)}
+              </button>
+              {virtualCards.map((vc) => (
+                <button
+                  key={vc.id}
+                  onClick={() => setCardFilter(vc.id)}
+                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === vc.id ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+                >
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: vc.color || "#38bdf8" }} />
+                  {vc.name} · {fmt(totalsByVirtual.get(vc.id) ?? 0)}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Itens da fatura */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
-            {invoice.items.length === 0 ? (
+            {visibleItems.length === 0 ? (
               <p className="p-6 text-center text-zinc-500">Sem lançamentos nesta fatura.</p>
             ) : (
               <table className="w-full text-sm">
@@ -345,19 +479,30 @@ export default function CardDetailClient({
                   <tr>
                     <th className="text-left px-4 py-3">Data</th>
                     <th className="text-left px-4 py-3">Descrição</th>
+                    <th className="text-left px-4 py-3">Cartão</th>
                     <th className="text-left px-4 py-3">Categoria</th>
                     <th className="text-right px-4 py-3">Valor</th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
-                  {invoice.items.map((it) => (
+                  {visibleItems.map((it) => (
                     <tr key={it.id} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3 text-zinc-400">{fmtDate(it.date)}</td>
                       <td className="px-4 py-3 text-white">
                         {it.title}
                         {it.type === "REFUND" && <span className="ml-2 text-xs text-emerald-400">(estorno)</span>}
                         {it.type === "INTEREST" && <span className="ml-2 text-xs text-rose-400">(juros)</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        {it.virtualCardId ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-300">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: it.virtualCardColor || "#38bdf8" }} />
+                            {it.virtualCardName || "Virtual"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-zinc-500">Físico</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-zinc-400">{it.categoryName || "—"}</td>
                       <td className={`px-4 py-3 text-right font-medium ${it.type === "REFUND" ? "text-emerald-400" : "text-white"}`}>

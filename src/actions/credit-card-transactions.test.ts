@@ -81,6 +81,36 @@ describe('actions/credit-card-transactions.ts', () => {
       expect(result.error).toContain('Cartão não encontrado');
     });
 
+    it('grava virtualCardId quando o virtual pertence ao cartão', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.creditCard.findUnique.mockResolvedValue({ id: 'card-1', closingDay: 15, dueDay: 25 } as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.virtualCard.findUnique.mockResolvedValue({ id: 'vc-1', cardId: 'card-1' } as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.creditCardInvoice.upsert.mockResolvedValue({ id: 'inv-1' } as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.creditCardTransaction.create.mockResolvedValue({} as any);
+
+      const result = await createCardPurchase(buildForm({ virtualCardId: 'vc-1' }));
+
+      expect(result.success).toBe(true);
+      const call = prismaMock.creditCardTransaction.create.mock.calls[0][0];
+      expect(call.data.virtualCardId).toBe('vc-1');
+    });
+
+    it('rejeita virtualCardId de outro cartão', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.creditCard.findUnique.mockResolvedValue({ id: 'card-1', closingDay: 15, dueDay: 25 } as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.virtualCard.findUnique.mockResolvedValue({ id: 'vc-9', cardId: 'outro-card' } as any);
+
+      const result = await createCardPurchase(buildForm({ virtualCardId: 'vc-9' }));
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Cartão virtual inválido');
+      expect(prismaMock.creditCardTransaction.create).not.toHaveBeenCalled();
+    });
+
     it('retorna não autorizado sem sessão', async () => {
       vi.mocked(getSession).mockResolvedValueOnce(null);
       const result = await createCardPurchase(buildForm());

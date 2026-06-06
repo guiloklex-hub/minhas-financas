@@ -6,10 +6,12 @@ import { createCardPurchase } from "@/actions/credit-card-transactions";
 import { createCardPurchaseFromText } from "@/actions/ai-card-purchase";
 
 type CategoryOption = { id: string; name: string };
+type VirtualCardOption = { id: string; name: string };
 
 interface Props {
   cardId: string;
   categories: CategoryOption[];
+  virtualCards: VirtualCardOption[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -21,7 +23,7 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function CardPurchaseForm({ cardId, categories, onSuccess, onCancel }: Props) {
+export default function CardPurchaseForm({ cardId, categories, virtualCards, onSuccess, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [international, setInternational] = useState(false);
@@ -119,6 +121,18 @@ export default function CardPurchaseForm({ cardId, categories, onSuccess, onCanc
           ))}
         </select>
       </div>
+
+      {virtualCards.length > 0 && (
+        <div>
+          <label htmlFor="virtualCardId" className="block text-sm font-medium text-white/70 mb-1">Cartão</label>
+          <select id="virtualCardId" name="virtualCardId" className={inputClass} defaultValue="">
+            <option value="">Cartão físico</option>
+            {virtualCards.map((v) => (
+              <option key={v.id} value={v.id}>{v.name} (virtual)</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="notes" className="block text-sm font-medium text-white/70 mb-1">Observações</label>

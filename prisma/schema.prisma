@@ -249,9 +249,32 @@ model CreditCard {
   transactions CreditCardTransaction[]
   invoices     CreditCardInvoice[]
   rewards      CardRewardLedger[]
+  virtualCards VirtualCard[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Cartão virtual vinculado a um cartão físico. Compartilha limite, fatura e
+// datas do físico — as compras continuam com cardId = físico (caem na mesma
+// fatura) e só recebem a marcação virtualCardId. `spendingLimit` é um sub-limite
+// opcional (informativo/alerta), não o limite real.
+model VirtualCard {
+  id            String   @id @default(uuid())
+  cardId        String
+  card          CreditCard @relation(fields: [cardId], references: [id])
+  name          String
+  lastFour      String?
+  color         String?
+  spendingLimit Float?
+  archived      Boolean  @default(false)
+
+  transactions CreditCardTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cardId])
 }
 
 // Lançamento do cartão. Compras parceladas geram uma linha por parcela,
@@ -280,6 +303,11 @@ model CreditCardTransaction {
   invoiceId String?
   invoice   CreditCardInvoice? @relation(fields: [invoiceId], references: [id])
 
+  // Cartão virtual de origem (opcional). A compra continua no cartão físico
+  // (cardId) — esta é só a marcação do virtual que a gerou.
+  virtualCardId String?
+  virtualCard   VirtualCard? @relation(fields: [virtualCardId], references: [id])
+
   // Compra internacional (snapshot)
   fxCurrency String?
   fxAmount   Float?
@@ -296,6 +324,7 @@ model CreditCardTransaction {
   @@index([cardId])
   @@index([date])
   @@index([invoiceId])
+  @@index([virtualCardId])
 }
 
 // Fatura por competência. totalAmount é snapshot no fechamento.

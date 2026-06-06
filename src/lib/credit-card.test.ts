@@ -9,6 +9,7 @@ import {
   computeBestPurchaseDay,
   computeCardSummary,
   computeRevolvingInterest,
+  computeVirtualCardUsage,
 } from "./credit-card";
 
 /** Helper: data UTC a partir de YYYY-MM-DD. */
@@ -186,6 +187,38 @@ describe("credit-card.ts", () => {
       const s = computeCardSummary({ ...base, transactions: [] });
       expect(s.nextClosingDate.toISOString()).toBe("2026-06-15T00:00:00.000Z");
       expect(s.nextDueDate.toISOString()).toBe("2026-06-25T00:00:00.000Z");
+    });
+  });
+
+  describe("computeVirtualCardUsage", () => {
+    const now = d("2026-06-10"); // competência atual: 06/2026
+
+    it("soma por cartão virtual na fatura atual e futuras (REFUND abate)", () => {
+      const usage = computeVirtualCardUsage({
+        closingDay: 15,
+        now,
+        transactions: [
+          { type: "PURCHASE", amount: 100, date: d("2026-06-05"), virtualCardId: "v1" },
+          { type: "PURCHASE", amount: 50, date: d("2026-07-05"), virtualCardId: "v1" }, // futura
+          { type: "REFUND", amount: 30, date: d("2026-06-06"), virtualCardId: "v1" },
+          { type: "PURCHASE", amount: 80, date: d("2026-06-07"), virtualCardId: "v2" },
+        ],
+      });
+      expect(usage.get("v1")).toBe(120); // 100 + 50 - 30
+      expect(usage.get("v2")).toBe(80);
+    });
+
+    it("ignora competências passadas e compras sem virtualCardId", () => {
+      const usage = computeVirtualCardUsage({
+        closingDay: 15,
+        now,
+        transactions: [
+          { type: "PURCHASE", amount: 200, date: d("2026-04-05"), virtualCardId: "v1" }, // passada
+          { type: "PURCHASE", amount: 70, date: d("2026-06-05"), virtualCardId: null }, // físico
+        ],
+      });
+      expect(usage.get("v1")).toBeUndefined();
+      expect(usage.size).toBe(0);
     });
   });
 });

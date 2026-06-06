@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { computeCardSummary } from "@/lib/credit-card";
+import { computeCardSummary, computeVirtualCardUsage } from "@/lib/credit-card";
 import { invoiceItemsTotal, getRewardBalance } from "@/lib/credit-card-service";
 import { detectSubscriptions } from "@/lib/subscriptions";
 import { forecastInvoices } from "@/lib/credit-card-forecast";
@@ -23,15 +23,24 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
     include: {
       items: {
         orderBy: { date: "asc" },
-        include: { category: { select: { name: true, color: true } } },
+        include: {
+          category: { select: { name: true, color: true } },
+          virtualCard: { select: { name: true, color: true } },
+        },
       },
     },
   });
 
   const allTxns = await prisma.creditCardTransaction.findMany({
     where: { cardId: id },
-    select: { type: true, amount: true, date: true, title: true, installmentNumber: true },
+    select: { type: true, amount: true, date: true, title: true, installmentNumber: true, virtualCardId: true },
   });
+
+  const virtualCards = await prisma.virtualCard.findMany({
+    where: { cardId: id, archived: false },
+    orderBy: { createdAt: "asc" },
+  });
+  const vcUsage = computeVirtualCardUsage({ transactions: allTxns, closingDay: card.closingDay, now });
   const paidTotal = invoices.reduce((acc, i) => acc + i.paidAmount, 0);
 
   const summary = computeCardSummary({
@@ -88,11 +97,23 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
         installmentTotal: it.installmentTotal,
         categoryName: it.category?.name ?? null,
         categoryColor: it.category?.color ?? null,
+        virtualCardId: it.virtualCardId,
+        virtualCardName: it.virtualCard?.name ?? null,
+        virtualCardColor: it.virtualCard?.color ?? null,
       })),
     };
   });
 
   const rewardBalance = await getRewardBalance(prisma, id);
+
+  const virtualCardsForClient = virtualCards.map((vc) => ({
+    id: vc.id,
+    name: vc.name,
+    lastFour: vc.lastFour,
+    color: vc.color,
+    spendingLimit: vc.spendingLimit,
+    used: vcUsage.get(vc.id) ?? 0,
+  }));
 
   const cardForClient = {
     id: card.id,
@@ -129,6 +150,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
         categories={categories}
         subscriptions={subscriptions}
         forecast={forecast}
+        virtualCards={virtualCardsForClient}
       />
     </div>
   );

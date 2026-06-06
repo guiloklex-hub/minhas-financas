@@ -8,6 +8,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 
 - **Contas** — saldo inicial imutável; o saldo atual é derivado (inicial + receitas − despesas). Extrato por conta e multi-moeda.
 - **Cartões de Crédito** — entidade própria (`CreditCard`) com limite, fechamento, vencimento e bandeira. Compras parceladas caem nas faturas certas por competência; faturas fecham/vencem via cron; pagamento da fatura é uma transferência (não conta como despesa). Gasto do cartão aparece nos relatórios/orçamentos por categoria.
+- **Cartões virtuais** — cada cartão físico pode ter cartões virtuais (com sub-limite opcional) que **compartilham a mesma fatura e limite**. As compras aparecem juntas na fatura, com selo de origem, filtro e total por cartão (físico/virtuais).
 - **Transações** — receitas/despesas categorizadas, com filtros + busca + paginação, tags, observações e conciliação.
 - **Transferências** — par de transações entre contas ligadas por `transferGroupId` (criadas/editadas/excluídas em conjunto).
 - **Recorrências** — regras (`RecurringRule`) que o cron materializa em transações no dia certo.

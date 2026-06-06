@@ -188,3 +188,29 @@ export function computeCardSummary(params: {
     nextDueDate: dueDate,
   };
 }
+
+/**
+ * Uso por cartão virtual: soma assinada das cargas (REFUND abate) por
+ * `virtualCardId`, considerando apenas a fatura atual e as futuras
+ * (competência ≥ a atual). Base da barra de sub-limite. Lançamentos sem
+ * `virtualCardId` (compras no físico) são ignorados.
+ */
+export function computeVirtualCardUsage(params: {
+  transactions: { type: string; amount: number; date: Date; virtualCardId: string | null }[];
+  closingDay: number;
+  now: Date;
+}): Map<string, number> {
+  const { transactions, closingDay, now } = params;
+  const currentIdx = competenceIndex(getInvoiceCompetence(now, closingDay));
+
+  const usage = new Map<string, number>();
+  for (const t of transactions) {
+    if (!t.virtualCardId) continue;
+    const idx = competenceIndex(getInvoiceCompetence(t.date, closingDay));
+    if (idx < currentIdx) continue;
+    usage.set(t.virtualCardId, (usage.get(t.virtualCardId) ?? 0) + chargeSign(t.type) * t.amount);
+  }
+
+  for (const [id, value] of usage) usage.set(id, roundMoney(value));
+  return usage;
+}

@@ -27,6 +27,25 @@ function normalizeTags(raw: FormDataEntryValue | null): string | null {
 }
 
 /**
+ * Resolve e valida o cartão virtual informado: deve existir e pertencer ao
+ * mesmo cartão físico (`cardId`). Vazio/ausente => null (compra no físico).
+ */
+async function resolveVirtualCardId(
+  raw: FormDataEntryValue | null,
+  cardId: string
+): Promise<{ ok: true; value: string | null } | { ok: false; error: string }> {
+  if (typeof raw !== "string" || raw.trim().length === 0) return { ok: true, value: null };
+  const vc = await prisma.virtualCard.findUnique({
+    where: { id: raw.trim() },
+    select: { id: true, cardId: true },
+  });
+  if (!vc || vc.cardId !== cardId) {
+    return { ok: false, error: "Cartão virtual inválido para este cartão." };
+  }
+  return { ok: true, value: vc.id };
+}
+
+/**
  * Cria uma compra no cartão. Se `installments` > 1, gera uma CreditCardTransaction
  * por parcela, cada uma datada na sua competência (addMonthsClamped) e ligada à
  * fatura correspondente (materializada se necessário). Tudo atômico.
@@ -104,6 +123,10 @@ export async function createCardPurchase(formData: FormData): Promise<ActionResu
       if (!category) return { success: false, error: "Categoria não encontrada." };
     }
 
+    const vcRes = await resolveVirtualCardId(formData.get("virtualCardId"), cardId);
+    if (!vcRes.ok) return { success: false, error: vcRes.error };
+    const virtualCardId = vcRes.value;
+
     const parts = installmentSplit(amountRes.value, installments);
     const installmentGroupId = installments > 1 ? randomUUID() : null;
 
@@ -139,6 +162,7 @@ export async function createCardPurchase(formData: FormData): Promise<ActionResu
             installmentNumber: installments > 1 ? i + 1 : null,
             installmentTotal: installments > 1 ? installments : null,
             invoiceId,
+            virtualCardId,
             // Snapshot internacional e pontos só na primeira parcela (a compra em si).
             fxCurrency: i === 0 ? fxCurrency : null,
             fxAmount: i === 0 ? fxAmount : null,
@@ -196,6 +220,9 @@ export async function createCardRefund(formData: FormData): Promise<ActionResult
     });
     if (!card) return { success: false, error: "Cartão não encontrado." };
 
+    const vcRes = await resolveVirtualCardId(formData.get("virtualCardId"), cardId);
+    if (!vcRes.ok) return { success: false, error: vcRes.error };
+
     const competence = getInvoiceCompetence(dateRes.value, card.closingDay);
 
     await prisma.$transaction(async (tx) => {
@@ -208,6 +235,7 @@ export async function createCardRefund(formData: FormData): Promise<ActionResult
           date: dateRes.value,
           type: "REFUND",
           invoiceId,
+          virtualCardId: vcRes.value,
         },
       });
     });
@@ -257,6 +285,9 @@ export async function updateCardPurchase(id: string, formData: FormData): Promis
         ? notesRaw.trim().slice(0, 2000)
         : null;
 
+    const vcRes = await resolveVirtualCardId(formData.get("virtualCardId"), existing.cardId);
+    if (!vcRes.ok) return { success: false, error: vcRes.error };
+
     await prisma.creditCardTransaction.update({
       where: { id },
       data: {
@@ -265,6 +296,7 @@ export async function updateCardPurchase(id: string, formData: FormData): Promis
         categoryId,
         notes,
         tags: normalizeTags(formData.get("tags")),
+        virtualCardId: vcRes.value,
       },
     });
 
