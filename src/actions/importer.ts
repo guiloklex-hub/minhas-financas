@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { getSession } from "@/lib/session"
 import { roundMoney } from "@/lib/money"
 import { suggestCategoriesForTitles } from "@/lib/categorization"
+import { categorizeTitlesWithAi } from "@/lib/ai-categorize"
 
 /**
  * Valor especial em `categoryId` que liga a categorização AUTOMÁTICA aprendida:
@@ -105,6 +106,57 @@ function dedupKey(accountId: string, date: Date, amount: number, title: string):
   return `${accountId}|${yyyy}-${mm}-${dd}|${amount}|${title}`;
 }
 
+type ParsedRow = { title: string; amount: number; type: "INCOME" | "EXPENSE"; date: Date };
+
+/**
+ * Parseia o texto do CSV em linhas válidas, deduplicando contra `seenKeys`
+ * (conjunto de chaves já vistas — inclui o que existe no banco e cresce conforme
+ * aceitamos linhas, pegando duplicatas dentro do próprio arquivo). Trunca em
+ * MAX_LINES. Helper compartilhado entre importação direta e análise/preview.
+ */
+function parseCsvText(
+  text: string,
+  accountId: string,
+  seenKeys: Set<string>
+): { rows: ParsedRow[]; duplicatesSkipped: number; truncated: boolean } {
+  let lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
+  let truncated = false;
+  if (lines.length > MAX_LINES) {
+    lines = lines.slice(0, MAX_LINES);
+    truncated = true;
+  }
+
+  const rows: ParsedRow[] = [];
+  let duplicatesSkipped = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]);
+    if (cols.length < 3) continue;
+
+    const [dateStr, title, amountStr] = cols;
+    const date = parseCsvDate(dateStr);
+    if (!date) continue;
+
+    const amount = parseFloat(amountStr.replace(",", "."));
+    if (isNaN(amount)) continue;
+
+    const type: "INCOME" | "EXPENSE" = amount >= 0 ? "INCOME" : "EXPENSE";
+    const finalTitle = title || "Transação Importada";
+    const finalAmount = roundMoney(Math.abs(amount));
+
+    const key = dedupKey(accountId, date, finalAmount, finalTitle);
+    if (seenKeys.has(key)) {
+      duplicatesSkipped++;
+      continue;
+    }
+    seenKeys.add(key);
+
+    rows.push({ title: finalTitle, amount: finalAmount, type, date });
+  }
+
+  return { rows, duplicatesSkipped, truncated };
+}
+
 export async function importTransactionsFromCsv(formData: FormData): Promise<{ success: boolean; count?: number; error?: string; message?: string }> {
   const session = await getSession();
   if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
@@ -158,15 +210,6 @@ export async function importTransactionsFromCsv(formData: FormData): Promise<{ s
       }
     }
 
-    const text = await file.text();
-    let lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-
-    let truncatedWarning = "";
-    if (lines.length > MAX_LINES) {
-      lines = lines.slice(0, MAX_LINES);
-      truncatedWarning = ` O arquivo excedeu o limite de ${MAX_LINES} linhas; apenas as primeiras ${MAX_LINES} foram processadas.`;
-    }
-
     // Carrega de uma vez as transações existentes da conta para deduplicar por
     // (conta|dia|valor|título), sem fazer uma query por linha.
     const existing = await prisma.transaction.findMany({
@@ -174,50 +217,16 @@ export async function importTransactionsFromCsv(formData: FormData): Promise<{ s
       select: { date: true, amount: true, title: true },
     });
 
-    // Set de chaves já vistas: começa com o que existe no banco e cresce conforme
-    // aceitamos linhas — assim duplicatas DENTRO do próprio arquivo também são pulas.
     const seenKeys = new Set<string>();
     for (const e of existing) {
       seenKeys.add(dedupKey(accountId, e.date, e.amount, e.title));
     }
 
-    // Primeira passada: parse + dedup. A categoria ainda não é resolvida aqui
-    // porque, no modo automático, sugerimos por lote (uma única carga do
-    // histórico) só para as linhas que de fato serão importadas.
-    type ParsedRow = { title: string; amount: number; type: "INCOME" | "EXPENSE"; date: Date };
-    const parsedRows: ParsedRow[] = [];
-    let duplicatesSkipped = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-      const cols = parseCsvLine(lines[i]);
-
-      if (cols.length < 3) continue;
-
-      const [dateStr, title, amountStr] = cols;
-
-      // Parse data (suporta YYYY-MM-DD e DD/MM/YYYY). Linhas com data inválida
-      // (provável cabeçalho) são puladas.
-      const date = parseCsvDate(dateStr);
-      if (!date) continue;
-
-      const amount = parseFloat(amountStr.replace(",", "."));
-      if (isNaN(amount)) continue;
-
-      const type: "INCOME" | "EXPENSE" = amount >= 0 ? "INCOME" : "EXPENSE";
-
-      const finalTitle = title || "Transação Importada";
-      const finalAmount = roundMoney(Math.abs(amount));
-
-      // A chave usa os mesmos valores que serão persistidos (título e valor finais).
-      const key = dedupKey(accountId, date, finalAmount, finalTitle);
-      if (seenKeys.has(key)) {
-        duplicatesSkipped++;
-        continue;
-      }
-      seenKeys.add(key);
-
-      parsedRows.push({ title: finalTitle, amount: finalAmount, type, date });
-    }
+    const text = await file.text();
+    const { rows: parsedRows, duplicatesSkipped, truncated } = parseCsvText(text, accountId, seenKeys);
+    const truncatedWarning = truncated
+      ? ` O arquivo excedeu o limite de ${MAX_LINES} linhas; apenas as primeiras ${MAX_LINES} foram processadas.`
+      : "";
 
     // Resolve a categoria de cada linha. No modo automático, carrega o
     // histórico UMA vez via suggestCategoriesForTitles e usa o fallback quando
@@ -286,5 +295,241 @@ export async function importTransactionsFromCsv(formData: FormData): Promise<{ s
   } catch {
     console.error("Erro na importação de CSV.");
     return { success: false, error: "Erro ao processar o arquivo CSV." };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fluxo em duas etapas (com pré-visualização): analisar -> confirmar.
+// ---------------------------------------------------------------------------
+
+export type CsvCategorizeMode = "default" | "history" | "ai";
+
+export type AnalyzedRow = {
+  date: string; // ISO (meia-noite UTC)
+  title: string;
+  amount: number;
+  type: "INCOME" | "EXPENSE";
+  suggestedCategoryId: string | null;
+  source: "history" | "ai" | null;
+};
+
+export type AnalyzeResult = {
+  success: boolean;
+  error?: string;
+  rows?: AnalyzedRow[];
+  counts?: { total: number; duplicates: number; history: number; ai: number; unresolved: number };
+  aiUsed?: boolean;
+  message?: string;
+};
+
+/**
+ * Fase A: lê o CSV, deduplica e SUGERE categorias (sem gravar nada).
+ * Estratégia híbrida: histórico (grátis) primeiro; a IA só recebe os títulos
+ * únicos que o histórico não resolveu (quando mode === "ai").
+ */
+export async function analyzeCsvForImport(formData: FormData): Promise<AnalyzeResult> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  try {
+    const file = formData.get("file") as File;
+    const accountId = formData.get("accountId") as string;
+    const modeRaw = formData.get("mode");
+    const mode: CsvCategorizeMode =
+      modeRaw === "history" || modeRaw === "ai" ? modeRaw : "default";
+
+    if (!file || !accountId) {
+      return { success: false, error: "Arquivo ou conta ausentes." };
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return { success: false, error: "Arquivo muito grande. O limite é de 2MB." };
+    }
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith(".csv") && !file.type.includes("csv") && !file.type.includes("text")) {
+      return { success: false, error: "Formato inválido. Envie um arquivo .csv." };
+    }
+
+    const account = await prisma.account.findUnique({ where: { id: accountId } });
+    if (!account) return { success: false, error: "Conta não encontrada." };
+
+    const existing = await prisma.transaction.findMany({
+      where: { accountId },
+      select: { date: true, amount: true, title: true },
+    });
+    const seenKeys = new Set<string>();
+    for (const e of existing) seenKeys.add(dedupKey(accountId, e.date, e.amount, e.title));
+
+    const text = await file.text();
+    const { rows, duplicatesSkipped, truncated } = parseCsvText(text, accountId, seenKeys);
+
+    if (rows.length === 0) {
+      if (duplicatesSkipped > 0) {
+        return { success: false, error: `Nenhuma linha nova: todas as ${duplicatesSkipped} já existiam (duplicadas).` };
+      }
+      return { success: false, error: "Nenhuma transação válida encontrada. Use o formato: Data,Título,Valor" };
+    }
+
+    // Histórico (determinístico) para todas as linhas, quando aplicável.
+    const historyMap =
+      mode === "history" || mode === "ai"
+        ? await suggestCategoriesForTitles(rows.map((r) => r.title))
+        : new Map<string, string | null>();
+
+    // IA só para os títulos únicos sem match no histórico.
+    let aiUsed = false;
+    let aiMap = new Map<string, string | null>();
+    if (mode === "ai") {
+      const remaining = Array.from(
+        new Set(rows.map((r) => r.title).filter((t) => !(historyMap.get(t) ?? null)))
+      );
+      if (remaining.length > 0) {
+        const categories = await prisma.category.findMany({ select: { id: true, name: true } });
+        const result = await categorizeTitlesWithAi(remaining, categories);
+        aiMap = result.map;
+        aiUsed = result.used;
+      }
+    }
+
+    let history = 0;
+    let ai = 0;
+    let unresolved = 0;
+    const outRows: AnalyzedRow[] = rows.map((r) => {
+      const h = historyMap.get(r.title) ?? null;
+      if (h) {
+        history++;
+        return { date: r.date.toISOString(), title: r.title, amount: r.amount, type: r.type, suggestedCategoryId: h, source: "history" };
+      }
+      const a = aiMap.get(r.title) ?? null;
+      if (a) {
+        ai++;
+        return { date: r.date.toISOString(), title: r.title, amount: r.amount, type: r.type, suggestedCategoryId: a, source: "ai" };
+      }
+      unresolved++;
+      return { date: r.date.toISOString(), title: r.title, amount: r.amount, type: r.type, suggestedCategoryId: null, source: null };
+    });
+
+    const parts: string[] = [];
+    if (duplicatesSkipped > 0) parts.push(`${duplicatesSkipped} duplicada(s) ignorada(s).`);
+    if (truncated) parts.push(`Arquivo truncado em ${MAX_LINES} linhas.`);
+    if (mode === "ai" && !aiUsed && unresolved > 0) parts.push("IA indisponível (sem chave ou orçamento) — use a categoria padrão.");
+
+    return {
+      success: true,
+      rows: outRows,
+      counts: { total: outRows.length, duplicates: duplicatesSkipped, history, ai, unresolved },
+      aiUsed,
+      message: parts.join(" "),
+    };
+  } catch {
+    console.error("Erro ao analisar CSV.");
+    return { success: false, error: "Erro ao analisar o arquivo CSV." };
+  }
+}
+
+export type ConfirmRow = {
+  date: string;
+  title: string;
+  amount: number;
+  type: "INCOME" | "EXPENSE";
+  categoryId?: string | null;
+};
+
+export type ConfirmInput = {
+  accountId: string;
+  defaultCategoryId: string;
+  rows: ConfirmRow[];
+};
+
+/**
+ * Fase B: grava as transações revisadas pelo usuário. NÃO confia no client —
+ * revalida conta, datas/valores/tipos e que TODO categoryId pertence a uma
+ * categoria existente; linhas sem categoria caem no `defaultCategoryId`.
+ */
+export async function confirmCsvImport(
+  input: ConfirmInput
+): Promise<{ success: boolean; count?: number; error?: string; message?: string }> {
+  const session = await getSession();
+  if (!session) return { success: false, error: "Não autorizado. Faça login novamente." };
+
+  try {
+    if (!input || typeof input.accountId !== "string" || !Array.isArray(input.rows)) {
+      return { success: false, error: "Dados de importação inválidos." };
+    }
+    if (input.rows.length === 0) {
+      return { success: false, error: "Nenhuma linha para importar." };
+    }
+    if (input.rows.length > MAX_LINES) {
+      return { success: false, error: `Limite de ${MAX_LINES} linhas por importação.` };
+    }
+
+    const account = await prisma.account.findUnique({ where: { id: input.accountId } });
+    if (!account) return { success: false, error: "Conta não encontrada." };
+
+    const categories = await prisma.category.findMany({ select: { id: true } });
+    const validIds = new Set(categories.map((c) => c.id));
+    if (!validIds.has(input.defaultCategoryId)) {
+      return { success: false, error: "Categoria padrão inválida." };
+    }
+
+    const accountId = input.accountId;
+    const existing = await prisma.transaction.findMany({
+      where: { accountId },
+      select: { date: true, amount: true, title: true },
+    });
+    const seenKeys = new Set<string>();
+    for (const e of existing) seenKeys.add(dedupKey(accountId, e.date, e.amount, e.title));
+
+    const toCreate: Array<{ title: string; amount: number; type: "INCOME" | "EXPENSE"; date: Date; accountId: string; categoryId: string }> = [];
+    let duplicatesSkipped = 0;
+
+    for (const row of input.rows) {
+      const date = new Date(row.date);
+      if (Number.isNaN(date.getTime())) continue;
+
+      const amount = roundMoney(Math.abs(Number(row.amount)));
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+
+      const type: "INCOME" | "EXPENSE" = row.type === "INCOME" ? "INCOME" : row.type === "EXPENSE" ? "EXPENSE" : "EXPENSE";
+      const title = (typeof row.title === "string" && row.title.trim().length > 0 ? row.title.trim() : "Transação Importada").slice(0, 200);
+
+      // Categoria: se informada, precisa existir (anti-adulteração); senão, padrão.
+      let categoryId = input.defaultCategoryId;
+      if (row.categoryId) {
+        if (!validIds.has(row.categoryId)) {
+          return { success: false, error: "Categoria inválida em uma das linhas." };
+        }
+        categoryId = row.categoryId;
+      }
+
+      const key = dedupKey(accountId, date, amount, title);
+      if (seenKeys.has(key)) {
+        duplicatesSkipped++;
+        continue;
+      }
+      seenKeys.add(key);
+
+      toCreate.push({ title, amount, type, date, accountId, categoryId });
+    }
+
+    if (toCreate.length === 0) {
+      return {
+        success: false,
+        error: duplicatesSkipped > 0
+          ? `Nenhuma transação importada: ${duplicatesSkipped} já existiam (duplicadas).`
+          : "Nenhuma transação válida para importar.",
+      };
+    }
+
+    await prisma.transaction.createMany({ data: toCreate });
+
+    revalidatePath("/");
+    revalidatePath("/transacoes");
+    revalidatePath("/insights");
+
+    const dupWarning = duplicatesSkipped > 0 ? ` ${duplicatesSkipped} ignorada(s) (duplicadas).` : "";
+    return { success: true, count: toCreate.length, message: `${toCreate.length} importada(s).${dupWarning}` };
+  } catch {
+    console.error("Erro ao confirmar importação de CSV.");
+    return { success: false, error: "Erro ao importar as transações." };
   }
 }

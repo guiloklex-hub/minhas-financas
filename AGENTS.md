@@ -95,7 +95,8 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [rate-limit.ts](src/lib/rate-limit.ts) | `rateLimit(key,max,windowMs)` — in-memory; usar em login/recuperação. |
 | [totp.ts](src/lib/totp.ts) | 2FA (otplib): `generateSecret`, `otpauthURL`, `verifyToken`. |
 | [recurring.ts](src/lib/recurring.ts) | `runRecurringRules()` — materializa `RecurringRule` em transações (chamado pelo cron). |
-| [categorization.ts](src/lib/categorization.ts) | `suggestCategoryIdByHistory` — auto-categorização **determinística** (sem IA). |
+| [categorization.ts](src/lib/categorization.ts) | `suggestCategoryIdByHistory` / `suggestCategoriesForTitles` — auto-categorização **determinística** (sem IA). |
+| [ai-categorize.ts](src/lib/ai-categorize.ts) | `categorizeTitlesWithAi` (lote, só IDs existentes, chunked) + `sanitizeAiCategoryMap` (puro). Usado no import de CSV. |
 | [anomaly.ts](src/lib/anomaly.ts) / [forecast.ts](src/lib/forecast.ts) | Detecção de anomalias e previsão de fluxo (números no código). |
 | [currency.ts](src/lib/currency.ts) | Multi-moeda **puro/client-safe**: `SUPPORTED_CURRENCIES`, `formatMoney`, `getCurrencySymbol`, `isSupportedCurrency` (sem Prisma — pode ser importado por Client Components). |
 | [currency-rates.ts](src/lib/currency-rates.ts) | **Server-only** (usa Prisma): `getLatestRate`, `convert`. Não importar em Client Components. |
@@ -185,6 +186,7 @@ if (!dateRes.ok) return { success: false, error: dateRes.error };
 - Valores monetários: `parseMoney` (finito, `min`/`max` configuráveis). Saldo inicial pode ser negativo (`min: -1_000_000_000`).
 - Datas: `parseDate`. No importador de CSV, validar que a data **existe de fato** (rejeitar 31/02).
 - **Uploads/CSV:** validar tamanho máximo (2MB), extensão/`type` e número de linhas (5000). Não truncar em silêncio — avisar na `message`. Validar existência de `accountId`/`categoryId` antes de gravar.
+- **Import de CSV com IA (duas fases, em [importer.ts](src/actions/importer.ts)):** `analyzeCsvForImport` (fase A, não grava) parseia/deduplica e **sugere** categorias — estratégia **híbrida**: histórico (`suggestCategoriesForTitles`, grátis) primeiro e IA (`categorizeTitlesWithAi`) só nos títulos únicos restantes (mode `ai`). `confirmCsvImport` (fase B) grava após o usuário revisar no preview — **não confia no client**: revalida conta, datas/valores/tipos e que **todo `categoryId` ∈ categorias existentes** (vazio → `defaultCategoryId` escolhido na tela), re-deduplica e `createMany`. A IA classifica apenas entre categorias existentes (não cria novas no lote) e respeita o guardrail de custo.
 
 ---
 
