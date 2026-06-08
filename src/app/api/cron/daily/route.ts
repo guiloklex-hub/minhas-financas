@@ -4,6 +4,7 @@ import { refreshExchangeRatesFromApi } from "@/lib/exchange-rate-fetch";
 import { createNotification } from "@/lib/notifications";
 import { runCreditCardJobs } from "@/lib/credit-card-cron";
 import { getCardSpendForCategory } from "@/lib/card-spend";
+import { formatCivilDate } from "@/lib/format-date";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -117,9 +118,7 @@ export async function GET(req: Request) {
   let maturityAlerts = 0;
   for (const investment of maturing) {
     if (!investment.maturityDate) continue;
-    const dateLabel = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(
-      investment.maturityDate
-    );
+    const dateLabel = formatCivilDate(investment.maturityDate);
     maturityAlerts += await createIfNotToday(startOfToday, {
       title: `Investimento vencendo: ${investment.name}`,
       body: `O investimento "${investment.name}" vence em ${dateLabel}. Valor atual: ${currency(investment.currentAmount)}.`,

@@ -5,6 +5,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { logAiUsage } from "@/lib/gemini";
 import { getSession } from "@/lib/session";
 import { isAiBudgetExceeded } from "@/lib/ai-budget";
+import { formatCivilDate } from "@/lib/format-date";
 
 export async function generateFinancialAdvice(month: number, year: number) {
   const session = await getSession();
@@ -37,8 +38,9 @@ export async function generateFinancialAdvice(month: number, year: number) {
     }
 
     // 1. Coleta de Dados do Banco
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
+    // UTC para casar com as datas das transações (meia-noite UTC).
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59));
 
     const transactions = await prisma.transaction.findMany({
       where: {
@@ -202,7 +204,7 @@ export async function simulateInvestmentScenario(prompt: string) {
     });
 
     const portfolioContext = investments.length > 0 
-      ? investments.map(inv => `- ${inv.name} (${inv.type}): R$ ${inv.currentAmount.toFixed(2)} rendendo ${(inv.yieldRate * 100).toFixed(2)}% a.a. Vencimento: ${inv.maturityDate ? new Date(inv.maturityDate).toLocaleDateString() : 'Indefinido'}`).join('\n')
+      ? investments.map(inv => `- ${inv.name} (${inv.type}): R$ ${inv.currentAmount.toFixed(2)} rendendo ${(inv.yieldRate * 100).toFixed(2)}% a.a. Vencimento: ${inv.maturityDate ? formatCivilDate(inv.maturityDate) : 'Indefinido'}`).join('\n')
       : "O usuário não possui nenhum investimento cadastrado no momento.";
 
     // 2. Preparar prompt e regras

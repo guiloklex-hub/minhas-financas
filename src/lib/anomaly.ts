@@ -43,9 +43,10 @@ export async function detectAnomalies(now: Date = new Date()): Promise<Anomaly[]
   const month = now.getMonth();
 
   // Janela: início dos 3 meses anteriores .. fim do mês corrente.
-  const windowStart = new Date(year, month - LOOKBACK_MONTHS, 1, 0, 0, 0, 0);
-  const currentMonthStart = new Date(year, month, 1, 0, 0, 0, 0);
-  const currentMonthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  // UTC para casar com as datas das transações (meia-noite UTC).
+  const windowStart = new Date(Date.UTC(year, month - LOOKBACK_MONTHS, 1, 0, 0, 0, 0));
+  const currentMonthStart = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+  const currentMonthEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
 
   const transactions = await prisma.transaction.findMany({
     where: {

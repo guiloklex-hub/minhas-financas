@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { Prisma } from "@/generated/prisma/client";
+import { formatCivilDate } from "@/lib/format-date";
 
 /**
  * GET /api/export/transactions
@@ -26,8 +27,7 @@ function csvField(value: string | null | undefined): string {
 
 /** Formata Date para "DD/MM/AAAA" no mesmo critério visual da listagem. */
 function formatDate(date: Date): string {
-  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-  return new Intl.DateTimeFormat("pt-BR").format(localDate);
+  return formatCivilDate(date);
 }
 
 /** Formata um número como valor monetário pt-BR (sem símbolo, com vírgula decimal). */

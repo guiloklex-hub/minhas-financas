@@ -46,8 +46,9 @@ const MONTH_NAMES = [
  * caixa. A IA jamais produz números — apenas redige texto sobre eles.
  */
 async function computeMetrics(month: number, year: number): Promise<InsightMetrics> {
-  const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
-  const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+  // UTC para casar com as datas das transações (meia-noite UTC).
+  const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+  const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
   const transactions = await prisma.transaction.findMany({
     where: {

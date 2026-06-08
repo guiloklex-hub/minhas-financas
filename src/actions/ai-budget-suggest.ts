@@ -46,8 +46,9 @@ export async function suggestBudgets(month: number, year: number): Promise<Sugge
   try {
     // Janela dos últimos 3 meses encerrados antes do mês-alvo.
     // Ex.: alvo 06/2026 -> considera 03/2026, 04/2026 e 05/2026.
-    const windowEnd = new Date(year, month - 1, 1); // 1º dia do mês-alvo (exclusivo)
-    const windowStart = new Date(year, month - 1 - 3, 1); // 3 meses antes
+    // UTC para casar com as datas das transações (meia-noite UTC).
+    const windowEnd = new Date(Date.UTC(year, month - 1, 1)); // 1º dia do mês-alvo (exclusivo)
+    const windowStart = new Date(Date.UTC(year, month - 1 - 3, 1)); // 3 meses antes
 
     const transactions = await prisma.transaction.findMany({
       where: {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, ArrowLeft, Plus, Trash2, CreditCard as CreditCardIcon, Gift, CalendarCheck, Sparkles, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
+import { formatCivilDate } from "@/lib/format-date";
 import { computeBestPurchaseDay } from "@/lib/credit-card";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 import { FutureInvoicesBar } from "@/components/charts/FutureInvoicesBar";
@@ -158,7 +159,7 @@ export default function CardDetailClient({
     card.rewardType === "POINTS" ? "Pontos" : null;
 
   const fmt = (v: number) => formatMoney(v, card.currency);
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(new Date(iso));
+  const fmtDate = (iso: string) => formatCivilDate(iso);
 
   const invoice = invoices[index];
 

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Transaction, Category, Account } from "@/generated/prisma/client";
 import { Edit2, Trash2, Loader2, Search, Filter, X, ArrowRightLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle, Download } from "lucide-react";
 import { deleteTransaction, deleteRecurrenceSeries, toggleReconciled } from "@/actions/transactions";
+import { formatCivilDate } from "@/lib/format-date";
 import EditTransactionModal from "./EditTransactionModal";
 import EditTransferModal from "./EditTransferModal";
 
@@ -59,11 +60,7 @@ export default function TransactionListClient({
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
-  const formatDate = (date: Date | string) => {
-    const d = new Date(date);
-    const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
-    return new Intl.DateTimeFormat('pt-BR').format(localDate);
-  };
+  const formatDate = (date: Date | string) => formatCivilDate(date);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const hasActiveFilters = Boolean(

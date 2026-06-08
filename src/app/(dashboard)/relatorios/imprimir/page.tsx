@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import PrintButton from "./PrintButton";
+import { formatCivilDate } from "@/lib/format-date";
 
 type SearchParams = {
   month?: string;
@@ -20,8 +21,7 @@ function formatCurrency(value: number): string {
 
 /** Formata Date para "DD/MM/AAAA" no mesmo critério visual da listagem. */
 function formatDate(date: Date): string {
-  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-  return new Intl.DateTimeFormat("pt-BR").format(localDate);
+  return formatCivilDate(date);
 }
 
 const MONTH_NAMES = [

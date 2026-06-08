@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { formatCivilDate } from "@/lib/format-date";
 
 interface StatementRow {
   id: string;
@@ -44,11 +45,7 @@ export default function AccountStatementClient({
     }).format(value);
   };
 
-  const formatDate = (date: Date | string) => {
-    const d = new Date(date);
-    const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
-    return new Intl.DateTimeFormat("pt-BR").format(localDate);
-  };
+  const formatDate = (date: Date | string) => formatCivilDate(date);
 
   return (
     <div className="space-y-6">

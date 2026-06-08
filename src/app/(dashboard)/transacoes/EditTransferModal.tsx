@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { updateTransfer } from "@/actions/transfers";
+import { toDateInputValue } from "@/lib/format-date";
 import { Transaction } from "@/generated/prisma/client";
 import { X, Loader2, ArrowRightLeft } from "lucide-react";
 
@@ -46,13 +47,8 @@ export default function EditTransferModal({ transaction, onClose, onSuccess }: P
     });
   }
 
-  // Formata a data para o input (YYYY-MM-DD), alinhada à mesma conversão usada
-  // ao exibir/editar transações.
-  const formattedDate = new Date(
-    new Date(transaction.date).getTime() - new Date().getTimezoneOffset() * 60000
-  )
-    .toISOString()
-    .split("T")[0];
+  // Valor do input (YYYY-MM-DD) a partir da data civil (meia-noite UTC).
+  const formattedDate = toDateInputValue(transaction.date);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

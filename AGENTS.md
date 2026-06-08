@@ -82,6 +82,7 @@ Antes de escrever lógica nova, procure por estes módulos:
 | [card-spend.ts](src/lib/card-spend.ts) | **Server-only**: gasto do cartão por categoria/total (integração com relatórios sem dupla contagem). |
 | [credit-card-cron.ts](src/lib/credit-card-cron.ts) | **Server-only**: rotinas diárias do cartão (fechar/vencer faturas, alertas). |
 | [date-utils.ts](src/lib/date-utils.ts) | `addMonthsClamped` — soma meses com clamp de fim de mês. |
+| [format-date.ts](src/lib/format-date.ts) | `formatCivilDate` (datas civis — vencimento/fatura/transação — exibidas em **UTC**, evita o off-by-one de fuso), `toDateInputValue` (`<input type="date">` sem deslocar o dia) e `formatTimestamp` (`createdAt` em `America/Sao_Paulo`). Datas civis são meia-noite UTC; ranges de relatório usam `Date.UTC` para casar com elas. |
 | [validation.ts](src/lib/validation.ts) | `parseRequiredString`, `parseMoney`, `parseDate` (`ValidationResult<T>`). |
 | [financial-math.ts](src/lib/financial-math.ts) | `calculateCompoundInterest`, `calculateBrazilianTaxes` (IR/IOF). |
 | [prisma.ts](src/lib/prisma.ts) | Singleton do Prisma Client (v7: instanciado com driver adapter better-sqlite3; marcado `server-only`). **Sempre importar daqui.** |

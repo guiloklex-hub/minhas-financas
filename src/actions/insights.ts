@@ -43,11 +43,13 @@ export async function getInsightsData(): Promise<InsightsPayload> {
   const currentDay = now.getDate();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  const currentMonthStart = new Date(currentYear, currentMonth, 1);
-  const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+  // Bordas de mês em UTC para casar com as datas das transações (meia-noite
+  // UTC) e evitar off-by-one nas viradas de mês em fusos negativos (ex.: BRT).
+  const currentMonthStart = new Date(Date.UTC(currentYear, currentMonth, 1));
+  const currentMonthEnd = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59));
 
-  const previousMonthStart = new Date(currentYear, currentMonth - 1, 1);
-  const previousMonthEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59);
+  const previousMonthStart = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
+  const previousMonthEnd = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59));
 
   // 1. Fetch current month expenses
   const currentExpenses = await prisma.transaction.findMany({
@@ -69,7 +71,7 @@ export async function getInsightsData(): Promise<InsightsPayload> {
   });
 
   // Limites exclusivos (início do próximo mês) para somar o gasto do cartão.
-  const currentNextMonthStart = new Date(currentYear, currentMonth + 1, 1);
+  const currentNextMonthStart = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
 
   // Gasto do cartão (compras vivem fora da tabela Transaction). O pagamento da
   // fatura é uma Transaction isTransfer e fica fora — evita dupla contagem.

@@ -61,10 +61,11 @@ export async function askFinancialQuestion(question: string): Promise<AskResult>
     const month = now.getMonth() + 1;
     const year = now.getFullYear();
 
-    const monthStart = new Date(year, month - 1, 1);
-    const monthEnd = new Date(year, month, 0, 23, 59, 59, 999);
-    const yearStart = new Date(year, 0, 1);
-    const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
+    // UTC para casar com as datas das transações (meia-noite UTC).
+    const monthStart = new Date(Date.UTC(year, month - 1, 1));
+    const monthEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    const yearEnd = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
 
     // Transações do mês (sem transferências — não são receita/despesa).
     const monthTx = await prisma.transaction.findMany({

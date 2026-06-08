@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, CreditCard as CreditCardIcon } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
+import { formatCivilDate } from "@/lib/format-date";
 import CardForm from "./CardForm";
 
 type CardView = {
@@ -36,9 +37,6 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
 
   const totalOpenInvoice = cards.reduce((acc, c) => acc + c.currentInvoiceTotal, 0);
   const totalAvailable = cards.reduce((acc, c) => acc + c.availableLimit, 0);
-
-  const fmtDate = (iso: string) =>
-    new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(new Date(iso));
 
   return (
     <div className="space-y-8">
@@ -116,7 +114,7 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
                 </div>
                 <div className="flex justify-between text-xs opacity-90">
                   <span>Disponível {formatMoney(card.availableLimit, card.currency)}</span>
-                  <span>Vence {fmtDate(card.nextDueDate)}</span>
+                  <span>Vence {formatCivilDate(card.nextDueDate)}</span>
                 </div>
               </div>
             </Link>

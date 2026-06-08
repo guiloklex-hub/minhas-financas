@@ -60,8 +60,9 @@ export async function forecastCashFlow(
   const month = now.getMonth();
 
   // Histórico: dos LOOKBACK_MONTHS meses anteriores até o fim do mês anterior.
-  const historyStart = new Date(year, month - LOOKBACK_MONTHS, 1, 0, 0, 0, 0);
-  const historyEnd = new Date(year, month, 0, 23, 59, 59, 999);
+  // UTC para casar com as datas das transações (meia-noite UTC).
+  const historyStart = new Date(Date.UTC(year, month - LOOKBACK_MONTHS, 1, 0, 0, 0, 0));
+  const historyEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
   const [rules, history] = await Promise.all([
     prisma.recurringRule.findMany({ where: { isActive: true } }),

@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import { createNotification } from "./notifications";
 import { computeCardSummary, computeRevolvingInterest } from "./credit-card";
 import { closeInvoiceInternal, ensureInvoiceForDate } from "./credit-card-service";
+import { formatCivilDate } from "./format-date";
 import { detectSubscriptions } from "./subscriptions";
 
 const currency = (value: number) =>
@@ -125,7 +126,7 @@ export async function runCreditCardJobs(now: Date): Promise<{
   for (const inv of dueSoon) {
     if (inv.paidAmount >= inv.totalAmount && inv.totalAmount > 0) continue;
     const monthLabel = `${String(inv.referenceMonth).padStart(2, "0")}/${inv.referenceYear}`;
-    const dateLabel = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(inv.dueDate);
+    const dateLabel = formatCivilDate(inv.dueDate);
     cardAlerts += await createIfNotToday(startOfToday, {
       title: `Fatura a vencer: ${inv.card.name} (${monthLabel})`,
       body: `A fatura de ${inv.card.name} vence em ${dateLabel}. Valor: ${currency(

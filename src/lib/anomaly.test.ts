@@ -136,6 +136,20 @@ describe('lib/anomaly.ts — detectAnomalies', () => {
     expect(arg?.where?.isTransfer).toBe(false);
   });
 
+  // Regressão de fuso: a janela tem que ser meia-noite UTC do dia 1 (não
+  // 03:00Z), senão a transação do dia 1º cai fora do mês em fusos negativos
+  // (BRT). Com o range em horário local este teste falharia fora de UTC.
+  it('monta a janela de datas em UTC (meia-noite do dia 1, sem deslocar por fuso)', async () => {
+    mockFindMany([]);
+
+    await detectAnomalies(NOW); // NOW = abril/2024; janela = jan..abril/2024
+
+    const arg = prismaMock.transaction.findMany.mock.calls[0][0];
+    const dateFilter = arg?.where?.date as { gte?: Date; lte?: Date } | undefined;
+    expect(dateFilter?.gte?.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+    expect(dateFilter?.lte?.toISOString()).toBe('2024-04-30T23:59:59.999Z');
+  });
+
   it('ordena as anomalias por deltaPct decrescente', async () => {
     const catA = buildCategory({ id: 'cat-a', name: 'A' });
     const catB = buildCategory({ id: 'cat-b', name: 'B' });
