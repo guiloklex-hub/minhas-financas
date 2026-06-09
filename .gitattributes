@@ -1,0 +1,19 @@
+# Normaliza fim de linha para LF no repositório (evita ruído entre Windows/Unix).
+* text=auto eol=lf
+
+# Scripts shell sempre LF.
+*.sh text eol=lf
+
+# Arquivos binários — sem normalização de EOL nem diff de texto.
+*.png binary
+*.jpg binary
+*.ico binary
+*.db binary
+*.webmanifest text
+
+# Lockfile e gerados: contam menos em diffs/estatísticas de linguagem.
+package-lock.json -diff linguist-generated=true
+src/generated/** linguist-generated=true
+
+# Documentação não infla as estatísticas de linguagem do GitHub.
+*.md linguist-documentation=true

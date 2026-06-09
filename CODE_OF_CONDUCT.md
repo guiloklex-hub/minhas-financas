@@ -1,5 +1,56 @@
-# Código de Conduta
+# Código de Conduta para Contribuidores
 
-Como contribuidores e mantenedores deste projeto, nós nos comprometemos a fazer da participação em nosso projeto e nossa comunidade uma experiência livre de assédio para todos, independentemente de idade, tamanho do corpo, deficiência, etnia, características sexuais, identidade e expressão de gênero, nível de experiência, educação, status socioeconômico, nacionalidade, aparência pessoal, raça, religião, ou identidade e orientação sexual.
+## Nosso Compromisso
 
-Esperamos que os participantes sigam o [Contributor Covenant](https://www.contributor-covenant.org/).
+Nós, como membros, contribuidores e líderes, nos comprometemos a fazer da participação
+em nossa comunidade uma experiência livre de assédio para todos, independentemente de
+idade, tamanho do corpo, deficiência visível ou invisível, etnia, características sexuais,
+identidade e expressão de gênero, nível de experiência, educação, status socioeconômico,
+nacionalidade, aparência pessoal, raça, religião ou identidade e orientação sexual.
+
+Comprometemo-nos a agir e interagir de maneiras que contribuam para uma comunidade aberta,
+acolhedora, diversa, inclusiva e saudável.
+
+## Nossos Padrões
+
+Exemplos de comportamento que contribuem para um ambiente positivo:
+
+- Demonstrar empatia e gentileza para com outras pessoas.
+- Respeitar opiniões, pontos de vista e experiências divergentes.
+- Dar e aceitar feedback construtivo com elegância.
+- Assumir responsabilidade, pedir desculpas aos afetados por nossos erros e aprender com eles.
+- Focar no que é melhor para a comunidade como um todo.
+
+Exemplos de comportamento inaceitável:
+
+- Uso de linguagem ou imagens sexualizadas e atenção ou investidas sexuais de qualquer tipo.
+- Comentários insultuosos/depreciativos (_trolling_) e ataques pessoais ou políticos.
+- Assédio público ou privado.
+- Publicar informações privadas de terceiros sem permissão explícita.
+- Qualquer conduta que possa ser razoavelmente considerada inapropriada em um ambiente profissional.
+
+## Responsabilidades de Aplicação
+
+Os mantenedores do projeto são responsáveis por esclarecer e aplicar nossos padrões e
+tomarão ações corretivas apropriadas e justas em resposta a qualquer comportamento
+considerado inadequado, ameaçador, ofensivo ou prejudicial.
+
+## Escopo
+
+Este Código de Conduta se aplica a todos os espaços da comunidade e também quando alguém
+representa oficialmente a comunidade em espaços públicos.
+
+## Aplicação
+
+Casos de comportamento abusivo, de assédio ou de outra forma inaceitável podem ser
+reportados aos mantenedores do projeto por meio de um
+[Security Advisory privado](https://github.com/guiloklex-hub/minhas-financas/security/advisories/new)
+ou contato direto com o mantenedor. Todas as queixas serão analisadas e investigadas de
+forma rápida e justa. Os mantenedores têm a obrigação de respeitar a privacidade e a
+segurança de quem reportar qualquer incidente.
+
+## Atribuição
+
+Este Código de Conduta é adaptado do [Contributor Covenant](https://www.contributor-covenant.org),
+versão 2.1, disponível em
+https://www.contributor-covenant.org/pt-br/version/2/1/code_of_conduct.html.

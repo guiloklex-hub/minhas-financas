@@ -118,11 +118,16 @@ No primeiro acesso, cadastre o **único** usuário na tela de registro; depois d
 
 | Comando | Descrição |
 |---|---|
-| `npm run dev` | Inicia o servidor de desenvolvimento. |
+| `npm run dev` | Inicia o servidor de desenvolvimento (porta 3002). |
 | `npm run build` | Gera o build de produção. |
 | `npm run start` | Sobe o servidor de produção (após `build`). |
-| `npm run lint` | Executa o ESLint. |
-| `npm run test` | Roda a suíte de testes (Vitest). |
+| `npm run lint` | Executa o ESLint sobre `src`. |
+| `npm run typecheck` | Checagem de tipos (`tsc --noEmit`). |
+| `npm run test` | Roda a suíte de testes em modo watch (Vitest). |
+| `npm run test:run` | Roda a suíte de testes uma vez (usado na CI). |
+| `npm run setup` / `npm run update` | Instala ou atualiza o sistema (`scripts/setup.sh`). |
+
+> **Antes de abrir um PR**, garanta que `npm run typecheck`, `npm run lint` e `npm run test:run` passam sem erros — a [CI](.github/workflows/ci.yml) roda exatamente esses passos mais o build.
 
 ## 🤝 Como Contribuir
 
