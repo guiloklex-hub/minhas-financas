@@ -44,7 +44,7 @@ export default async function OrcamentosPage() {
         <h3 className="text-xl font-semibold">Uso de Orçamento ({String(currentMonth).padStart(2, '0')}/{currentYear})</h3>
         
         {budgets.length === 0 ? (
-          <div className="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-center text-white/50">
+          <div className="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-center text-muted">
             Nenhum orçamento definido para este mês.
           </div>
         ) : (
@@ -62,14 +62,14 @@ export default async function OrcamentosPage() {
                       {b.category.name}
                     </h4>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-white/70">
+                      <span className="text-sm font-medium text-muted">
                         {formatCurrency(spent)} / {formatCurrency(b.amountLimit)}
                       </span>
                       <DeleteBudgetButton id={b.id} categoryName={b.category.name} />
                     </div>
                   </div>
                   
-                  <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
+                  <div className="w-full bg-accent rounded-full h-3 mb-2 overflow-hidden">
                     <div 
                       className={`h-3 rounded-full transition-all duration-500 ${isOverBudget ? 'bg-[var(--color-expense)]' : 'bg-white'}`}
                       style={{ width: `${percentage}%` }}
@@ -79,7 +79,7 @@ export default async function OrcamentosPage() {
                   {isOverBudget ? (
                     <p className="text-xs text-[var(--color-expense)] font-medium text-right">Limite ultrapassado!</p>
                   ) : (
-                    <p className="text-xs text-white/50 text-right">{(100 - percentage).toFixed(1)}% disponível</p>
+                    <p className="text-xs text-muted text-right">{(100 - percentage).toFixed(1)}% disponível</p>
                   )}
                 </div>
               );

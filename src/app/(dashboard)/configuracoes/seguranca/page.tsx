@@ -15,10 +15,10 @@ export default async function SegurancaPage() {
   });
 
   return (
-    <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8 max-w-2xl">
+    <div className="bg-card/60 border border-border rounded-xl p-8 max-w-2xl">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-white">Segurança</h3>
-        <p className="text-sm text-zinc-400">Altere sua senha e gerencie a verificação em duas etapas.</p>
+        <h3 className="text-xl font-semibold text-foreground">Segurança</h3>
+        <p className="text-sm text-muted">Altere sua senha e gerencie a verificação em duas etapas.</p>
       </div>
 
       <SecurityFormClient twoFactorEnabled={dbUser?.twoFactorEnabled ?? false} />

@@ -29,7 +29,7 @@ function actionStyle(action: string): { icon: React.ReactNode; className: string
     case "PASSWORD_RESET_COMPLETED":
       return { icon: <Lock size={16} />, className: "bg-emerald-500/10 text-emerald-400" };
     default:
-      return { icon: <History size={16} />, className: "bg-zinc-800 text-zinc-400" };
+      return { icon: <History size={16} />, className: "bg-zinc-800 text-muted" };
   }
 }
 
@@ -51,18 +51,18 @@ export default async function AuditoriaPage() {
   });
 
   return (
-    <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8 max-w-3xl">
+    <div className="bg-card/60 border border-border rounded-xl p-8 max-w-3xl">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-white">Auditoria</h3>
-        <p className="text-sm text-zinc-400">Registro das últimas ações sensíveis da sua conta (logins, 2FA, recuperação de senha).</p>
+        <h3 className="text-xl font-semibold text-foreground">Auditoria</h3>
+        <p className="text-sm text-muted">Registro das últimas ações sensíveis da sua conta (logins, 2FA, recuperação de senha).</p>
       </div>
 
       {logs.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500 text-sm">Nenhum registro de auditoria ainda.</div>
+        <div className="text-center py-12 text-muted text-sm">Nenhum registro de auditoria ainda.</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-800">
+        <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-black/30 text-zinc-400">
+            <thead className="bg-background text-muted">
               <tr>
                 <th className="text-left font-medium px-4 py-3">Ação</th>
                 <th className="text-left font-medium px-4 py-3">Data</th>
@@ -77,11 +77,11 @@ export default async function AuditoriaPage() {
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-2">
                         <span className={`p-1.5 rounded-md ${className}`}>{icon}</span>
-                        <span className="text-white">{ACTION_LABELS[log.action] ?? log.action}</span>
+                        <span className="text-foreground">{ACTION_LABELS[log.action] ?? log.action}</span>
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">{dateFormatter.format(log.createdAt)}</td>
-                    <td className="px-4 py-3 text-zinc-500 font-mono text-xs">{log.ipAddress ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">{dateFormatter.format(log.createdAt)}</td>
+                    <td className="px-4 py-3 text-muted font-mono text-xs">{log.ipAddress ?? "—"}</td>
                   </tr>
                 );
               })}

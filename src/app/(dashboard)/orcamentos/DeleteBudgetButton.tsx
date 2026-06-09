@@ -28,7 +28,7 @@ export default function DeleteBudgetButton({ id, categoryName }: { id: string; c
       disabled={isPending}
       aria-label={`Excluir orçamento de ${categoryName}`}
       title={error || "Excluir orçamento"}
-      className="p-2 text-white/40 hover:text-[var(--color-expense)] hover:bg-[var(--color-expense)]/10 rounded-lg transition-colors disabled:opacity-50"
+      className="p-2 text-muted hover:text-[var(--color-expense)] hover:bg-[var(--color-expense)]/10 rounded-lg transition-colors disabled:opacity-50"
     >
       {isPending ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
     </button>

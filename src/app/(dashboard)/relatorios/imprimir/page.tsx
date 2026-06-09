@@ -117,8 +117,8 @@ export default async function RelatorioImprimirPage({
       {/* Cabeçalho da tela (com botão de impressão) */}
       <div className="flex items-center justify-between gap-4 print:hidden">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Relatório Mensal</h2>
-          <p className="text-zinc-400 mt-2">Período: {periodLabel}</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Relatório Mensal</h2>
+          <p className="text-muted mt-2">Período: {periodLabel}</p>
         </div>
         <PrintButton />
       </div>
@@ -127,31 +127,31 @@ export default async function RelatorioImprimirPage({
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-6 shadow-sm print:border-0 print:bg-white print:p-0 print:shadow-none">
         {/* Título do relatório */}
         <div className="mb-6 border-b border-[var(--color-border)] pb-4 print:border-zinc-300">
-          <h1 className="text-2xl font-bold text-white print:text-black">Relatório Financeiro</h1>
-          <p className="text-zinc-400 mt-1 print:text-zinc-700">{periodLabel}</p>
-          <p className="text-xs text-zinc-500 mt-1 print:text-zinc-600">
+          <h1 className="text-2xl font-bold text-foreground print:text-black">Relatório Financeiro</h1>
+          <p className="text-muted mt-1 print:text-zinc-700">{periodLabel}</p>
+          <p className="text-xs text-muted mt-1 print:text-muted">
             Gerado em {generatedAt}
           </p>
         </div>
 
         {/* Resumo */}
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-white mb-3 print:text-black">Resumo</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-3 print:text-black">Resumo</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
             <div className="rounded-lg border border-[var(--color-border)] p-4 print:border-zinc-300">
-              <p className="text-xs uppercase text-zinc-500 print:text-zinc-600">Receitas</p>
+              <p className="text-xs uppercase text-muted print:text-muted">Receitas</p>
               <p className="text-xl font-bold text-[var(--color-income)] mt-1 print:text-emerald-700">
                 {formatCurrency(totalIncome)}
               </p>
             </div>
             <div className="rounded-lg border border-[var(--color-border)] p-4 print:border-zinc-300">
-              <p className="text-xs uppercase text-zinc-500 print:text-zinc-600">Despesas</p>
+              <p className="text-xs uppercase text-muted print:text-muted">Despesas</p>
               <p className="text-xl font-bold text-[var(--color-expense)] mt-1 print:text-rose-700">
                 {formatCurrency(totalExpense)}
               </p>
             </div>
             <div className="rounded-lg border border-[var(--color-border)] p-4 print:border-zinc-300">
-              <p className="text-xs uppercase text-zinc-500 print:text-zinc-600">Saldo</p>
+              <p className="text-xs uppercase text-muted print:text-muted">Saldo</p>
               <p
                 className={`text-xl font-bold mt-1 ${
                   balance >= 0
@@ -167,16 +167,16 @@ export default async function RelatorioImprimirPage({
 
         {/* Despesas por categoria */}
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-white mb-3 print:text-black">
+          <h2 className="text-lg font-semibold text-foreground mb-3 print:text-black">
             Despesas por Categoria
           </h2>
           {expensesRanking.length === 0 ? (
-            <p className="text-zinc-500 text-sm print:text-zinc-600">
+            <p className="text-muted text-sm print:text-muted">
               Nenhuma despesa registrada neste período.
             </p>
           ) : (
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-[var(--color-border)] text-zinc-400 uppercase print:border-zinc-300 print:text-zinc-700">
+              <thead className="border-b border-[var(--color-border)] text-muted uppercase print:border-zinc-300 print:text-zinc-700">
                 <tr>
                   <th className="py-2 font-medium">Categoria</th>
                   <th className="py-2 font-medium text-right">Valor</th>
@@ -185,7 +185,7 @@ export default async function RelatorioImprimirPage({
               </thead>
               <tbody className="divide-y divide-[var(--color-border)] print:divide-zinc-200">
                 {expensesRanking.map((cat) => (
-                  <tr key={cat.name} className="text-white print:text-black">
+                  <tr key={cat.name} className="text-foreground print:text-black">
                     <td className="py-2">
                       <span className="inline-flex items-center gap-2">
                         <span
@@ -196,7 +196,7 @@ export default async function RelatorioImprimirPage({
                       </span>
                     </td>
                     <td className="py-2 text-right font-medium">{formatCurrency(cat.amount)}</td>
-                    <td className="py-2 text-right text-zinc-400 print:text-zinc-700">
+                    <td className="py-2 text-right text-muted print:text-zinc-700">
                       {totalExpense > 0 ? ((cat.amount / totalExpense) * 100).toFixed(1) : "0.0"}%
                     </td>
                   </tr>
@@ -208,16 +208,16 @@ export default async function RelatorioImprimirPage({
 
         {/* Tabela de transações */}
         <section>
-          <h2 className="text-lg font-semibold text-white mb-3 print:text-black">
+          <h2 className="text-lg font-semibold text-foreground mb-3 print:text-black">
             Transações ({transactions.length})
           </h2>
           {transactions.length === 0 ? (
-            <p className="text-zinc-500 text-sm print:text-zinc-600">
+            <p className="text-muted text-sm print:text-muted">
               Nenhuma transação registrada neste período.
             </p>
           ) : (
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-[var(--color-border)] text-zinc-400 uppercase print:border-zinc-300 print:text-zinc-700">
+              <thead className="border-b border-[var(--color-border)] text-muted uppercase print:border-zinc-300 print:text-zinc-700">
                 <tr>
                   <th className="py-2 font-medium">Data</th>
                   <th className="py-2 font-medium">Título</th>
@@ -228,13 +228,13 @@ export default async function RelatorioImprimirPage({
               </thead>
               <tbody className="divide-y divide-[var(--color-border)] print:divide-zinc-200">
                 {transactions.map((t) => (
-                  <tr key={t.id} className="text-white print:text-black">
+                  <tr key={t.id} className="text-foreground print:text-black">
                     <td className="py-2 whitespace-nowrap">{formatDate(t.date)}</td>
                     <td className="py-2">{t.title}</td>
-                    <td className="py-2 text-zinc-300 print:text-zinc-700">
+                    <td className="py-2 text-foreground/80 print:text-zinc-700">
                       {t.category?.name ?? "Sem categoria"}
                     </td>
-                    <td className="py-2 text-zinc-300 print:text-zinc-700">
+                    <td className="py-2 text-foreground/80 print:text-zinc-700">
                       {t.account?.name ?? "Sem conta"}
                     </td>
                     <td

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { createAccount, updateAccount, deleteAccount } from "@/actions/accounts";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { Account } from "@/generated/prisma/client";
@@ -34,9 +35,11 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
 
     if (result.success) {
       if (formRef.current) formRef.current.reset();
+      toast.success(account ? "Conta atualizada!" : "Conta criada!");
       onSuccess();
     } else {
       setError(result.error || "Ocorreu um erro desconhecido.");
+      toast.error(result.error || "Ocorreu um erro desconhecido.");
     }
   };
 
@@ -49,9 +52,11 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
     setLoading(false);
 
     if (result.success) {
+      toast.success("Conta excluída.");
       onSuccess();
     } else {
       setError(result.error || "Erro ao excluir conta.");
+      toast.error(result.error || "Erro ao excluir conta.");
     }
   };
 
@@ -66,7 +71,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       )}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1">Nome da Conta</label>
+        <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">Nome da Conta</label>
         <input 
           type="text" 
           id="name" 
@@ -79,7 +84,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       </div>
 
       <div>
-        <label htmlFor="type" className="block text-sm font-medium text-white/70 mb-1">Tipo</label>
+        <label htmlFor="type" className="block text-sm font-medium text-muted mb-1">Tipo</label>
         <select 
           id="type" 
           name="type" 
@@ -94,7 +99,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       </div>
 
       <div>
-        <label htmlFor="currency" className="block text-sm font-medium text-white/70 mb-1">Moeda</label>
+        <label htmlFor="currency" className="block text-sm font-medium text-muted mb-1">Moeda</label>
         <select
           id="currency"
           name="currency"
@@ -111,7 +116,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       </div>
 
       <div>
-        <label htmlFor="initialBalance" className="block text-sm font-medium text-white/70 mb-1">Saldo Inicial</label>
+        <label htmlFor="initialBalance" className="block text-sm font-medium text-muted mb-1">Saldo Inicial</label>
         <input 
           type="number" 
           id="initialBalance" 
@@ -139,7 +144,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
           <button 
             type="button" 
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all duration-200"
+            className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all duration-200"
           >
             Cancelar
           </button>

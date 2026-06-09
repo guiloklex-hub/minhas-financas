@@ -209,7 +209,7 @@ export default function TransactionListClient({
   }
 
   const inputClass =
-    "w-full bg-black/50 border border-[var(--color-border)] rounded-md p-2 text-sm focus:outline-none focus:border-white/50 transition-colors";
+    "w-full bg-background border border-[var(--color-border)] rounded-md p-2 text-sm focus:outline-none focus:border-white/50 transition-colors";
 
   return (
     <>
@@ -218,16 +218,16 @@ export default function TransactionListClient({
         onSubmit={applyFilters}
         className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-sm space-y-4"
       >
-        <div className="flex items-center gap-2 text-white/70 text-sm font-medium">
+        <div className="flex items-center gap-2 text-muted text-sm font-medium">
           <Filter size={16} />
           <span>Filtros</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <div className="lg:col-span-3">
-            <label htmlFor="filter-q" className="block text-xs font-medium mb-1 text-white/60">Buscar por título</label>
+            <label htmlFor="filter-q" className="block text-xs font-medium mb-1 text-muted">Buscar por título</label>
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               <input
                 id="filter-q"
                 type="text"
@@ -240,7 +240,7 @@ export default function TransactionListClient({
           </div>
 
           <div>
-            <label htmlFor="filter-account" className="block text-xs font-medium mb-1 text-white/60">Conta</label>
+            <label htmlFor="filter-account" className="block text-xs font-medium mb-1 text-muted">Conta</label>
             <select
               id="filter-account"
               value={draft.accountId}
@@ -255,7 +255,7 @@ export default function TransactionListClient({
           </div>
 
           <div>
-            <label htmlFor="filter-category" className="block text-xs font-medium mb-1 text-white/60">Categoria</label>
+            <label htmlFor="filter-category" className="block text-xs font-medium mb-1 text-muted">Categoria</label>
             <select
               id="filter-category"
               value={draft.categoryId}
@@ -270,7 +270,7 @@ export default function TransactionListClient({
           </div>
 
           <div>
-            <label htmlFor="filter-type" className="block text-xs font-medium mb-1 text-white/60">Tipo</label>
+            <label htmlFor="filter-type" className="block text-xs font-medium mb-1 text-muted">Tipo</label>
             <select
               id="filter-type"
               value={draft.type}
@@ -284,7 +284,7 @@ export default function TransactionListClient({
           </div>
 
           <div>
-            <label htmlFor="filter-from" className="block text-xs font-medium mb-1 text-white/60">De</label>
+            <label htmlFor="filter-from" className="block text-xs font-medium mb-1 text-muted">De</label>
             <input
               id="filter-from"
               type="date"
@@ -295,7 +295,7 @@ export default function TransactionListClient({
           </div>
 
           <div>
-            <label htmlFor="filter-to" className="block text-xs font-medium mb-1 text-white/60">Até</label>
+            <label htmlFor="filter-to" className="block text-xs font-medium mb-1 text-muted">Até</label>
             <input
               id="filter-to"
               type="date"
@@ -320,7 +320,7 @@ export default function TransactionListClient({
               type="button"
               onClick={clearFilters}
               disabled={isNavigating}
-              className="px-4 py-2 rounded-md bg-white/5 border border-white/10 text-white/80 text-sm font-medium hover:bg-white/10 disabled:opacity-50 transition-colors flex items-center gap-2"
+              className="px-4 py-2 rounded-md bg-accent border border-white/10 text-foreground/80 text-sm font-medium hover:bg-accent disabled:opacity-50 transition-colors flex items-center gap-2"
             >
               <X size={16} />
               Limpar
@@ -329,7 +329,7 @@ export default function TransactionListClient({
           <a
             href={buildExportUrl()}
             download
-            className="ml-auto px-4 py-2 rounded-md bg-white/5 border border-white/10 text-white/80 text-sm font-medium hover:bg-white/10 transition-colors flex items-center gap-2"
+            className="ml-auto px-4 py-2 rounded-md bg-accent border border-white/10 text-foreground/80 text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2"
             title="Exportar transações filtradas em CSV"
           >
             <Download size={16} />
@@ -341,7 +341,7 @@ export default function TransactionListClient({
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 border-b border-[var(--color-border)] uppercase text-white/60">
+            <thead className="bg-accent border-b border-[var(--color-border)] uppercase text-muted">
               <tr>
                 <th className="px-6 py-4 font-medium">Data</th>
                 <th className="px-6 py-4 font-medium">Título</th>
@@ -355,23 +355,23 @@ export default function TransactionListClient({
             <tbody className="divide-y divide-[var(--color-border)]">
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-white/50">Nenhuma transação encontrada.</td>
+                  <td colSpan={7} className="px-6 py-8 text-center text-muted">Nenhuma transação encontrada.</td>
                 </tr>
               ) : (
                 transactions.map((t) => {
                   const tags = t.tags ? t.tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [];
                   return (
-                    <tr key={t.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-white/80">{formatDate(t.date)}</td>
+                    <tr key={t.id} className="hover:bg-accent transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-foreground/80">{formatDate(t.date)}</td>
                       <td className="px-6 py-4 font-medium">
                         <div className="flex items-center gap-2">
                           {t.transferGroupId && <ArrowRightLeft size={14} className="text-purple-400 shrink-0" />}
                           <span>{t.title}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-white/80">
+                      <td className="px-6 py-4 text-foreground/80">
                         <span
-                          className="px-2 py-1 rounded-md text-xs font-medium bg-white/10"
+                          className="px-2 py-1 rounded-md text-xs font-medium bg-accent"
                           style={{ color: t.category?.color || '#fff' }}
                         >
                           {t.category?.name || "Sem categoria"}
@@ -379,13 +379,13 @@ export default function TransactionListClient({
                       </td>
                       <td className="px-6 py-4">
                         {tags.length === 0 ? (
-                          <span className="text-white/30 text-xs">—</span>
+                          <span className="text-foreground/30 text-xs">—</span>
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/70 border border-white/10"
+                                className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-accent text-muted border border-white/10"
                               >
                                 {tag}
                               </span>
@@ -393,7 +393,7 @@ export default function TransactionListClient({
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-white/80">{t.account?.name || "Sem conta"}</td>
+                      <td className="px-6 py-4 text-foreground/80">{t.account?.name || "Sem conta"}</td>
                       <td className={`px-6 py-4 text-right font-semibold whitespace-nowrap ${t.type === 'INCOME' ? 'text-[var(--color-income)]' : 'text-[var(--color-expense)]'}`}>
                         {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
                       </td>
@@ -405,7 +405,7 @@ export default function TransactionListClient({
                             className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                               t.reconciled
                                 ? "text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
-                                : "text-zinc-400 hover:text-white hover:bg-white/10"
+                                : "text-muted hover:text-foreground hover:bg-accent"
                             }`}
                             title={t.reconciled ? "Conciliada — clique para desfazer" : "Marcar como conciliada"}
                           >
@@ -420,7 +420,7 @@ export default function TransactionListClient({
                           <button
                             onClick={() => handleEditClick(t)}
                             disabled={isPendingDelete && deletingId === t.id}
-                            className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             title={t.transferGroupId ? "Editar transferência" : "Editar"}
                           >
                             <Edit2 size={16} />
@@ -428,7 +428,7 @@ export default function TransactionListClient({
                           <button
                             onClick={() => handleDelete(t)}
                             disabled={isPendingDelete && deletingId === t.id}
-                            className="p-2 text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                             title="Excluir"
                           >
                             {isPendingDelete && deletingId === t.id ? (
@@ -448,25 +448,25 @@ export default function TransactionListClient({
         </div>
         {total > pageSize && (
           <div className="p-4 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between text-sm gap-4">
-            <span className="text-zinc-400">
+            <span className="text-muted">
               Mostrando {(page - 1) * pageSize + 1} a {Math.min(page * pageSize, total)} de {total} transações
             </span>
             <div className="flex gap-2">
               <button
                 disabled={page === 1 || isNavigating}
                 onClick={() => goToPage(page - 1)}
-                className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-md bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors flex items-center gap-1"
               >
                 <ChevronLeft size={16} />
                 Anterior
               </button>
-              <span className="px-4 py-1.5 flex items-center justify-center bg-black/20 rounded-md text-zinc-300 font-medium border border-white/5">
+              <span className="px-4 py-1.5 flex items-center justify-center bg-accent/40 rounded-md text-foreground/80 font-medium border border-white/5">
                 {page} / {totalPages}
               </span>
               <button
                 disabled={page === totalPages || isNavigating}
                 onClick={() => goToPage(page + 1)}
-                className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-md bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors flex items-center gap-1"
               >
                 Próximo
                 <ChevronRight size={16} />

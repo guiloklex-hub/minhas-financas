@@ -151,7 +151,7 @@ export default function PushManager() {
           ? "Permissão de notificações bloqueada no navegador"
           : "Ativar notificações push"
       }
-      className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-xs text-zinc-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-xs text-foreground/80 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isSubscribing ? (
         <Loader2 size={14} className="animate-spin" />

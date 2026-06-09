@@ -93,27 +93,27 @@ export default function CardPurchaseForm({ cardId, categories, virtualCards, onS
       </div>
 
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-white/70 mb-1">Descrição</label>
+        <label htmlFor="title" className="block text-sm font-medium text-muted mb-1">Descrição</label>
         <input id="title" name="title" required className={inputClass} placeholder="Ex: Mercado, Geladeira..." />
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-white/70 mb-1">Valor total</label>
+          <label htmlFor="amount" className="block text-sm font-medium text-muted mb-1">Valor total</label>
           <input type="number" id="amount" name="amount" required step="0.01" min="0.01" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="installments" className="block text-sm font-medium text-white/70 mb-1">Parcelas</label>
+          <label htmlFor="installments" className="block text-sm font-medium text-muted mb-1">Parcelas</label>
           <input type="number" id="installments" name="installments" min="1" max="72" defaultValue={1} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-white/70 mb-1">Data</label>
+          <label htmlFor="date" className="block text-sm font-medium text-muted mb-1">Data</label>
           <input type="date" id="date" name="date" required defaultValue={todayISO()} className={inputClass} />
         </div>
       </div>
 
       <div>
-        <label htmlFor="categoryId" className="block text-sm font-medium text-white/70 mb-1">Categoria</label>
+        <label htmlFor="categoryId" className="block text-sm font-medium text-muted mb-1">Categoria</label>
         <select id="categoryId" name="categoryId" className={inputClass} defaultValue="">
           <option value="">— Sem categoria —</option>
           {categories.map((c) => (
@@ -124,7 +124,7 @@ export default function CardPurchaseForm({ cardId, categories, virtualCards, onS
 
       {virtualCards.length > 0 && (
         <div>
-          <label htmlFor="virtualCardId" className="block text-sm font-medium text-white/70 mb-1">Cartão</label>
+          <label htmlFor="virtualCardId" className="block text-sm font-medium text-muted mb-1">Cartão</label>
           <select id="virtualCardId" name="virtualCardId" className={inputClass} defaultValue="">
             <option value="">Cartão físico</option>
             {virtualCards.map((v) => (
@@ -135,12 +135,12 @@ export default function CardPurchaseForm({ cardId, categories, virtualCards, onS
       )}
 
       <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-white/70 mb-1">Observações</label>
+        <label htmlFor="notes" className="block text-sm font-medium text-muted mb-1">Observações</label>
         <input id="notes" name="notes" className={inputClass} placeholder="Opcional" />
       </div>
 
       <div className="pt-1">
-        <label className="flex items-center gap-2 text-sm text-white/70">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input type="checkbox" checked={international} onChange={(e) => setInternational(e.target.checked)} />
           Compra internacional
         </label>
@@ -149,22 +149,22 @@ export default function CardPurchaseForm({ cardId, categories, virtualCards, onS
       {international && (
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label htmlFor="fxCurrency" className="block text-sm font-medium text-white/70 mb-1">Moeda</label>
+            <label htmlFor="fxCurrency" className="block text-sm font-medium text-muted mb-1">Moeda</label>
             <input id="fxCurrency" name="fxCurrency" maxLength={3} className={inputClass} placeholder="USD" />
           </div>
           <div>
-            <label htmlFor="fxAmount" className="block text-sm font-medium text-white/70 mb-1">Valor (moeda)</label>
+            <label htmlFor="fxAmount" className="block text-sm font-medium text-muted mb-1">Valor (moeda)</label>
             <input type="number" id="fxAmount" name="fxAmount" step="0.01" min="0" className={inputClass} />
           </div>
           <div>
-            <label htmlFor="iofAmount" className="block text-sm font-medium text-white/70 mb-1">IOF (R$)</label>
+            <label htmlFor="iofAmount" className="block text-sm font-medium text-muted mb-1">IOF (R$)</label>
             <input type="number" id="iofAmount" name="iofAmount" step="0.01" min="0" className={inputClass} />
           </div>
         </div>
       )}
 
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all">Cancelar</button>
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all">Cancelar</button>
         <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all disabled:opacity-50">
           {loading ? "Salvando..." : "Adicionar compra"}
         </button>

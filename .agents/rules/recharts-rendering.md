@@ -14,9 +14,15 @@ Você deve atuar como um Engenheiro Frontend Sênior. Sempre que for criar ou mo
 **Código de Exemplo Padrão Exigido:**
 ```tsx
 <div className="w-full h-[300px] min-w-0 min-h-0">
-  <ResponsiveContainer height="100%" minWidth="{0}" width="100%">
-    <BarChart data="{data}">
-      
+  <ResponsiveContainer height="100%" minWidth={0} width="100%">
+    <BarChart data={data}>
+      {/* ... */}
     </BarChart>
   </ResponsiveContainer>
 </div>
+```
+
+## Componentes de gráfico são "burros"
+5. **Sem card/título próprios:** o componente de gráfico ([src/components/charts/](src/components/charts/)) renderiza APENAS o gráfico (o `<div>` dimensionado + `<ResponsiveContainer>`). O **card e o título vêm da página** (`Card`/`CardHeader`/`CardTitle`). Nunca renderize `<h3>` + card dentro do componente — isso causou título duplicado/card aninhado.
+6. **Tema compartilhado:** use [src/components/charts/chart-theme.ts](src/components/charts/chart-theme.ts) para cores (`CHART_COLORS`, baseadas em CSS vars → trocam com o tema), eixos (`axisStroke`/`gridStroke`), tooltip (`tooltipContentStyle`...) e formatação (`formatBRL`/`formatBRLCompact`). Não hardcode hex de eixo/tooltip.
+7. **Legenda de pizza:** para muitas categorias, agregue as menores com `aggregatePie(data, maxSlices)` ("Outros") e renderize uma legenda em lista com valor/percentual — não jogue tudo num `<Legend>` horizontal.

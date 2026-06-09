@@ -41,7 +41,7 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-white">Cartões de Crédito</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Cartões de Crédito</h2>
         <button
           onClick={() => setShowForm((s) => !s)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all duration-200"
@@ -63,19 +63,19 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
 
       {cards.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Faturas abertas (total)</h3>
+          <div className="p-6 rounded-xl border border-border bg-card">
+            <h3 className="text-sm font-medium text-muted uppercase tracking-wider mb-2">Faturas abertas (total)</h3>
             <p className="text-3xl font-semibold text-rose-500">{formatMoney(totalOpenInvoice, "BRL")}</p>
           </div>
-          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Limite disponível (total)</h3>
+          <div className="p-6 rounded-xl border border-border bg-card">
+            <h3 className="text-sm font-medium text-muted uppercase tracking-wider mb-2">Limite disponível (total)</h3>
             <p className="text-3xl font-semibold text-emerald-500">{formatMoney(totalAvailable, "BRL")}</p>
           </div>
         </div>
       )}
 
       {cards.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl text-zinc-500">
+        <div className="text-center py-16 border border-dashed border-border rounded-xl text-muted">
           <CreditCardIcon size={40} className="mx-auto mb-3 opacity-50" />
           <p>Nenhum cartão cadastrado ainda.</p>
           <p className="text-sm">Clique em &quot;Novo cartão&quot; para começar.</p>
@@ -86,7 +86,7 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
             <Link
               key={card.id}
               href={`/cartoes/${card.id}`}
-              className="group rounded-2xl p-5 shadow-lg border border-white/10 hover:border-white/30 transition-all duration-200 text-white flex flex-col justify-between min-h-44"
+              className="group rounded-2xl p-5 shadow-lg border border-white/10 hover:border-white/30 transition-all duration-200 text-foreground flex flex-col justify-between min-h-44"
               style={{
                 background: `linear-gradient(135deg, ${card.color || "#7c3aed"} 0%, rgba(0,0,0,0.65) 130%)`,
               }}
@@ -106,7 +106,7 @@ export default function CardsList({ cards, accounts }: { cards: CardView[]; acco
                   <span>Fatura atual</span>
                   <span>{formatMoney(card.currentInvoiceTotal, card.currency)}</span>
                 </div>
-                <div className="w-full bg-black/30 rounded-full h-2 overflow-hidden mb-2">
+                <div className="w-full bg-background rounded-full h-2 overflow-hidden mb-2">
                   <div
                     className={`h-2 rounded-full ${usageColor(card.usagePercent)}`}
                     style={{ width: `${Math.min(100, Math.max(0, card.usagePercent))}%` }}

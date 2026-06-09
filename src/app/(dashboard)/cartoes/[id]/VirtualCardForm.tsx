@@ -64,22 +64,22 @@ export default function VirtualCardForm({ cardId, virtualCard, onSuccess, onCanc
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="vcName" className="block text-sm font-medium text-white/70 mb-1">Nome</label>
+          <label htmlFor="vcName" className="block text-sm font-medium text-muted mb-1">Nome</label>
           <input id="vcName" name="name" required defaultValue={virtualCard?.name || ""} className={inputClass} placeholder="Ex: Assinaturas, Compras online" />
         </div>
         <div>
-          <label htmlFor="vcLastFour" className="block text-sm font-medium text-white/70 mb-1">Últimos 4 dígitos</label>
+          <label htmlFor="vcLastFour" className="block text-sm font-medium text-muted mb-1">Últimos 4 dígitos</label>
           <input id="vcLastFour" name="lastFour" inputMode="numeric" maxLength={4} defaultValue={virtualCard?.lastFour || ""} className={inputClass} placeholder="1234" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="vcLimit" className="block text-sm font-medium text-white/70 mb-1">Sub-limite (opcional)</label>
+          <label htmlFor="vcLimit" className="block text-sm font-medium text-muted mb-1">Sub-limite (opcional)</label>
           <input type="number" id="vcLimit" name="spendingLimit" step="0.01" min="0" defaultValue={virtualCard?.spendingLimit ?? ""} className={inputClass} placeholder="Ex: 500" />
         </div>
         <div>
-          <label htmlFor="vcColor" className="block text-sm font-medium text-white/70 mb-1">Cor</label>
+          <label htmlFor="vcColor" className="block text-sm font-medium text-muted mb-1">Cor</label>
           <input type="color" id="vcColor" name="color" defaultValue={virtualCard?.color || "#38bdf8"} className="w-full h-[42px] px-1 py-1 bg-[var(--color-background)] border border-[var(--color-border)] rounded-md" />
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function VirtualCardForm({ cardId, virtualCard, onSuccess, onCanc
           </button>
         ) : <div />}
         <div className="space-x-3">
-          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all">Cancelar</button>
+          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all">Cancelar</button>
           <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all disabled:opacity-50">
             {loading ? "Salvando..." : "Salvar"}
           </button>

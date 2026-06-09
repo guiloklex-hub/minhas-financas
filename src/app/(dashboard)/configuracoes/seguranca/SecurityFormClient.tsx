@@ -87,7 +87,7 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
   }
 
   const inputClass =
-    "w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm text-white placeholder:text-zinc-600";
+    "w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm text-foreground placeholder:text-muted";
 
   return (
     <div className="space-y-10">
@@ -100,9 +100,9 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
         )}
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-zinc-400 ml-1">Senha Atual</label>
+          <label className="text-xs font-medium text-muted ml-1">Senha Atual</label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
               <Lock size={18} />
             </div>
             <input type="password" name="currentPassword" required className={inputClass} placeholder="••••••••" />
@@ -110,9 +110,9 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-zinc-400 ml-1">Nova Senha</label>
+          <label className="text-xs font-medium text-muted ml-1">Nova Senha</label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
               <Lock size={18} />
             </div>
             <input type="password" name="newPassword" required minLength={6} className={inputClass} placeholder="Nova senha (mínimo 6 caracteres)" />
@@ -131,17 +131,17 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
       </form>
 
       {/* Divisor */}
-      <div className="border-t border-zinc-800" />
+      <div className="border-t border-border" />
 
       {/* 2FA */}
       <div className="space-y-4">
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-lg ${enabled ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-zinc-400"}`}>
+          <div className={`p-2 rounded-lg ${enabled ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-muted"}`}>
             {enabled ? <ShieldCheck size={20} /> : <ShieldOff size={20} />}
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-white">Verificação em duas etapas (2FA)</h4>
-            <p className="text-xs text-zinc-400">
+            <h4 className="text-sm font-semibold text-foreground">Verificação em duas etapas (2FA)</h4>
+            <p className="text-xs text-muted">
               {enabled
                 ? "Ativada. Um código do app autenticador será exigido no login."
                 : "Adicione uma camada extra de segurança usando um app autenticador (Google Authenticator, Authy, etc.)."}
@@ -169,10 +169,10 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
 
         {/* Fluxo de desativação: pede senha */}
         {enabled && showDisable && (
-          <div className="space-y-3 bg-black/30 border border-zinc-800 rounded-xl p-4">
-            <p className="text-xs text-zinc-400">Confirme sua senha para desativar a verificação em duas etapas.</p>
+          <div className="space-y-3 bg-background border border-border rounded-xl p-4">
+            <p className="text-xs text-muted">Confirme sua senha para desativar a verificação em duas etapas.</p>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                 <Lock size={18} />
               </div>
               <input
@@ -195,7 +195,7 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
               <button
                 type="button"
                 onClick={() => { setShowDisable(false); setDisablePassword(""); }}
-                className="h-10 px-5 bg-zinc-800 text-zinc-300 text-sm font-medium rounded-xl hover:bg-zinc-700 transition-all"
+                className="h-10 px-5 bg-zinc-800 text-foreground/80 text-sm font-medium rounded-xl hover:bg-zinc-700 transition-all"
               >
                 Cancelar
               </button>
@@ -217,19 +217,19 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
 
         {/* Fluxo de ativação: QR + confirmar */}
         {!enabled && setup && (
-          <div className="space-y-4 bg-black/30 border border-zinc-800 rounded-xl p-4">
-            <p className="text-xs text-zinc-400">
+          <div className="space-y-4 bg-background border border-border rounded-xl p-4">
+            <p className="text-xs text-muted">
               1. Escaneie o QR Code com seu app autenticador (ou insira o segredo manualmente).
             </p>
             <div className="flex flex-col items-center gap-3">
               <div className="bg-white p-2 rounded-xl">
                 <Image src={setup.qrDataUrl} alt="QR Code 2FA" width={180} height={180} unoptimized />
               </div>
-              <code className="text-[11px] text-zinc-500 break-all text-center select-all">{setup.secret}</code>
+              <code className="text-[11px] text-muted break-all text-center select-all">{setup.secret}</code>
             </div>
-            <p className="text-xs text-zinc-400">2. Digite o código de 6 dígitos gerado para confirmar.</p>
+            <p className="text-xs text-muted">2. Digite o código de 6 dígitos gerado para confirmar.</p>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                 <KeyRound size={18} />
               </div>
               <input
@@ -254,7 +254,7 @@ export default function SecurityFormClient({ twoFactorEnabled }: { twoFactorEnab
               <button
                 type="button"
                 onClick={() => { setSetup(null); setConfirmToken(""); setTwoFaMessage(null); }}
-                className="h-10 px-5 bg-zinc-800 text-zinc-300 text-sm font-medium rounded-xl hover:bg-zinc-700 transition-all"
+                className="h-10 px-5 bg-zinc-800 text-foreground/80 text-sm font-medium rounded-xl hover:bg-zinc-700 transition-all"
               >
                 Cancelar
               </button>

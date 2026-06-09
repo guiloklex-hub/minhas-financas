@@ -52,15 +52,15 @@ export default function EditTransferModal({ transaction, onClose, onSuccess }: P
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative">
-        <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative">
+        <div className="p-6 border-b border-border flex justify-between items-center bg-background/50">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <ArrowRightLeft size={20} className="text-purple-400" />
             Editar Transferência
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
@@ -73,26 +73,26 @@ export default function EditTransferModal({ transaction, onClose, onSuccess }: P
             </div>
           )}
 
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-muted">
             As alterações são aplicadas às duas pernas da transferência (saída e entrada).
           </p>
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1 text-zinc-300">Título</label>
+            <label htmlFor="title" className="block text-sm font-medium mb-1 text-foreground/80">Título</label>
             <input
               required
               type="text"
               id="title"
               name="title"
               defaultValue={stripLegSuffix(transaction.title)}
-              className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full bg-background border border-border rounded-lg p-3 text-foreground focus:outline-none focus:border-purple-500 transition-colors"
               placeholder="Ex: Transferência"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium mb-1 text-zinc-300">Valor (R$)</label>
+              <label htmlFor="amount" className="block text-sm font-medium mb-1 text-foreground/80">Valor (R$)</label>
               <input
                 required
                 type="number"
@@ -101,29 +101,29 @@ export default function EditTransferModal({ transaction, onClose, onSuccess }: P
                 id="amount"
                 name="amount"
                 defaultValue={transaction.amount}
-                className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+                className="w-full bg-background border border-border rounded-lg p-3 text-foreground focus:outline-none focus:border-purple-500 transition-colors"
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label htmlFor="date" className="block text-sm font-medium mb-1 text-zinc-300">Data</label>
+              <label htmlFor="date" className="block text-sm font-medium mb-1 text-foreground/80">Data</label>
               <input
                 required
                 type="date"
                 id="date"
                 name="date"
                 defaultValue={formattedDate}
-                className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+                className="w-full bg-background border border-border rounded-lg p-3 text-foreground focus:outline-none focus:border-purple-500 transition-colors"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-6 py-2.5 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>

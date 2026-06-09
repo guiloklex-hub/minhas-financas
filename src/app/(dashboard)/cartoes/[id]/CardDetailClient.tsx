@@ -9,6 +9,7 @@ import { formatCivilDate } from "@/lib/format-date";
 import { computeBestPurchaseDay, getInvoiceCompetence } from "@/lib/credit-card";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 import { FutureInvoicesBar } from "@/components/charts/FutureInvoicesBar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Repeat } from "lucide-react";
 import { deleteCardPurchase } from "@/actions/credit-card-transactions";
 import { analyzeInvoice } from "@/actions/ai-card-coach";
@@ -238,13 +239,13 @@ export default function CardDetailClient({
 
   return (
     <div className="space-y-8">
-      <Link href="/cartoes" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors">
+      <Link href="/cartoes" className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors">
         <ArrowLeft size={16} /> Voltar para cartões
       </Link>
 
       {/* Cabeçalho: visual do cartão + limite */}
       <div
-        className="rounded-2xl p-6 text-white shadow-lg border border-white/10"
+        className="rounded-2xl p-6 text-foreground shadow-lg border border-white/10"
         style={{ background: `linear-gradient(135deg, ${card.color || "#7c3aed"} 0%, rgba(0,0,0,0.65) 130%)` }}
       >
         <div className="flex items-start justify-between">
@@ -261,7 +262,7 @@ export default function CardDetailClient({
             <span>Utilizado {fmt(summary.totalOwed)}</span>
             <span>Limite {fmt(card.creditLimit)}</span>
           </div>
-          <div className="w-full bg-black/30 rounded-full h-2.5 overflow-hidden">
+          <div className="w-full bg-background rounded-full h-2.5 overflow-hidden">
             <div className={`h-2.5 rounded-full ${usageColor(summary.usagePercent)}`} style={{ width: `${Math.min(100, Math.max(0, summary.usagePercent))}%` }} />
           </div>
           <p className="text-xs opacity-90 mt-1">Disponível: {fmt(summary.availableLimit)} ({summary.usagePercent.toFixed(0)}% usado)</p>
@@ -270,37 +271,37 @@ export default function CardDetailClient({
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50">
-          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Fatura atual</h3>
+        <div className="p-5 rounded-xl border border-border bg-card">
+          <h3 className="text-xs font-medium text-muted uppercase tracking-wider mb-1">Fatura atual</h3>
           <p className="text-2xl font-semibold text-rose-500">{fmt(summary.currentInvoiceTotal)}</p>
         </div>
-        <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50">
-          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Parcelas futuras</h3>
-          <p className="text-2xl font-semibold text-white">{fmt(summary.committedFuture)}</p>
+        <div className="p-5 rounded-xl border border-border bg-card">
+          <h3 className="text-xs font-medium text-muted uppercase tracking-wider mb-1">Parcelas futuras</h3>
+          <p className="text-2xl font-semibold text-foreground">{fmt(summary.committedFuture)}</p>
         </div>
-        <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50">
-          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Próximo vencimento</h3>
-          <p className="text-2xl font-semibold text-white">{fmtDate(summary.nextDueDate)}</p>
+        <div className="p-5 rounded-xl border border-border bg-card">
+          <h3 className="text-xs font-medium text-muted uppercase tracking-wider mb-1">Próximo vencimento</h3>
+          <p className="text-2xl font-semibold text-foreground">{fmtDate(summary.nextDueDate)}</p>
         </div>
       </div>
 
       {/* Melhor dia de compra + recompensas */}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 flex items-center gap-3">
+        <div className="p-5 rounded-xl border border-border bg-card flex items-center gap-3">
           <CalendarCheck size={22} className="text-emerald-400 shrink-0" />
           <div>
-            <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Melhor dia de compra</h3>
-            <p className="text-lg font-semibold text-white">Dia {bestDay}</p>
-            <p className="text-xs text-zinc-500">Logo após o fechamento (dia {card.closingDay}) — maior prazo até o vencimento.</p>
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wider">Melhor dia de compra</h3>
+            <p className="text-lg font-semibold text-foreground">Dia {bestDay}</p>
+            <p className="text-xs text-muted">Logo após o fechamento (dia {card.closingDay}) — maior prazo até o vencimento.</p>
           </div>
         </div>
         {rewardLabel && (
-          <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-between gap-3">
+          <div className="p-5 rounded-xl border border-border bg-card flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Gift size={22} className="text-purple-400 shrink-0" />
               <div>
-                <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{rewardLabel}</h3>
-                <p className="text-lg font-semibold text-white">{card.rewardBalance.toLocaleString("pt-BR")}</p>
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wider">{rewardLabel}</h3>
+                <p className="text-lg font-semibold text-foreground">{card.rewardBalance.toLocaleString("pt-BR")}</p>
               </div>
             </div>
             {card.rewardBalance > 0 && (
@@ -370,11 +371,11 @@ export default function CardDetailClient({
       )}
 
       {/* Cartões virtuais */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
             <Layers size={18} className="text-sky-400" />
-            <h3 className="text-lg font-semibold text-white">Cartões virtuais</h3>
+            <h3 className="text-lg font-semibold text-foreground">Cartões virtuais</h3>
           </div>
           <button
             onClick={() => { setEditingVc(null); setShowVcForm((s) => !s); }}
@@ -396,7 +397,7 @@ export default function CardDetailClient({
         )}
 
         {virtualCards.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nenhum cartão virtual. Crie um para separar gastos (ex.: assinaturas) na mesma fatura.</p>
+          <p className="text-sm text-muted">Nenhum cartão virtual. Crie um para separar gastos (ex.: assinaturas) na mesma fatura.</p>
         ) : (
           <ul className="space-y-3">
             {virtualCards.map((vc) => {
@@ -406,23 +407,23 @@ export default function CardDetailClient({
                   <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: vc.color || "#38bdf8" }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-white truncate">
+                      <p className="text-foreground truncate">
                         {vc.name}
-                        {vc.lastFour && <span className="text-zinc-500"> •••• {vc.lastFour}</span>}
+                        {vc.lastFour && <span className="text-muted"> •••• {vc.lastFour}</span>}
                       </p>
-                      <span className="text-sm text-zinc-300 whitespace-nowrap">
+                      <span className="text-sm text-foreground/80 whitespace-nowrap">
                         {fmt(vc.used)}{vc.spendingLimit ? ` / ${fmt(vc.spendingLimit)}` : ""}
                       </span>
                     </div>
                     {pct !== null && (
-                      <div className="w-full bg-white/10 rounded-full h-1.5 mt-1 overflow-hidden">
+                      <div className="w-full bg-accent rounded-full h-1.5 mt-1 overflow-hidden">
                         <div className={`h-1.5 rounded-full ${usageColor(pct)}`} style={{ width: `${pct}%` }} />
                       </div>
                     )}
                   </div>
                   <button
                     onClick={() => { setEditingVc(vc); setShowVcForm(true); }}
-                    className="p-1.5 rounded-md text-zinc-400 hover:bg-white/10 shrink-0"
+                    className="p-1.5 rounded-md text-muted hover:bg-accent shrink-0"
                     title="Editar cartão virtual"
                   >
                     <Pencil size={15} />
@@ -447,28 +448,28 @@ export default function CardDetailClient({
 
       {/* Navegador de faturas */}
       {invoices.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl text-zinc-500">
+        <div className="text-center py-16 border border-dashed border-border rounded-xl text-muted">
           Nenhuma fatura ainda. Registre uma compra para começar.
         </div>
       ) : invoice ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+          <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
             <button
               disabled={index >= invoices.length - 1}
               onClick={() => { setIndex((i) => Math.min(invoices.length - 1, i + 1)); setInsights(null); setOcrResult(null); setOcrError(null); setCardFilter("ALL"); }}
-              className="p-2 rounded-md hover:bg-white/10 disabled:opacity-30 transition-colors"
+              className="p-2 rounded-md hover:bg-accent disabled:opacity-30 transition-colors"
               aria-label="Fatura anterior"
             >
               <ChevronLeft size={18} />
             </button>
             <div className="text-center">
-              <p className="text-lg font-semibold text-white">
+              <p className="text-lg font-semibold text-foreground">
                 {String(invoice.referenceMonth).padStart(2, "0")}/{invoice.referenceYear}
-                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${STATUS_LABELS[invoice.status]?.className || "bg-zinc-700 text-zinc-300"}`}>
+                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${STATUS_LABELS[invoice.status]?.className || "bg-zinc-700 text-foreground/80"}`}>
                   {STATUS_LABELS[invoice.status]?.label || invoice.status}
                 </span>
               </p>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted">
                 Total {fmt(invoice.total)} · Vence {fmtDate(invoice.dueDate)}
                 {invoice.paidAmount > 0 && ` · Pago ${fmt(invoice.paidAmount)}`}
               </p>
@@ -476,7 +477,7 @@ export default function CardDetailClient({
             <button
               disabled={index <= 0}
               onClick={() => { setIndex((i) => Math.max(0, i - 1)); setInsights(null); setOcrResult(null); setOcrError(null); setCardFilter("ALL"); }}
-              className="p-2 rounded-md hover:bg-white/10 disabled:opacity-30 transition-colors"
+              className="p-2 rounded-md hover:bg-accent disabled:opacity-30 transition-colors"
               aria-label="Próxima fatura"
             >
               <ChevronRight size={18} />
@@ -488,13 +489,13 @@ export default function CardDetailClient({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setCardFilter("ALL")}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "ALL" ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "ALL" ? "bg-white text-black border-white" : "border-border text-foreground/80 hover:bg-accent"}`}
               >
                 Todos
               </button>
               <button
                 onClick={() => setCardFilter("PHYSICAL")}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "PHYSICAL" ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === "PHYSICAL" ? "bg-white text-black border-white" : "border-border text-foreground/80 hover:bg-accent"}`}
               >
                 Físico · {fmt(physicalTotal)}
               </button>
@@ -502,7 +503,7 @@ export default function CardDetailClient({
                 <button
                   key={vc.id}
                   onClick={() => setCardFilter(vc.id)}
-                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === vc.id ? "bg-white text-black border-white" : "border-zinc-700 text-zinc-300 hover:bg-white/10"}`}
+                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${cardFilter === vc.id ? "bg-white text-black border-white" : "border-border text-foreground/80 hover:bg-accent"}`}
                 >
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: vc.color || "#38bdf8" }} />
                   {vc.name} · {fmt(totalsByVirtual.get(vc.id) ?? 0)}
@@ -512,12 +513,12 @@ export default function CardDetailClient({
           )}
 
           {/* Itens da fatura */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
             {visibleItems.length === 0 ? (
-              <p className="p-6 text-center text-zinc-500">Sem lançamentos nesta fatura.</p>
+              <p className="p-6 text-center text-muted">Sem lançamentos nesta fatura.</p>
             ) : (
               <table className="w-full text-sm">
-                <thead className="bg-white/5 border-b border-zinc-800 text-zinc-400 uppercase text-xs">
+                <thead className="bg-accent border-b border-border text-muted uppercase text-xs">
                   <tr>
                     <th className="text-left px-4 py-3">Data</th>
                     <th className="text-left px-4 py-3">Descrição</th>
@@ -529,29 +530,29 @@ export default function CardDetailClient({
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
                   {visibleItems.map((it) => (
-                    <tr key={it.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-3 text-zinc-400">{fmtDate(it.date)}</td>
-                      <td className="px-4 py-3 text-white">
+                    <tr key={it.id} className="hover:bg-accent transition-colors">
+                      <td className="px-4 py-3 text-muted">{fmtDate(it.date)}</td>
+                      <td className="px-4 py-3 text-foreground">
                         {it.title}
                         {it.type === "REFUND" && <span className="ml-2 text-xs text-emerald-400">(estorno)</span>}
                         {it.type === "INTEREST" && <span className="ml-2 text-xs text-rose-400">(juros)</span>}
                       </td>
                       <td className="px-4 py-3">
                         {it.virtualCardId ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-300">
+                          <span className="inline-flex items-center gap-1.5 text-xs text-foreground/80">
                             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: it.virtualCardColor || "#38bdf8" }} />
                             {it.virtualCardName || "Virtual"}
                           </span>
                         ) : (
-                          <span className="text-xs text-zinc-500">Físico</span>
+                          <span className="text-xs text-muted">Físico</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">{it.categoryName || "—"}</td>
-                      <td className={`px-4 py-3 text-right font-medium ${it.type === "REFUND" ? "text-emerald-400" : "text-white"}`}>
+                      <td className="px-4 py-3 text-muted">{it.categoryName || "—"}</td>
+                      <td className={`px-4 py-3 text-right font-medium ${it.type === "REFUND" ? "text-emerald-400" : "text-foreground"}`}>
                         {it.type === "REFUND" ? "-" : ""}{fmt(it.amount)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button onClick={() => handleDeleteItem(it.id)} className="text-zinc-500 hover:text-rose-400 transition-colors" aria-label="Excluir lançamento">
+                        <button onClick={() => handleDeleteItem(it.id)} className="text-muted hover:text-rose-400 transition-colors" aria-label="Excluir lançamento">
                           <Trash2 size={15} />
                         </button>
                       </td>
@@ -563,17 +564,22 @@ export default function CardDetailClient({
           </div>
 
           {pieData.length > 0 && (
-            <div className="w-full min-w-0">
-              <CategoryPieChart data={pieData} />
-            </div>
+            <Card className="w-full min-w-0">
+              <CardHeader>
+                <CardTitle className="text-base">Despesas por categoria</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CategoryPieChart data={pieData} />
+              </CardContent>
+            </Card>
           )}
 
           {/* Coach de IA da fatura */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles size={18} className="text-purple-400" />
-                <h3 className="text-lg font-semibold text-white">Coach da fatura (IA)</h3>
+                <h3 className="text-lg font-semibold text-foreground">Coach da fatura (IA)</h3>
               </div>
               <button
                 onClick={() => runCoach(invoice.id)}
@@ -587,23 +593,23 @@ export default function CardDetailClient({
             {insights ? (
               <ul className="space-y-2">
                 {insights.map((tip, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-zinc-300">
+                  <li key={i} className="flex gap-2 text-sm text-foreground/80">
                     <span className="text-purple-400">•</span>
                     <span>{tip}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-zinc-500">Gere uma análise inteligente com riscos e oportunidades desta fatura.</p>
+              <p className="text-sm text-muted">Gere uma análise inteligente com riscos e oportunidades desta fatura.</p>
             )}
           </div>
 
           {/* Conciliação por foto da fatura (OCR + IA) */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <ScanLine size={18} className="text-sky-400" />
-                <h3 className="text-lg font-semibold text-white">Conferir fatura por foto (IA)</h3>
+                <h3 className="text-lg font-semibold text-foreground">Conferir fatura por foto (IA)</h3>
               </div>
               <label className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-md transition-all cursor-pointer">
                 {ocrLoading ? <Loader2 size={15} className="animate-spin" /> : <ScanLine size={15} />}
@@ -621,7 +627,7 @@ export default function CardDetailClient({
                 />
               </label>
             </div>
-            <p className="text-sm text-zinc-500 mb-3">Envie a foto/print da fatura física: a IA extrai as linhas e apontamos divergências com o que está lançado aqui.</p>
+            <p className="text-sm text-muted mb-3">Envie a foto/print da fatura física: a IA extrai as linhas e apontamos divergências com o que está lançado aqui.</p>
             {ocrError && <p className="text-sm text-rose-400">{ocrError}</p>}
             {ocrResult && (
               <div className="space-y-3 text-sm">
@@ -631,7 +637,7 @@ export default function CardDetailClient({
                     <p className="text-amber-400 mb-1">Na fatura, mas não lançado aqui:</p>
                     <ul className="space-y-1">
                       {ocrResult.missingInApp.map((m, i) => (
-                        <li key={i} className="flex justify-between text-zinc-300">
+                        <li key={i} className="flex justify-between text-foreground/80">
                           <span>{m.description}</span><span>{fmt(m.amount)}</span>
                         </li>
                       ))}
@@ -643,7 +649,7 @@ export default function CardDetailClient({
                     <p className="text-rose-400 mb-1">Lançado aqui, mas ausente na foto:</p>
                     <ul className="space-y-1">
                       {ocrResult.extraInApp.map((m) => (
-                        <li key={m.id} className="flex justify-between text-zinc-300">
+                        <li key={m.id} className="flex justify-between text-foreground/80">
                           <span>{m.title}</span><span>{fmt(m.amount)}</span>
                         </li>
                       ))}
@@ -661,22 +667,22 @@ export default function CardDetailClient({
 
       {/* Assinaturas detectadas */}
       {subscriptions.length > 0 && (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Repeat size={18} className="text-amber-400" />
-            <h3 className="text-lg font-semibold text-white">Assinaturas detectadas</h3>
+            <h3 className="text-lg font-semibold text-foreground">Assinaturas detectadas</h3>
           </div>
-          <p className="text-sm text-zinc-400 mb-4">
+          <p className="text-sm text-muted mb-4">
             Cobranças recorrentes identificadas no histórico (valor parecido, cadência mensal).
           </p>
           <ul className="divide-y divide-zinc-800">
             {subscriptions.map((s, i) => (
               <li key={`${s.title}-${i}`} className="flex items-center justify-between py-3">
                 <div>
-                  <p className="text-white">{s.title}</p>
-                  <p className="text-xs text-zinc-500">{s.months} meses · último em {fmtDate(s.lastDate)}</p>
+                  <p className="text-foreground">{s.title}</p>
+                  <p className="text-xs text-muted">{s.months} meses · último em {fmtDate(s.lastDate)}</p>
                 </div>
-                <span className="font-medium text-white">{fmt(s.averageAmount)}/mês</span>
+                <span className="font-medium text-foreground">{fmt(s.averageAmount)}/mês</span>
               </li>
             ))}
           </ul>
@@ -685,15 +691,20 @@ export default function CardDetailClient({
 
       {/* Projeção de faturas futuras */}
       {forecast.length > 0 && (
-        <div className="w-full min-w-0">
-          <FutureInvoicesBar
-            data={forecast.map((p) => ({
-              name: `${String(p.month).padStart(2, "0")}/${p.year}`,
-              comprometido: p.committed,
-              projetado: p.projected,
-            }))}
-          />
-        </div>
+        <Card className="w-full min-w-0">
+          <CardHeader>
+            <CardTitle className="text-base">Projeção de faturas futuras</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FutureInvoicesBar
+              data={forecast.map((p) => ({
+                name: `${String(p.month).padStart(2, "0")}/${p.year}`,
+                comprometido: p.committed,
+                projetado: p.projected,
+              }))}
+            />
+          </CardContent>
+        </Card>
       )}
     </div>
   );

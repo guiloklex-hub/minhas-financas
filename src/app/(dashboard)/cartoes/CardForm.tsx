@@ -70,13 +70,13 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
       )}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1">Nome do cartão</label>
+        <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">Nome do cartão</label>
         <input id="name" name="name" required defaultValue={card?.name || ""} className={inputClass} placeholder="Ex: Nubank, Inter Black..." />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="brand" className="block text-sm font-medium text-white/70 mb-1">Bandeira</label>
+          <label htmlFor="brand" className="block text-sm font-medium text-muted mb-1">Bandeira</label>
           <select id="brand" name="brand" defaultValue={card?.brand || "OTHER"} className={inputClass}>
             {BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
@@ -84,29 +84,29 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
           </select>
         </div>
         <div>
-          <label htmlFor="lastFour" className="block text-sm font-medium text-white/70 mb-1">Últimos 4 dígitos</label>
+          <label htmlFor="lastFour" className="block text-sm font-medium text-muted mb-1">Últimos 4 dígitos</label>
           <input id="lastFour" name="lastFour" inputMode="numeric" maxLength={4} defaultValue={card?.lastFour || ""} className={inputClass} placeholder="1234" />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="creditLimit" className="block text-sm font-medium text-white/70 mb-1">Limite</label>
+          <label htmlFor="creditLimit" className="block text-sm font-medium text-muted mb-1">Limite</label>
           <input type="number" id="creditLimit" name="creditLimit" required step="0.01" min="0" defaultValue={card?.creditLimit ?? 0} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="closingDay" className="block text-sm font-medium text-white/70 mb-1">Fechamento</label>
+          <label htmlFor="closingDay" className="block text-sm font-medium text-muted mb-1">Fechamento</label>
           <input type="number" id="closingDay" name="closingDay" required min="1" max="31" defaultValue={card?.closingDay ?? 1} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="dueDay" className="block text-sm font-medium text-white/70 mb-1">Vencimento</label>
+          <label htmlFor="dueDay" className="block text-sm font-medium text-muted mb-1">Vencimento</label>
           <input type="number" id="dueDay" name="dueDay" required min="1" max="31" defaultValue={card?.dueDay ?? 10} className={inputClass} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="currency" className="block text-sm font-medium text-white/70 mb-1">Moeda</label>
+          <label htmlFor="currency" className="block text-sm font-medium text-muted mb-1">Moeda</label>
           <select id="currency" name="currency" defaultValue={card?.currency || "BRL"} className={inputClass}>
             {SUPPORTED_CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>{c.symbol} — {c.code}</option>
@@ -114,13 +114,13 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
           </select>
         </div>
         <div>
-          <label htmlFor="color" className="block text-sm font-medium text-white/70 mb-1">Cor</label>
+          <label htmlFor="color" className="block text-sm font-medium text-muted mb-1">Cor</label>
           <input type="color" id="color" name="color" defaultValue={card?.color || "#7c3aed"} className="w-full h-[42px] px-1 py-1 bg-[var(--color-background)] border border-[var(--color-border)] rounded-md" />
         </div>
       </div>
 
       <div>
-        <label htmlFor="paymentAccountId" className="block text-sm font-medium text-white/70 mb-1">Conta de pagamento padrão</label>
+        <label htmlFor="paymentAccountId" className="block text-sm font-medium text-muted mb-1">Conta de pagamento padrão</label>
         <select id="paymentAccountId" name="paymentAccountId" defaultValue={card?.paymentAccountId || ""} className={inputClass}>
           <option value="">— Nenhuma —</option>
           {accounts.map((a) => (
@@ -131,7 +131,7 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="rewardType" className="block text-sm font-medium text-white/70 mb-1">Recompensa</label>
+          <label htmlFor="rewardType" className="block text-sm font-medium text-muted mb-1">Recompensa</label>
           <select id="rewardType" name="rewardType" defaultValue={card?.rewardType || "NONE"} className={inputClass}>
             {REWARD_TYPES.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
@@ -139,11 +139,11 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
           </select>
         </div>
         <div>
-          <label htmlFor="rewardRate" className="block text-sm font-medium text-white/70 mb-1">Taxa (por R$)</label>
+          <label htmlFor="rewardRate" className="block text-sm font-medium text-muted mb-1">Taxa (por R$)</label>
           <input type="number" id="rewardRate" name="rewardRate" step="0.01" min="0" defaultValue={card?.rewardRate ?? 0} className={inputClass} placeholder="1 = 1 ponto/R$" />
         </div>
         <div>
-          <label htmlFor="annualFee" className="block text-sm font-medium text-white/70 mb-1">Anuidade</label>
+          <label htmlFor="annualFee" className="block text-sm font-medium text-muted mb-1">Anuidade</label>
           <input type="number" id="annualFee" name="annualFee" step="0.01" min="0" defaultValue={card?.annualFee ?? 0} className={inputClass} />
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function CardForm({ card, accounts, onSuccess, onCancel }: CardFo
           </button>
         ) : <div />}
         <div className="space-x-3">
-          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all duration-200">
+          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all duration-200">
             Cancelar
           </button>
           <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">

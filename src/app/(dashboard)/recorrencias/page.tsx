@@ -21,8 +21,8 @@ export default async function RecorrenciasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Recorrências</h2>
-        <p className="text-zinc-400 mt-1">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Recorrências</h2>
+        <p className="text-muted mt-1">
           Regras que geram transações automaticamente na data certa.
         </p>
       </div>

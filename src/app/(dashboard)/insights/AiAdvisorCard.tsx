@@ -27,20 +27,20 @@ export function AiAdvisorCard({ month, year }: { month: number; year: number }) 
   };
 
   return (
-    <div className="bg-zinc-900/60 border border-purple-500/20 rounded-2xl p-6 mb-6 relative overflow-hidden">
+    <div className="bg-card/60 border border-purple-500/20 rounded-2xl p-6 mb-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
         <Brain size={150} />
       </div>
       
       <div className="relative z-10">
-        <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Sparkles className="text-purple-500" size={24} />
           Conselheiro Financeiro IA
         </h2>
         
         {advice.length === 0 && !loading && !error && (
           <div>
-            <p className="text-zinc-400 mb-6 max-w-xl text-sm leading-relaxed">
+            <p className="text-muted mb-6 max-w-xl text-sm leading-relaxed">
               Peça para o Gemini analisar todas as suas receitas, despesas e orçamentos do mês atual e gerar dicas personalizadas, alertando sobre riscos ou oportunidades financeiras.
             </p>
             <button 
@@ -70,11 +70,11 @@ export function AiAdvisorCard({ month, year }: { month: number; year: number }) 
         {advice.length > 0 && !loading && (
           <div className="space-y-4 max-w-2xl mt-4">
             {advice.map((item, index) => (
-              <div key={index} className="flex gap-3 items-start bg-zinc-800/50 p-4 rounded-xl border border-zinc-700/50">
+              <div key={index} className="flex gap-3 items-start bg-zinc-800/50 p-4 rounded-xl border border-border/50">
                 <div className="bg-purple-600/20 text-purple-400 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
                   {index + 1}
                 </div>
-                <p className="text-zinc-300 text-sm leading-relaxed">{item}</p>
+                <p className="text-foreground/80 text-sm leading-relaxed">{item}</p>
               </div>
             ))}
             <button 

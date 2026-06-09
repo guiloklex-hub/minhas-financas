@@ -37,13 +37,13 @@ const formatAxis = (value: number) =>
 export function ForecastCard({ data }: { data: ForecastPoint[] }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center gap-2">
+      <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
         <TrendingUp className="text-emerald-500" /> Projeção dos Próximos Meses
       </h3>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
         {data.length === 0 ? (
-          <div className="h-[260px] w-full flex items-center justify-center text-zinc-500 border border-zinc-800 rounded-xl bg-zinc-900/50">
+          <div className="h-[260px] w-full flex items-center justify-center text-muted border border-border rounded-xl bg-card">
             Sem dados suficientes para projetar o fluxo de caixa.
           </div>
         ) : (
@@ -89,8 +89,8 @@ export function ForecastCard({ data }: { data: ForecastPoint[] }) {
 
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {data.map((point) => (
-                <div key={point.month} className="rounded-lg border border-zinc-800 bg-black/40 p-3">
-                  <div className="text-xs font-bold text-zinc-500">{point.month}</div>
+                <div key={point.month} className="rounded-lg border border-border bg-background p-3">
+                  <div className="text-xs font-bold text-muted">{point.month}</div>
                   <div
                     className={`mt-1 text-lg font-bold ${
                       point.projectedNet >= 0 ? "text-emerald-400" : "text-rose-400"
@@ -98,7 +98,7 @@ export function ForecastCard({ data }: { data: ForecastPoint[] }) {
                   >
                     {formatCurrency(point.projectedNet)}
                   </div>
-                  <div className="text-xs text-zinc-500 mt-1">saldo projetado</div>
+                  <div className="text-xs text-muted mt-1">saldo projetado</div>
                 </div>
               ))}
             </div>
@@ -145,14 +145,14 @@ export function MonthlyInsightSummary({
   };
 
   return (
-    <div className="bg-zinc-900/60 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden">
+    <div className="bg-card/60 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
         <FileText size={150} />
       </div>
 
       <div className="relative z-10">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Sparkles className="text-blue-400" size={22} />
             Resumo do Mês
           </h2>
@@ -180,14 +180,14 @@ export function MonthlyInsightSummary({
         )}
 
         {summary ? (
-          <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4">
-            <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-line">{summary}</p>
+          <div className="bg-zinc-800/50 border border-border/50 rounded-xl p-4">
+            <p className="text-foreground/80 text-sm leading-relaxed whitespace-pre-line">{summary}</p>
             {createdAt && (
-              <p className="text-xs text-zinc-500 mt-3">Atualizado em {createdAt}</p>
+              <p className="text-xs text-muted mt-3">Atualizado em {createdAt}</p>
             )}
           </div>
         ) : (
-          <p className="text-zinc-400 text-sm leading-relaxed max-w-xl">
+          <p className="text-muted text-sm leading-relaxed max-w-xl">
             Gere um resumo textual do mês com os totais, gastos fora do padrão e a projeção de caixa.
             Os números são sempre calculados pelo sistema; a IA apenas redige o texto.
           </p>

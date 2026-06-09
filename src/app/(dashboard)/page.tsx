@@ -4,6 +4,8 @@ import { computeAccountBalance } from "@/lib/account-balance"
 import { getCardSpendByCategory } from "@/lib/card-spend";
 import { IncomeExpenseBarChart } from "@/components/charts/IncomeExpenseBarChart";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
 
 export default async function Dashboard() {
   const accounts = await prisma.account.findMany({
@@ -97,63 +99,57 @@ export default async function Dashboard() {
   return (
     <div className="space-y-8 pb-12">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight mb-6 text-white">Resumo Financeiro</h2>
-        
+        <h2 className="text-3xl font-bold tracking-tight mb-6">Resumo Financeiro</h2>
+
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Balance Card */}
-          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-zinc-700 transition-all duration-200">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Saldo Global</h3>
-            <p className="text-4xl font-semibold text-white">{formatCurrency(balance)}</p>
-          </div>
-
-          {/* Income Card */}
-          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-emerald-900/30 transition-all duration-200">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Receitas (Mês Atual)</h3>
-            <p className="text-4xl font-semibold text-emerald-500">{formatCurrency(income)}</p>
-          </div>
-
-          {/* Expense Card */}
-          <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm flex flex-col justify-between hover:border-rose-900/30 transition-all duration-200">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-2">Despesas (Mês Atual)</h3>
-            <p className="text-4xl font-semibold text-rose-500">{formatCurrency(expense)}</p>
-          </div>
+          <StatCard label="Saldo Global" value={formatCurrency(balance)} index={0} />
+          <StatCard label="Receitas (Mês Atual)" value={formatCurrency(income)} valueClassName="text-income" index={1} />
+          <StatCard label="Despesas (Mês Atual)" value={formatCurrency(expense)} valueClassName="text-expense" index={2} />
         </div>
       </div>
 
       {/* Analytics Section */}
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
-          <h3 className="text-lg font-bold tracking-tight mb-2 text-white">Receitas vs Despesas</h3>
-          <p className="text-sm text-zinc-400 mb-4">Comparativo do mês atual</p>
-          <IncomeExpenseBarChart data={barChartData} />
-        </div>
-        
-        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
-          <h3 className="text-lg font-bold tracking-tight mb-2 text-white">Despesas por Categoria</h3>
-          <p className="text-sm text-zinc-400 mb-4">Distribuição do mês atual</p>
-          <CategoryPieChart data={pieChartData} />
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Receitas vs Despesas</CardTitle>
+            <CardDescription>Comparativo do mês atual</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <IncomeExpenseBarChart data={barChartData} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Despesas por Categoria</CardTitle>
+            <CardDescription>Distribuição do mês atual</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CategoryPieChart data={pieChartData} />
+          </CardContent>
+        </Card>
       </div>
-      
+
       <div>
-        <h3 className="text-xl font-bold tracking-tight mb-4 text-white">Minhas Contas</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <h3 className="text-xl font-bold tracking-tight mb-4">Minhas Contas</h3>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]">
           {accounts.map(acc => {
             // Saldo por conta inclui transferências: cada perna afeta a conta de origem/destino.
             const accBalance = computeAccountBalance(acc.initialBalance, acc.transactions);
 
             return (
-              <div key={acc.id} className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm hover:border-zinc-700 transition-all duration-200">
+              <Card key={acc.id} className="p-5 hover:border-foreground/20">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 className="font-semibold text-lg text-white">{acc.name}</h4>
-                    <span className="text-xs text-zinc-500 uppercase tracking-wider">{acc.type}</span>
+                    <h4 className="font-semibold text-lg">{acc.name}</h4>
+                    <span className="text-xs text-muted uppercase tracking-wider">{acc.type}</span>
                   </div>
                 </div>
-                <p className={`text-2xl font-bold ${accBalance >= 0 ? 'text-white' : 'text-rose-500'}`}>
+                <p className={`text-2xl font-bold tabular-nums ${accBalance >= 0 ? '' : 'text-expense'}`}>
                   {formatCurrency(accBalance)}
                 </p>
-              </div>
+              </Card>
             );
           })}
         </div>

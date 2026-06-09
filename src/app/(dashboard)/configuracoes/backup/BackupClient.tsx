@@ -53,10 +53,10 @@ export default function BackupClient() {
       )}
 
       {/* Exportar */}
-      <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8">
+      <div className="bg-card/60 border border-border rounded-xl p-8">
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-white">Baixar backup</h3>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h3 className="text-xl font-semibold text-foreground">Baixar backup</h3>
+          <p className="text-sm text-muted mt-1">
             Exporta todos os seus dados (contas, categorias, transações, orçamentos, investimentos,
             recorrências e metas) em um único arquivo JSON.
           </p>
@@ -73,10 +73,10 @@ export default function BackupClient() {
       </div>
 
       {/* Restaurar */}
-      <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8">
+      <div className="bg-card/60 border border-border rounded-xl p-8">
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-white">Restaurar backup</h3>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h3 className="text-xl font-semibold text-foreground">Restaurar backup</h3>
+          <p className="text-sm text-muted mt-1">
             Selecione um arquivo de backup (.json) gerado por esta tela para restaurar seus dados.
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function BackupClient() {
 
         <form ref={formRef} onSubmit={handleRestore} className="space-y-4">
           <div className="space-y-1">
-            <label htmlFor="backupFile" className="text-xs font-medium text-zinc-400 ml-1">
+            <label htmlFor="backupFile" className="text-xs font-medium text-muted ml-1">
               Arquivo de backup (.json)
             </label>
             <input
@@ -100,7 +100,7 @@ export default function BackupClient() {
               type="file"
               name="file"
               accept="application/json,.json"
-              className="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition-colors"
+              className="w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition-colors"
             />
           </div>
 

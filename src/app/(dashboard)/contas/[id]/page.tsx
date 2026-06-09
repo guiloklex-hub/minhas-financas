@@ -31,12 +31,12 @@ export default async function AccountStatementPage({
       <div className="max-w-5xl mx-auto py-6 space-y-6">
         <Link
           href="/contas"
-          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft size={16} />
           Voltar para contas
         </Link>
-        <div className="py-12 text-center text-white/50 border border-dashed border-[var(--color-border)] rounded-xl">
+        <div className="py-12 text-center text-muted border border-dashed border-[var(--color-border)] rounded-xl">
           Conta não encontrada.
         </div>
       </div>

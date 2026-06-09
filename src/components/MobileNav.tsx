@@ -51,7 +51,7 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
   return (
     <>
       {/* Barra de navegação inferior (sempre visível no mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch justify-around border-t border-zinc-800 bg-zinc-950/85 backdrop-blur-md px-1 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch justify-around border-t border-border bg-background/85 backdrop-blur-md px-1 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
         {primaryItems.map((item) => {
           const active = isNavItemActive(pathname, item.href);
           const Icon = item.icon;
@@ -60,7 +60,7 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
               key={item.href}
               href={item.href}
               className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1 transition-colors ${
-                active ? "text-white" : "text-zinc-400 hover:text-white"
+                active ? "text-foreground" : "text-muted hover:text-foreground"
               }`}
             >
               <Icon size={20} className={active && item.accent ? item.accent : undefined} />
@@ -76,7 +76,7 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
           aria-haspopup="dialog"
           aria-expanded={open}
           className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1 transition-colors ${
-            open ? "text-white" : "text-zinc-400 hover:text-white"
+            open ? "text-foreground" : "text-muted hover:text-foreground"
           }`}
         >
           <Menu size={20} />
@@ -113,12 +113,12 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
           {/* Cabeçalho do drawer */}
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-card)] px-5 pt-3 pb-3">
             <div className="absolute left-1/2 top-1.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-zinc-700" />
-            <h2 className="text-base font-semibold text-white">Menu</h2>
+            <h2 className="text-base font-semibold text-foreground">Menu</h2>
             <button
               type="button"
               onClick={close}
               aria-label="Fechar"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--color-border)] text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--color-border)] text-muted transition-colors hover:bg-accent hover:text-foreground"
             >
               <X size={18} />
             </button>
@@ -136,20 +136,20 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
                   onClick={close}
                   className={`flex flex-col items-center gap-2 rounded-2xl border p-3 text-center transition-colors ${
                     active
-                      ? "border-white/20 bg-white/10"
-                      : "border-transparent hover:border-[var(--color-border)] hover:bg-white/5"
+                      ? "border-white/20 bg-accent"
+                      : "border-transparent hover:border-[var(--color-border)] hover:bg-accent"
                   }`}
                 >
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white/5 ${
-                      item.accent ?? "text-zinc-200"
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--color-border)] bg-accent ${
+                      item.accent ?? "text-foreground"
                     }`}
                   >
                     <Icon size={20} />
                   </span>
                   <span
                     className={`text-xs font-medium leading-tight ${
-                      active ? "text-white" : "text-zinc-300"
+                      active ? "text-foreground" : "text-foreground/80"
                     }`}
                   >
                     {item.label}
@@ -166,8 +166,8 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
               onClick={close}
               className={`flex items-center gap-3 rounded-2xl border p-3 transition-colors ${
                 isNavItemActive(pathname, SETTINGS_ITEM.href)
-                  ? "border-white/20 bg-white/10"
-                  : "border-[var(--color-border)] hover:bg-white/5"
+                  ? "border-white/20 bg-accent"
+                  : "border-[var(--color-border)] hover:bg-accent"
               }`}
             >
               {avatarUrl ? (
@@ -177,18 +177,18 @@ export default function MobileNav({ userName, avatarUrl }: MobileNavProps) {
                   width={40}
                   height={40}
                   unoptimized
-                  className="h-10 w-10 rounded-full border border-zinc-800 object-cover"
+                  className="h-10 w-10 rounded-full border border-border object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800">
-                  <UserIcon size={18} className="text-zinc-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-zinc-800">
+                  <UserIcon size={18} className="text-muted" />
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">{userName}</p>
-                <p className="truncate text-xs text-zinc-500">Configurações</p>
+                <p className="truncate text-sm font-medium text-foreground">{userName}</p>
+                <p className="truncate text-xs text-muted">Configurações</p>
               </div>
-              <Settings size={16} className="text-zinc-500" />
+              <Settings size={16} className="text-muted" />
             </Link>
           </div>
         </div>

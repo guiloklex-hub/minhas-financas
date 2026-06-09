@@ -13,12 +13,12 @@ const formatCurrency = (value: number) =>
 export function AnomaliesCard({ anomalies }: { anomalies: Anomaly[] }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center gap-2">
+      <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
         <Activity className="text-amber-500" /> Gastos Fora do Padrão
       </h3>
 
       {anomalies.length === 0 ? (
-        <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-500 text-sm">
+        <div className="p-5 rounded-xl border border-border bg-card text-muted text-sm">
           Nenhuma categoria apresentou gasto anômalo neste mês. Continue assim!
         </div>
       ) : (
@@ -30,7 +30,7 @@ export function AnomaliesCard({ anomalies }: { anomalies: Anomaly[] }) {
               className="group p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors flex flex-col gap-3"
             >
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-white flex items-center gap-2">
+                <span className="font-semibold text-foreground flex items-center gap-2">
                   <span
                     className="w-3 h-3 rounded-full shrink-0"
                     style={{ backgroundColor: a.color || "#f59e0b" }}
@@ -45,12 +45,12 @@ export function AnomaliesCard({ anomalies }: { anomalies: Anomaly[] }) {
 
               <div className="flex justify-between items-end">
                 <div>
-                  <div className="text-xs text-zinc-500">Este mês</div>
-                  <div className="text-lg font-bold text-white">{formatCurrency(a.currentAmount)}</div>
+                  <div className="text-xs text-muted">Este mês</div>
+                  <div className="text-lg font-bold text-foreground">{formatCurrency(a.currentAmount)}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-zinc-500">Média recente</div>
-                  <div className="text-sm font-medium text-zinc-400">{formatCurrency(a.average)}</div>
+                  <div className="text-xs text-muted">Média recente</div>
+                  <div className="text-sm font-medium text-muted">{formatCurrency(a.average)}</div>
                 </div>
               </div>
 

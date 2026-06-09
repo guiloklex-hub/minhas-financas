@@ -37,13 +37,13 @@ export default function AiQuickLaunch({ accounts }: Props) {
   };
 
   return (
-    <div className="p-6 rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black shadow-lg">
+    <div className="p-6 rounded-xl border border-border bg-gradient-to-br from-zinc-900 to-black shadow-lg">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="text-emerald-400" size={24} />
-        <h3 className="text-xl font-bold text-white">Lançamento Mágico</h3>
+        <h3 className="text-xl font-bold text-foreground">Lançamento Mágico</h3>
       </div>
       
-      <p className="text-zinc-400 text-sm mb-6">
+      <p className="text-muted text-sm mb-6">
         Descreva sua transação naturalmente. Ex: &quot;Gastei 50 com gasolina no HB20&quot; ou &quot;Recebi 5000 de salário&quot;.
       </p>
 
@@ -54,14 +54,14 @@ export default function AiQuickLaunch({ accounts }: Props) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="O que você gastou ou recebeu hoje?"
-            className="flex-1 bg-zinc-950 border border-zinc-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="flex-1 bg-background border border-border text-foreground p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             disabled={isPending}
           />
           
           <select
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
-            className="bg-zinc-950 border border-zinc-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[200px]"
+            className="bg-background border border-border text-foreground p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[200px]"
             disabled={isPending}
           >
             {accounts.map(acc => (

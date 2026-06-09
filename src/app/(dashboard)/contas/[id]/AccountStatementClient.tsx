@@ -52,7 +52,7 @@ export default function AccountStatementClient({
       <div>
         <Link
           href="/contas"
-          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft size={16} />
           Voltar para contas
@@ -63,16 +63,16 @@ export default function AccountStatementClient({
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold tracking-tight">{accountName}</h2>
-            <span className="text-xs font-medium px-2 py-1 bg-white/5 text-white/70 rounded-full">
+            <span className="text-xs font-medium px-2 py-1 bg-accent text-muted rounded-full">
               {TYPE_LABELS[accountType] ?? accountType}
             </span>
           </div>
-          <p className="text-xs text-white/40 mt-1">
+          <p className="text-xs text-muted mt-1">
             Saldo inicial: {formatCurrency(initialBalance)}
           </p>
         </div>
         <div className="text-left sm:text-right">
-          <p className="text-xs text-white/40">Saldo atual</p>
+          <p className="text-xs text-muted">Saldo atual</p>
           <p
             className={`text-2xl font-bold ${
               currentBalance >= 0 ? "" : "text-rose-500"
@@ -86,7 +86,7 @@ export default function AccountStatementClient({
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 border-b border-[var(--color-border)] uppercase text-white/60">
+            <thead className="bg-accent border-b border-[var(--color-border)] uppercase text-muted">
               <tr>
                 <th className="px-6 py-4 font-medium">Data</th>
                 <th className="px-6 py-4 font-medium">Título</th>
@@ -100,21 +100,21 @@ export default function AccountStatementClient({
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-white/50"
+                    className="px-6 py-8 text-center text-muted"
                   >
                     Nenhuma transação nesta conta.
                   </td>
                 </tr>
               ) : (
                 rows.map((t) => (
-                  <tr key={t.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-white/80">
+                  <tr key={t.id} className="hover:bg-accent transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-foreground/80">
                       {formatDate(t.date)}
                     </td>
                     <td className="px-6 py-4 font-medium">{t.title}</td>
-                    <td className="px-6 py-4 text-white/80">
+                    <td className="px-6 py-4 text-foreground/80">
                       <span
-                        className="px-2 py-1 rounded-md text-xs font-medium bg-white/10"
+                        className="px-2 py-1 rounded-md text-xs font-medium bg-accent"
                         style={{ color: t.categoryColor || "#fff" }}
                       >
                         {t.categoryName || "Sem categoria"}
@@ -132,7 +132,7 @@ export default function AccountStatementClient({
                     </td>
                     <td
                       className={`px-6 py-4 text-right font-semibold whitespace-nowrap ${
-                        t.balanceAfter >= 0 ? "text-white/80" : "text-rose-500"
+                        t.balanceAfter >= 0 ? "text-foreground/80" : "text-rose-500"
                       }`}
                     >
                       {formatCurrency(t.balanceAfter)}

@@ -177,7 +177,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
           )}
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">
               Nome da Meta
             </label>
             <input
@@ -193,7 +193,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="targetAmount" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="targetAmount" className="block text-sm font-medium text-muted mb-1">
                 Valor Alvo (R$)
               </label>
               <input
@@ -210,7 +210,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
             </div>
 
             <div>
-              <label htmlFor="currentAmount" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="currentAmount" className="block text-sm font-medium text-muted mb-1">
                 Valor Atual (R$)
               </label>
               <input
@@ -228,7 +228,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="deadline" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="deadline" className="block text-sm font-medium text-muted mb-1">
                 Prazo (opcional)
               </label>
               <input
@@ -241,7 +241,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
             </div>
 
             <div>
-              <label htmlFor="accountId" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="accountId" className="block text-sm font-medium text-muted mb-1">
                 Conta vinculada (opcional)
               </label>
               <select
@@ -264,7 +264,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
             <button
               type="button"
               onClick={closeForm}
-              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all duration-200"
+              className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all duration-200"
             >
               Cancelar
             </button>
@@ -318,7 +318,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
                   <button
                     onClick={() => openEdit(goal)}
                     title="Editar"
-                    className="p-2 text-white/50 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                    className="p-2 text-muted hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
                   >
                     <Pencil size={16} />
                   </button>
@@ -326,7 +326,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
                     onClick={() => handleDelete(goal.id)}
                     disabled={deletingId === goal.id}
                     title="Excluir"
-                    className="p-2 text-white/50 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                   >
                     {deletingId === goal.id ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -342,10 +342,10 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
                   <p className="text-2xl font-bold text-emerald-400">
                     {formatCurrency(goal.currentAmount)}
                   </p>
-                  <p className="text-sm text-white/50">de {formatCurrency(goal.targetAmount)}</p>
+                  <p className="text-sm text-muted">de {formatCurrency(goal.targetAmount)}</p>
                 </div>
 
-                <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-accent rounded-full h-3 overflow-hidden">
                   <div
                     className={`h-3 rounded-full transition-all duration-500 ${
                       achieved ? "bg-emerald-400" : "bg-emerald-500"
@@ -357,20 +357,20 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
                 <div className="flex items-center justify-between mt-2">
                   <span
                     className={`text-xs font-medium ${
-                      achieved ? "text-emerald-400" : "text-white/60"
+                      achieved ? "text-emerald-400" : "text-muted"
                     }`}
                   >
                     {rawPercent.toFixed(1)}%
                   </span>
                   {!achieved && (
-                    <span className="text-xs text-white/50">
+                    <span className="text-xs text-muted">
                       Faltam {formatCurrency(remaining)}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                 {goal.deadline && (
                   <span className="inline-flex items-center gap-1.5">
                     <CalendarClock size={14} />
@@ -387,7 +387,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
 
               {contributingId === goal.id ? (
                 <div className="mt-4 pt-4 border-t border-[var(--color-border)] space-y-2">
-                  <label className="block text-xs font-medium text-white/70">
+                  <label className="block text-xs font-medium text-muted">
                     Valor do aporte (R$)
                   </label>
                   <div className="flex items-center gap-2">
@@ -417,7 +417,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
                       onClick={() => setContributingId(null)}
                       disabled={isContributePending}
                       title="Cancelar"
-                      className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
                     >
                       <X size={18} />
                     </button>
@@ -440,7 +440,7 @@ export default function GoalsClient({ initialGoals, accounts }: GoalsClientProps
         })}
 
         {goals.length === 0 && !isFormOpen && (
-          <div className="col-span-full py-12 text-center text-white/50 border border-dashed border-[var(--color-border)] rounded-xl">
+          <div className="col-span-full py-12 text-center text-muted border border-dashed border-[var(--color-border)] rounded-xl">
             Nenhuma meta cadastrada. Clique em &quot;Nova Meta&quot; para começar.
           </div>
         )}

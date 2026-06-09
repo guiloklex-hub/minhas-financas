@@ -124,25 +124,25 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
 
   return (
     <div className="space-y-6">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-4">Nova Categoria</h3>
+      <div className="bg-card border border-border rounded-xl p-6">
+        <h3 className="text-lg font-bold text-foreground mb-4">Nova Categoria</h3>
         <form onSubmit={handleCreate} className="flex gap-4 items-end">
           <div className="flex-1">
-            <label className="block text-xs font-medium text-zinc-400 mb-1">Nome da Categoria</label>
+            <label className="block text-xs font-medium text-muted mb-1">Nome da Categoria</label>
             <input
               name="name"
               required
               placeholder="Ex: Mercado"
-              className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <div className="w-24">
-            <label className="block text-xs font-medium text-zinc-400 mb-1">Cor</label>
+            <label className="block text-xs font-medium text-muted mb-1">Cor</label>
             <input
               name="color"
               type="color"
               defaultValue="#10b981"
-              className="w-full h-[42px] bg-black/40 border border-zinc-800 rounded-lg cursor-pointer"
+              className="w-full h-[42px] bg-background border border-border rounded-lg cursor-pointer"
             />
           </div>
           <button
@@ -157,9 +157,9 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
         {error && <p className="text-rose-500 text-sm mt-3">{error}</p>}
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/5 border-b border-zinc-800 uppercase text-white/60">
+          <thead className="bg-accent border-b border-border uppercase text-muted">
             <tr>
               <th className="px-6 py-4 font-medium w-20">Ordem</th>
               <th className="px-6 py-4 font-medium">Categoria</th>
@@ -172,14 +172,14 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
               const absoluteIndex = startIndex + i;
               const isEditing = editingId === cat.id;
               return (
-                <tr key={cat.id} className="hover:bg-white/5 transition-colors align-middle">
+                <tr key={cat.id} className="hover:bg-accent transition-colors align-middle">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleMove(absoluteIndex, -1)}
                         disabled={absoluteIndex === 0 || isPending || isEditing}
                         title="Mover para cima"
-                        className="p-1.5 text-zinc-500 hover:text-white hover:bg-white/10 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                        className="p-1.5 text-muted hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                       >
                         {reorderingId === cat.id ? <Loader2 size={14} className="animate-spin" /> : <ArrowUp size={14} />}
                       </button>
@@ -187,7 +187,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                         onClick={() => handleMove(absoluteIndex, 1)}
                         disabled={absoluteIndex === categories.length - 1 || isPending || isEditing}
                         title="Mover para baixo"
-                        className="p-1.5 text-zinc-500 hover:text-white hover:bg-white/10 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                        className="p-1.5 text-muted hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                       >
                         <ArrowDown size={14} />
                       </button>
@@ -202,7 +202,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                           onChange={(e) => setEditName(e.target.value)}
                           autoFocus
                           placeholder="Nome"
-                          className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          className="w-full bg-background border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         />
                       </td>
                       <td className="px-6 py-4">
@@ -211,13 +211,13 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                             value={editColor}
                             onChange={(e) => setEditColor(e.target.value)}
                             type="color"
-                            className="h-9 w-12 bg-black/40 border border-zinc-700 rounded-lg cursor-pointer"
+                            className="h-9 w-12 bg-background border border-border rounded-lg cursor-pointer"
                           />
                           <input
                             value={editIcon}
                             onChange={(e) => setEditIcon(e.target.value)}
                             placeholder="Ícone (ex: 🛒)"
-                            className="w-24 bg-black/40 border border-zinc-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-24 bg-background border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           />
                         </div>
                       </td>
@@ -235,7 +235,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                             onClick={cancelEdit}
                             disabled={isEditPending}
                             title="Cancelar"
-                            className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
                           >
                             <X size={16} />
                           </button>
@@ -244,7 +244,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-4 font-medium text-white">
+                      <td className="px-6 py-4 font-medium text-foreground">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-800 text-sm" style={{ color: cat.color || '#fff' }}>
                             {cat.icon ? <span>{cat.icon}</span> : <Tag size={14} />}
@@ -255,7 +255,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color || '#52525b' }} />
-                          <span className="text-zinc-400 font-mono text-xs">{cat.color || '#52525b'}</span>
+                          <span className="text-muted font-mono text-xs">{cat.color || '#52525b'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -264,7 +264,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                             onClick={() => startEdit(cat)}
                             disabled={loadingId === cat.id || isPending}
                             title="Editar"
-                            className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors disabled:opacity-50"
                           >
                             <Pencil size={16} />
                           </button>
@@ -272,7 +272,7 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
                             onClick={() => handleDelete(cat.id)}
                             disabled={loadingId === cat.id || isPending}
                             title="Excluir"
-                            className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                           >
                             {loadingId === cat.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                           </button>
@@ -285,28 +285,28 @@ export default function CategoryListClient({ initialCategories }: { initialCateg
             })}
             {categories.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">Nenhuma categoria cadastrada.</td>
+                <td colSpan={4} className="px-6 py-8 text-center text-muted">Nenhuma categoria cadastrada.</td>
               </tr>
             )}
           </tbody>
         </table>
-        {editError && <p className="text-rose-500 text-sm px-6 py-3 border-t border-zinc-800">{editError}</p>}
+        {editError && <p className="text-rose-500 text-sm px-6 py-3 border-t border-border">{editError}</p>}
         {categories.length > itemsPerPage && (
-          <div className="p-3 border-t border-zinc-800 flex items-center justify-between bg-black/20">
+          <div className="p-3 border-t border-border flex items-center justify-between bg-accent/40">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(p => p - 1)}
-              className="px-3 py-1.5 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+              className="px-3 py-1.5 rounded-md text-xs bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors"
             >
               Anterior
             </button>
-            <span className="text-xs text-zinc-400 font-medium">
+            <span className="text-xs text-muted font-medium">
               {currentPage} de {totalPages}
             </span>
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(p => p + 1)}
-              className="px-3 py-1.5 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+              className="px-3 py-1.5 rounded-md text-xs bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors"
             >
               Próximo
             </button>

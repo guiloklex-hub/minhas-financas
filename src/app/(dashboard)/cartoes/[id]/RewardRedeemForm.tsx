@@ -36,16 +36,16 @@ export default function RewardRedeemForm({ cardId, balance, onSuccess, onCancel 
       )}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="points" className="block text-sm font-medium text-white/70 mb-1">Pontos (máx. {balance.toLocaleString("pt-BR")})</label>
+          <label htmlFor="points" className="block text-sm font-medium text-muted mb-1">Pontos (máx. {balance.toLocaleString("pt-BR")})</label>
           <input type="number" id="points" name="points" required step="0.01" min="0.01" max={balance} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-white/70 mb-1">Descrição</label>
+          <label htmlFor="description" className="block text-sm font-medium text-muted mb-1">Descrição</label>
           <input id="description" name="description" className={inputClass} placeholder="Ex: Milhas, desconto..." />
         </div>
       </div>
       <div className="flex justify-end gap-3">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all">Cancelar</button>
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all">Cancelar</button>
         <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all disabled:opacity-50">
           {loading ? "Processando..." : "Resgatar"}
         </button>

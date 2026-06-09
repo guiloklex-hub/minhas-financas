@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { CashFlowChart } from "@/components/charts/CashFlowChart";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   getCashFlow,
   getCategoryBreakdown,
@@ -140,14 +141,14 @@ export default function ReportsClient({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Relatórios</h2>
-        <p className="text-zinc-400 mt-2">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Relatórios</h2>
+        <p className="text-muted mt-2">
           Fluxo de caixa, comparativo anual e despesas por categoria.
         </p>
       </div>
 
       {/* Seletor de período */}
-      <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
+      <div className="p-4 rounded-xl border border-border bg-card shadow-sm">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((preset) => (
@@ -159,7 +160,7 @@ export default function ReportsClient({
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
                   activePreset === preset.key
                     ? "bg-blue-600 text-white"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                    : "bg-zinc-800 text-foreground/80 hover:bg-zinc-700"
                 }`}
               >
                 {preset.label}
@@ -171,7 +172,7 @@ export default function ReportsClient({
 
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1">
-              <label htmlFor="report-from" className="text-xs text-zinc-500">
+              <label htmlFor="report-from" className="text-xs text-muted">
                 De
               </label>
               <input
@@ -179,11 +180,11 @@ export default function ReportsClient({
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                className="bg-zinc-800 border border-border rounded-lg px-3 py-2 text-sm text-foreground"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="report-to" className="text-xs text-zinc-500">
+              <label htmlFor="report-to" className="text-xs text-muted">
                 Até
               </label>
               <input
@@ -191,14 +192,14 @@ export default function ReportsClient({
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+                className="bg-zinc-800 border border-border rounded-lg px-3 py-2 text-sm text-foreground"
               />
             </div>
             <button
               type="button"
               onClick={applyCustom}
               disabled={isPending}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-foreground hover:bg-zinc-700 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isPending ? <Loader2 size={16} className="animate-spin" /> : null}
               Aplicar
@@ -209,13 +210,20 @@ export default function ReportsClient({
       </div>
 
       {/* Fluxo de caixa */}
-      <CashFlowChart data={cashFlow} />
+      <Card className="w-full min-w-0">
+        <CardHeader>
+          <CardTitle>Fluxo de Caixa</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CashFlowChart data={cashFlow} />
+        </CardContent>
+      </Card>
 
       {/* Comparativo anual (YoY) */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
         <div className="flex items-baseline justify-between mb-6">
-          <h3 className="text-lg font-bold text-white">Comparativo anual (YoY)</h3>
-          <span className="text-sm text-zinc-500">
+          <h3 className="text-lg font-bold text-foreground">Comparativo anual (YoY)</h3>
+          <span className="text-sm text-muted">
             {year} vs {year - 1}
           </span>
         </div>
@@ -265,14 +273,14 @@ export default function ReportsClient({
       </div>
 
       {/* Despesas por categoria (drill-down) */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm w-full min-w-0 flex flex-col">
         <div className="flex items-baseline justify-between mb-6">
-          <h3 className="text-lg font-bold text-white">Despesas por categoria</h3>
-          <span className="text-sm text-zinc-500">Total: {formatCurrency(totalExpenses)}</span>
+          <h3 className="text-lg font-bold text-foreground">Despesas por categoria</h3>
+          <span className="text-sm text-muted">Total: {formatCurrency(totalExpenses)}</span>
         </div>
 
         {categoryBreakdown.length === 0 ? (
-          <p className="text-zinc-500">Nenhuma despesa no período selecionado.</p>
+          <p className="text-muted">Nenhuma despesa no período selecionado.</p>
         ) : (
           <ul className="space-y-2">
             {categoryBreakdown.map((cat) => {
@@ -289,12 +297,12 @@ export default function ReportsClient({
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-white truncate">{cat.name}</span>
-                        <span className="text-sm font-semibold text-zinc-200 shrink-0">
+                        <span className="font-medium text-foreground truncate">{cat.name}</span>
+                        <span className="text-sm font-semibold text-foreground shrink-0">
                           {formatCurrency(cat.amount)}
                         </span>
                       </div>
-                      <div className="mt-2 w-full bg-black/40 rounded-full h-1.5">
+                      <div className="mt-2 w-full bg-background rounded-full h-1.5">
                         <div
                           className="h-1.5 rounded-full"
                           style={{
@@ -306,7 +314,7 @@ export default function ReportsClient({
                     </div>
                     <ArrowRight
                       size={16}
-                      className="text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0"
+                      className="text-muted group-hover:text-foreground/80 transition-colors shrink-0"
                     />
                   </Link>
                 </li>

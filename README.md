@@ -23,6 +23,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 - **Notificações** — sino in-app + Web Push (VAPID) + e-mail (SMTP).
 - **Segurança** — login com rate limiting, 2FA (TOTP), recuperação de senha e trilha de auditoria.
 - **PWA** — instalável e com notificações push.
+- **UI/UX** — design system com tokens semânticos e **tema claro/escuro** (toggle via `next-themes`), biblioteca de primitivos (`src/components/ui/`: Button, Card, Input, Modal, StatCard…), toasts (`sonner`), micro-animações (`framer-motion`) e **modo privacidade** (ocultar valores). Ações globais (tema, privacidade, push, notificações) ficam no header.
 
 ## 🚀 Tecnologias
 
@@ -30,7 +31,7 @@ O app possui **autenticação por segurança**: a tela de login protege o acesso
 - **Linguagem**: TypeScript
 - **Banco de Dados**: SQLite (via driver adapter `better-sqlite3` — módulo nativo)
 - **ORM**: Prisma 7 (generator `prisma-client`, client gerado em `src/generated/prisma`)
-- **Estilização**: Tailwind CSS v4
+- **Estilização**: Tailwind CSS v4 + tokens semânticos · `next-themes` (claro/escuro) · `class-variance-authority` + `clsx`/`tailwind-merge` (`cn`) · `framer-motion` (animações) · `sonner` (toasts) · `lucide-react` (ícones)
 - **IA**: Google Gemini (`@google/generative-ai`)
 
 > **Prisma 7:** o client é gerado em `src/generated/prisma` (não em `node_modules`) — rode `npx prisma generate` após clonar (o `npm run setup` faz isso). A conexão usa um driver adapter; `DATABASE_URL` aponta para `file:./prisma/dev.db`. Em ambientes com `ignore-scripts`, pode ser preciso compilar o `better-sqlite3` (`npm rebuild better-sqlite3`).

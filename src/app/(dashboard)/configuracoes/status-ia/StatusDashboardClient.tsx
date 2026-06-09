@@ -97,37 +97,37 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
           <Sparkles size={32} />
         </div>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             IA (Gemini)
           </h2>
-          <p className="text-zinc-400 mt-1">Uso, custo estimado, erros e saúde da integração de IA</p>
+          <p className="text-muted mt-1">Uso, custo estimado, erros e saúde da integração de IA</p>
         </div>
       </div>
 
       {/* Orçamento de IA (mês corrente) */}
-      <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60">
+      <div className="p-5 rounded-2xl border border-border bg-card/60">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
               <Wallet size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Orçamento de IA (mês)</h3>
-              <p className="text-[11px] text-zinc-500">Gasto estimado vs. teto mensal configurado (USD)</p>
+              <h3 className="text-sm font-bold text-foreground">Orçamento de IA (mês)</h3>
+              <p className="text-[11px] text-muted">Gasto estimado vs. teto mensal configurado (USD)</p>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-white">
+            <div className="text-lg font-bold text-foreground">
               {formatUsd(budget.spendThisMonthUsd)}
               {hasBudget ? (
-                <span className="text-zinc-500 font-medium"> / {formatUsd(budget.monthlyBudgetUsd as number)}</span>
+                <span className="text-muted font-medium"> / {formatUsd(budget.monthlyBudgetUsd as number)}</span>
               ) : null}
             </div>
             <div className="text-[11px] font-semibold">
               {hasBudget ? (
                 <span className={budgetTextColor}>{budgetPercent.toFixed(0)}% utilizado</span>
               ) : (
-                <span className="text-zinc-500">sem limite</span>
+                <span className="text-muted">sem limite</span>
               )}
             </div>
           </div>
@@ -141,8 +141,8 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
             />
           </div>
         ) : (
-          <p className="mt-4 text-xs text-zinc-400">
-            Defina <span className="font-mono text-zinc-300">AI_MONTHLY_BUDGET_USD</span> para ativar o teto mensal de gasto com IA.
+          <p className="mt-4 text-xs text-muted">
+            Defina <span className="font-mono text-foreground/80">AI_MONTHLY_BUDGET_USD</span> para ativar o teto mensal de gasto com IA.
           </p>
         )}
 
@@ -156,83 +156,83 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
 
       {/* Grid: 5 Top Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center">
             <Activity size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">{metrics.totalCalls}</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Chamadas (30d)</div>
-            <div className="text-[10px] text-zinc-500">{metrics.last7dCalls} nos últimos 7d</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{metrics.totalCalls}</div>
+            <div className="text-xs font-semibold text-muted mb-1">Chamadas (30d)</div>
+            <div className="text-[10px] text-muted">{metrics.last7dCalls} nos últimos 7d</div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
             <Cpu size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">{metrics.totalTokens.toLocaleString('pt-BR')}</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Tokens (30d)</div>
-            <div className="text-[10px] text-zinc-500"> </div>
+            <div className="text-3xl font-bold text-foreground mb-1">{metrics.totalTokens.toLocaleString('pt-BR')}</div>
+            <div className="text-xs font-semibold text-muted mb-1">Tokens (30d)</div>
+            <div className="text-[10px] text-muted"> </div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
             <CircleDollarSign size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">{formatCurrency(metrics.totalCost)}</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Custo estimado (30d)</div>
-            <div className="text-[10px] text-zinc-500">estimativa — não é a fatura</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{formatCurrency(metrics.totalCost)}</div>
+            <div className="text-xs font-semibold text-muted mb-1">Custo estimado (30d)</div>
+            <div className="text-[10px] text-muted">estimativa — não é a fatura</div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center">
             <AlertTriangle size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">{metrics.errorRate.toFixed(1)}%</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Taxa de erro (30d)</div>
-            <div className="text-[10px] text-zinc-500"> </div>
+            <div className="text-3xl font-bold text-foreground mb-1">{metrics.errorRate.toFixed(1)}%</div>
+            <div className="text-xs font-semibold text-muted mb-1">Taxa de erro (30d)</div>
+            <div className="text-[10px] text-muted"> </div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 flex items-center justify-center">
             <Timer size={18} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white mb-1">{metrics.p50} / {metrics.p95}ms</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Latência p50 / p95</div>
-            <div className="text-[10px] text-zinc-500">chamadas com sucesso</div>
+            <div className="text-2xl font-bold text-foreground mb-1">{metrics.p50} / {metrics.p95}ms</div>
+            <div className="text-xs font-semibold text-muted mb-1">Latência p50 / p95</div>
+            <div className="text-[10px] text-muted">chamadas com sucesso</div>
           </div>
         </div>
       </div>
 
       {/* Grid: 2 Bottom Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 flex items-center justify-center">
             <Users size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">1</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Tenants com IA ativa</div>
-            <div className="text-[10px] text-zinc-500">opt-in (aiEnabled)</div>
+            <div className="text-3xl font-bold text-foreground mb-1">1</div>
+            <div className="text-xs font-semibold text-muted mb-1">Tenants com IA ativa</div>
+            <div className="text-[10px] text-muted">opt-in (aiEnabled)</div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col justify-between h-36">
+        <div className="p-5 rounded-2xl border border-border bg-card/60 flex flex-col justify-between h-36">
           <div className="w-8 h-8 rounded-lg bg-yellow-600/20 text-yellow-500 flex items-center justify-center">
             <Crown size={18} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white mb-1">1</div>
-            <div className="text-xs font-semibold text-zinc-400 mb-1">Tenants Premium</div>
-            <div className="text-[10px] text-zinc-500">elegíveis à IA</div>
+            <div className="text-3xl font-bold text-foreground mb-1">1</div>
+            <div className="text-xs font-semibold text-muted mb-1">Tenants Premium</div>
+            <div className="text-[10px] text-muted">elegíveis à IA</div>
           </div>
         </div>
       </div>
@@ -240,8 +240,8 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
       {/* Main Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Chart */}
-        <div className="lg:col-span-2 p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
-          <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Chamadas de IA por dia (30d)</h3>
+        <div className="lg:col-span-2 p-6 rounded-2xl border border-border bg-card/60">
+          <h3 className="text-sm font-bold text-foreground mb-6 uppercase tracking-wider">Chamadas de IA por dia (30d)</h3>
           <div className="w-full h-[250px] min-w-0 min-h-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -271,16 +271,16 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
         </div>
 
         {/* Right Info Box */}
-        <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 flex flex-col">
+        <div className="p-6 rounded-2xl border border-border bg-card/60 flex flex-col">
           <div className="flex justify-between items-start mb-8">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Sparkles size={16} className="text-purple-500" />
               Integração Gemini
             </h3>
             <button 
               onClick={handleTestConnection}
               disabled={testStatus === 'LOADING'}
-              className={`text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2
+              className={`text-foreground text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2
                 ${testStatus === 'LOADING' ? 'bg-purple-600/50 cursor-not-allowed' : 
                   testStatus === 'SUCCESS' ? 'bg-emerald-600 hover:bg-emerald-700' :
                   testStatus === 'ERROR' ? 'bg-rose-600 hover:bg-rose-700' :
@@ -309,43 +309,43 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
           )}
 
           <div className="space-y-4 text-sm mt-auto">
-            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <span className="text-zinc-400 font-medium">API key</span>
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <span className="text-muted font-medium">API key</span>
               <span className="text-emerald-500 flex items-center gap-1 font-semibold">
                 <CheckCircle2 size={16} /> Configurada
               </span>
             </div>
-            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <span className="text-zinc-400 font-medium">Modelo (texto)</span>
-              <span className="text-zinc-300 font-mono text-xs">gemini-3.1-flash-lite</span>
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <span className="text-muted font-medium">Modelo (texto)</span>
+              <span className="text-foreground/80 font-mono text-xs">gemini-3.1-flash-lite</span>
             </div>
-            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <span className="text-zinc-400 font-medium">Modelo (áudio)</span>
-              <span className="text-zinc-300 font-mono text-xs">gemini-3.1-flash-lite</span>
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <span className="text-muted font-medium">Modelo (áudio)</span>
+              <span className="text-foreground/80 font-mono text-xs">gemini-3.1-flash-lite</span>
             </div>
-            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <span className="text-zinc-400 font-medium">Preço in/out (USD/1M)</span>
-              <span className="text-zinc-300 font-mono text-xs">$0.1 / $0.4</span>
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <span className="text-muted font-medium">Preço in/out (USD/1M)</span>
+              <span className="text-foreground/80 font-mono text-xs">$0.1 / $0.4</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400 font-medium">Câmbio USD→BRL</span>
-              <span className="text-zinc-300 font-mono text-xs">5.4</span>
+              <span className="text-muted font-medium">Câmbio USD→BRL</span>
+              <span className="text-foreground/80 font-mono text-xs">5.4</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tenants Table */}
-      <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
-        <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Top Tenants por uso (30d)</h3>
+      <div className="p-6 rounded-2xl border border-border bg-card/60">
+        <h3 className="text-sm font-bold text-foreground mb-6 uppercase tracking-wider">Top Tenants por uso (30d)</h3>
         
-        <div className="flex justify-between items-center text-sm py-4 border-b border-zinc-800/50">
+        <div className="flex justify-between items-center text-sm py-4 border-b border-border/50">
           <div className="flex items-center gap-4">
-            <span className="text-zinc-500 font-medium w-4">1</span>
-            <span className="text-white font-bold text-base">Usuário Local (Você)</span>
+            <span className="text-muted font-medium w-4">1</span>
+            <span className="text-foreground font-bold text-base">Usuário Local (Você)</span>
             <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-2 py-0.5 rounded uppercase tracking-wider">Premium</span>
           </div>
-          <div className="flex gap-6 text-xs text-zinc-400 font-medium">
+          <div className="flex gap-6 text-xs text-muted font-medium">
             <span>{metrics.totalCalls} chamadas</span>
             <span>{metrics.totalTokens.toLocaleString('pt-BR')} tk</span>
             <span className="text-emerald-500 font-bold">{formatCurrency(metrics.totalCost)}</span>
@@ -355,12 +355,12 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
 
       {/* Registros de Uso */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Registros de Uso ({filteredLogs.length})</h3>
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Registros de Uso ({filteredLogs.length})</h3>
         <div className="flex gap-2">
           <select 
             value={featureFilter}
             onChange={(e) => setFeatureFilter(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="bg-zinc-800 border border-border text-foreground text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="ALL">Todas as features</option>
             <option value="Lançamento Mágico">Lançamento Mágico</option>
@@ -369,7 +369,7 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="bg-zinc-800 border border-border text-foreground text-sm px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="ALL">Todos os status</option>
             <option value="SUCCESS">Sucesso</option>
@@ -378,9 +378,9 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
         </div>
       </div>
 
-      <div className="overflow-x-auto mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60">
+      <div className="overflow-x-auto mt-4 rounded-xl border border-border bg-card/60">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/5 border-b border-zinc-800 uppercase text-white/60">
+          <thead className="bg-accent border-b border-border uppercase text-muted">
             <tr>
               <th className="px-6 py-4 font-medium">Data</th>
               <th className="px-6 py-4 font-medium">Feature</th>
@@ -393,20 +393,20 @@ export default function StatusDashboardClient({ metrics, chartData, recentLogs, 
           <tbody className="divide-y divide-zinc-800">
             {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Nenhum registro encontrado.</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-muted">Nenhum registro encontrado.</td>
               </tr>
             ) : (
               filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4 text-zinc-400">{log.date}</td>
-                  <td className="px-6 py-4 font-medium text-white">{log.feature}</td>
+                <tr key={log.id} className="hover:bg-accent transition-colors">
+                  <td className="px-6 py-4 text-muted">{log.date}</td>
+                  <td className="px-6 py-4 font-medium text-foreground">{log.feature}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${log.status === 'SUCCESS' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
                       {log.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-zinc-400">{log.totalTokens} tk</td>
-                  <td className="px-6 py-4 text-zinc-400">{log.latencyMs} ms</td>
+                  <td className="px-6 py-4 text-muted">{log.totalTokens} tk</td>
+                  <td className="px-6 py-4 text-muted">{log.latencyMs} ms</td>
                   <td className="px-6 py-4 text-emerald-500">{formatCurrency(log.costUsd)}</td>
                 </tr>
               ))

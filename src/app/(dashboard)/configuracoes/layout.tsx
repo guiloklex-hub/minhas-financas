@@ -24,11 +24,11 @@ export default function ConfiguracoesLayout({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Configurações</h2>
-        <p className="text-zinc-400 mt-1">Gerencie suas categorias e as configurações do sistema.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Configurações</h2>
+        <p className="text-muted mt-1">Gerencie suas categorias e as configurações do sistema.</p>
       </div>
 
-      <div className="border-b border-zinc-800">
+      <div className="border-b border-border">
         <nav className="-mb-px flex space-x-6">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
@@ -41,7 +41,7 @@ export default function ConfiguracoesLayout({
                   flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                   ${isActive 
                     ? "border-emerald-500 text-emerald-500" 
-                    : "border-transparent text-zinc-400 hover:text-zinc-300 hover:border-zinc-700"}
+                    : "border-transparent text-muted hover:text-foreground/80 hover:border-border"}
                 `}
               >
                 <Icon size={16} />

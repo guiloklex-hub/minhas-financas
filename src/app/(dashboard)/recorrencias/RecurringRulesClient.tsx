@@ -130,7 +130,7 @@ export default function RecurringRulesClient({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted">
           {initialRules.length} regra{initialRules.length === 1 ? "" : "s"} cadastrada
           {initialRules.length === 1 ? "" : "s"}.
         </p>
@@ -165,7 +165,7 @@ export default function RecurringRulesClient({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-muted mb-1">
                 Título
               </label>
               <input
@@ -181,7 +181,7 @@ export default function RecurringRulesClient({
             </div>
 
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="amount" className="block text-sm font-medium text-muted mb-1">
                 Valor (R$)
               </label>
               <input
@@ -197,7 +197,7 @@ export default function RecurringRulesClient({
             </div>
 
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="type" className="block text-sm font-medium text-muted mb-1">
                 Tipo
               </label>
               <select
@@ -213,7 +213,7 @@ export default function RecurringRulesClient({
             </div>
 
             <div>
-              <label htmlFor="frequency" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="frequency" className="block text-sm font-medium text-muted mb-1">
                 Frequência
               </label>
               <select
@@ -232,7 +232,7 @@ export default function RecurringRulesClient({
 
             {needsDayOfMonth && (
               <div>
-                <label htmlFor="dayOfMonth" className="block text-sm font-medium text-white/70 mb-1">
+                <label htmlFor="dayOfMonth" className="block text-sm font-medium text-muted mb-1">
                   Dia do mês
                 </label>
                 <input
@@ -250,7 +250,7 @@ export default function RecurringRulesClient({
             )}
 
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="startDate" className="block text-sm font-medium text-muted mb-1">
                 Próxima execução
               </label>
               <input
@@ -266,7 +266,7 @@ export default function RecurringRulesClient({
             </div>
 
             <div>
-              <label htmlFor="categoryId" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="categoryId" className="block text-sm font-medium text-muted mb-1">
                 Categoria
               </label>
               <select
@@ -288,7 +288,7 @@ export default function RecurringRulesClient({
             </div>
 
             <div>
-              <label htmlFor="accountId" className="block text-sm font-medium text-white/70 mb-1">
+              <label htmlFor="accountId" className="block text-sm font-medium text-muted mb-1">
                 Conta
               </label>
               <select
@@ -314,7 +314,7 @@ export default function RecurringRulesClient({
             <button
               type="button"
               onClick={closeForm}
-              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -338,7 +338,7 @@ export default function RecurringRulesClient({
 
       <div className="space-y-3">
         {initialRules.length === 0 && !isFormOpen ? (
-          <div className="py-12 text-center text-white/50 border border-dashed border-[var(--color-border)] rounded-xl">
+          <div className="py-12 text-center text-muted border border-dashed border-[var(--color-border)] rounded-xl">
             Nenhuma regra de recorrência cadastrada. Clique em &quot;Nova Recorrência&quot; para
             começar.
           </div>
@@ -365,13 +365,13 @@ export default function RecurringRulesClient({
                         className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                           rule.isActive
                             ? "bg-emerald-500/15 text-emerald-400"
-                            : "bg-white/10 text-white/50"
+                            : "bg-accent text-muted"
                         }`}
                       >
                         {rule.isActive ? "Ativo" : "Pausado"}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/50 mt-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted mt-1">
                       <span>{FREQUENCY_LABELS[rule.frequency] ?? rule.frequency}</span>
                       <span className="inline-flex items-center gap-1">
                         <CalendarClock size={12} /> Próxima: {formatDate(rule.nextRunDate)}
@@ -394,7 +394,7 @@ export default function RecurringRulesClient({
                     <button
                       onClick={() => handleToggle(rule.id)}
                       disabled={isBusy}
-                      className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
                       aria-label={rule.isActive ? "Pausar regra" : "Retomar regra"}
                       title={rule.isActive ? "Pausar" : "Retomar"}
                     >
@@ -408,7 +408,7 @@ export default function RecurringRulesClient({
                     </button>
                     <button
                       onClick={() => openEdit(rule)}
-                      className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors"
                       aria-label="Editar regra"
                       title="Editar"
                     >
@@ -417,7 +417,7 @@ export default function RecurringRulesClient({
                     <button
                       onClick={() => handleDelete(rule.id)}
                       disabled={isBusy}
-                      className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                       aria-label="Excluir regra"
                       title="Excluir"
                     >

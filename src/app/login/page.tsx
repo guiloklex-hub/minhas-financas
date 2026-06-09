@@ -48,21 +48,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-black text-foreground flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorativo */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8">
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <div className="p-4 bg-accent rounded-2xl border border-white/10 backdrop-blur-md">
             <ShieldCheck size={40} className="text-emerald-400" />
           </div>
         </div>
         
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
           <h1 className="text-2xl font-bold text-center mb-2">Bem-vindo de volta</h1>
-          <p className="text-zinc-400 text-center mb-8 text-sm">Acesse sua conta para gerenciar suas finanças</p>
+          <p className="text-muted text-center mb-8 text-sm">Acesse sua conta para gerenciar suas finanças</p>
 
           {mounted ? (
             <>
@@ -74,32 +74,32 @@ export default function LoginPage() {
                 )}
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400 ml-1">E-mail</label>
+                  <label className="text-xs font-medium text-muted ml-1">E-mail</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                       <Mail size={18} />
                     </div>
                     <input 
                       type="email" 
                       name="email" 
                       required
-                      className="w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-zinc-600"
+                      className="w-full pl-10 pr-4 py-3 bg-black/40 border border-border rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-muted"
                       placeholder="seu@email.com"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400 ml-1">Senha</label>
+                  <label className="text-xs font-medium text-muted ml-1">Senha</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                       <Lock size={18} />
                     </div>
                     <input
                       type="password"
                       name="password"
                       required
-                      className="w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-zinc-600"
+                      className="w-full pl-10 pr-4 py-3 bg-black/40 border border-border rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-muted"
                       placeholder="••••••••"
                     />
                   </div>
@@ -107,9 +107,9 @@ export default function LoginPage() {
 
                 {requiresTwoFactor && (
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-400 ml-1">Código de verificação (2FA)</label>
+                    <label className="text-xs font-medium text-muted ml-1">Código de verificação (2FA)</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                         <KeyRound size={18} />
                       </div>
                       <input
@@ -120,11 +120,11 @@ export default function LoginPage() {
                         pattern="[0-9]*"
                         maxLength={6}
                         autoFocus
-                        className="w-full pl-10 pr-4 py-3 bg-black/40 border border-zinc-800 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm tracking-[0.4em] placeholder:tracking-normal placeholder:text-zinc-600"
+                        className="w-full pl-10 pr-4 py-3 bg-black/40 border border-border rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all text-sm tracking-[0.4em] placeholder:tracking-normal placeholder:text-muted"
                         placeholder="000000"
                       />
                     </div>
-                    <p className="text-xs text-zinc-500 ml-1 pt-1">Digite o código de 6 dígitos do seu app autenticador.</p>
+                    <p className="text-xs text-muted ml-1 pt-1">Digite o código de 6 dígitos do seu app autenticador.</p>
                   </div>
                 )}
 
@@ -137,16 +137,16 @@ export default function LoginPage() {
                 </button>
 
                 <div className="text-center">
-                  <Link href="/esqueci-senha" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors">
+                  <Link href="/esqueci-senha" className="text-xs text-muted hover:text-emerald-400 transition-colors">
                     Esqueci minha senha
                   </Link>
                 </div>
               </form>
 
               {canRegister && (
-                <p className="mt-8 text-center text-sm text-zinc-500">
+                <p className="mt-8 text-center text-sm text-muted">
                   Ainda não tem conta?{" "}
-                  <Link href="/registro" className="text-white hover:text-emerald-400 transition-colors font-medium">
+                  <Link href="/registro" className="text-foreground hover:text-emerald-400 transition-colors font-medium">
                     Crie uma agora
                   </Link>
                 </p>
@@ -154,9 +154,9 @@ export default function LoginPage() {
             </>
           ) : (
             <div className="space-y-5 animate-pulse">
-              <div className="h-16 bg-white/5 rounded-xl w-full"></div>
-              <div className="h-16 bg-white/5 rounded-xl w-full"></div>
-              <div className="h-12 mt-4 bg-white/10 rounded-xl w-full"></div>
+              <div className="h-16 bg-accent rounded-xl w-full"></div>
+              <div className="h-16 bg-accent rounded-xl w-full"></div>
+              <div className="h-12 mt-4 bg-accent rounded-xl w-full"></div>
             </div>
           )}
         </div>

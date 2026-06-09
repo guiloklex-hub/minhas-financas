@@ -65,7 +65,7 @@ function renderInline(text: string) {
     const match = /^\*\*([^*]+)\*\*$/.exec(part);
     if (match) {
       return (
-        <strong key={i} className="font-semibold text-white">
+        <strong key={i} className="font-semibold text-foreground">
           {match[1]}
         </strong>
       );
@@ -114,15 +114,15 @@ function ChatPanel() {
   };
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+    <section className="rounded-2xl border border-border bg-card/60 p-6">
       <div className="flex items-center gap-2 mb-4">
         <Bot className="text-emerald-400" size={22} />
-        <h3 className="text-xl font-bold text-white">Pergunte sobre suas finanças</h3>
+        <h3 className="text-xl font-bold text-foreground">Pergunte sobre suas finanças</h3>
       </div>
 
       <div className="space-y-3 mb-4 max-h-[420px] overflow-y-auto">
         {messages.length === 0 && !isPending && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Ex.: &quot;Quanto gastei este mês?&quot;, &quot;Qual minha maior despesa?&quot; ou &quot;Como está meu saldo?&quot;.
             As respostas usam apenas os números reais das suas contas.
           </p>
@@ -137,7 +137,7 @@ function ChatPanel() {
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
                 m.role === "user"
                   ? "bg-emerald-600/20 border border-emerald-500/30 text-emerald-50"
-                  : "bg-zinc-800/70 border border-zinc-700/50 text-zinc-200"
+                  : "bg-zinc-800/70 border border-border/50 text-foreground"
               }`}
             >
               {m.role === "assistant" ? <SimpleMarkdown text={m.content} /> : m.content}
@@ -147,7 +147,7 @@ function ChatPanel() {
 
         {isPending && (
           <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl bg-zinc-800/70 border border-zinc-700/50 px-4 py-3 text-sm text-zinc-400">
+            <div className="flex items-center gap-2 rounded-2xl bg-zinc-800/70 border border-border/50 px-4 py-3 text-sm text-muted">
               <Loader2 className="animate-spin" size={16} />
               <span className="animate-pulse">Analisando seus dados...</span>
             </div>
@@ -169,7 +169,7 @@ function ChatPanel() {
           maxLength={500}
           placeholder="Digite sua pergunta..."
           disabled={isPending}
-          className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-60"
+          className="flex-1 rounded-lg border border-border bg-background p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-60"
         />
         <button
           type="submit"
@@ -232,18 +232,18 @@ function BudgetSuggestPanel({ month, year }: { month: number; year: number }) {
   };
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+    <section className="rounded-2xl border border-border bg-card/60 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="text-purple-400" size={22} />
-          <h3 className="text-xl font-bold text-white">Sugerir orçamentos</h3>
+          <h3 className="text-xl font-bold text-foreground">Sugerir orçamentos</h3>
         </div>
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-muted">
           Base: média dos últimos 3 meses ({String(month).padStart(2, "0")}/{year})
         </span>
       </div>
 
-      <p className="text-sm text-zinc-400 mb-4">
+      <p className="text-sm text-muted mb-4">
         Calcula limites por categoria a partir da sua média de gastos. Revise e aplique de uma vez.
       </p>
 
@@ -276,11 +276,11 @@ function BudgetSuggestPanel({ month, year }: { month: number; year: number }) {
             {suggestions.map((s) => (
               <div
                 key={s.categoryId}
-                className="flex flex-col gap-1 rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-1 rounded-xl border border-border/50 bg-zinc-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="font-semibold text-white truncate">{s.name}</p>
-                  <p className="text-xs text-zinc-400">{s.rationale}</p>
+                  <p className="font-semibold text-foreground truncate">{s.name}</p>
+                  <p className="text-xs text-muted">{s.rationale}</p>
                 </div>
                 <span className="shrink-0 rounded-lg bg-purple-500/15 px-3 py-1 text-sm font-bold text-purple-300">
                   {formatBrl(s.suggestedLimit)}
@@ -301,13 +301,13 @@ function BudgetSuggestPanel({ month, year }: { month: number; year: number }) {
             <button
               onClick={handleSuggest}
               disabled={isLoading}
-              className="rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/5 disabled:opacity-50"
+              className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent disabled:opacity-50"
             >
               Recalcular
             </button>
             <Link
               href="/orcamentos"
-              className="flex items-center gap-1 self-center text-sm text-zinc-400 transition-colors hover:text-white"
+              className="flex items-center gap-1 self-center text-sm text-muted transition-colors hover:text-foreground"
             >
               Ver orçamentos <ArrowRight size={14} />
             </Link>
@@ -370,19 +370,19 @@ function ReceiptPanel() {
   };
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+    <section className="rounded-2xl border border-border bg-card/60 p-6">
       <div className="flex items-center gap-2 mb-4">
         <Receipt className="text-blue-400" size={22} />
-        <h3 className="text-xl font-bold text-white">Ler comprovante</h3>
+        <h3 className="text-xl font-bold text-foreground">Ler comprovante</h3>
       </div>
 
-      <p className="text-sm text-zinc-400 mb-4">
+      <p className="text-sm text-muted mb-4">
         Envie a foto de uma nota ou recibo (JPEG, PNG ou WEBP, até 5MB). A IA extrai valor, data e
-        descrição para você <strong className="text-zinc-200">confirmar</strong> — nada é lançado
+        descrição para você <strong className="text-foreground">confirmar</strong> — nada é lançado
         automaticamente.
       </p>
 
-      <label className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/50 p-4 text-sm text-zinc-300 transition-colors hover:border-blue-500/50 hover:bg-blue-500/5">
+      <label className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-background/50 p-4 text-sm text-foreground/80 transition-colors hover:border-blue-500/50 hover:bg-blue-500/5">
         {isPending ? (
           <Loader2 className="animate-spin text-blue-400" size={20} />
         ) : (
@@ -411,22 +411,22 @@ function ReceiptPanel() {
       )}
 
       {result && (
-        <div className="mt-4 rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-4">
-          <p className="mb-3 text-sm font-semibold text-white">Dados extraídos (confira antes de salvar)</p>
+        <div className="mt-4 rounded-xl border border-border/50 bg-zinc-800/40 p-4">
+          <p className="mb-3 text-sm font-semibold text-foreground">Dados extraídos (confira antes de salvar)</p>
           <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
             <div>
-              <dt className="text-zinc-500">Descrição</dt>
-              <dd className="text-zinc-200">{result.title ?? "—"}</dd>
+              <dt className="text-muted">Descrição</dt>
+              <dd className="text-foreground">{result.title ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-zinc-500">Valor</dt>
+              <dt className="text-muted">Valor</dt>
               <dd className="font-semibold text-rose-400">
                 {result.amount !== null ? formatBrl(result.amount) : "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">Data</dt>
-              <dd className="text-zinc-200">{result.date ?? "—"}</dd>
+              <dt className="text-muted">Data</dt>
+              <dd className="text-foreground">{result.date ?? "—"}</dd>
             </div>
           </dl>
 

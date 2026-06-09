@@ -9,10 +9,10 @@ export default async function PerfilPage() {
   }
 
   return (
-    <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-8 max-w-2xl">
+    <div className="bg-card/60 border border-border rounded-xl p-8 max-w-2xl">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-white">Informações Pessoais</h3>
-        <p className="text-sm text-zinc-400">Atualize a foto e o seu nome de exibição no sistema.</p>
+        <h3 className="text-xl font-semibold text-foreground">Informações Pessoais</h3>
+        <p className="text-sm text-muted">Atualize a foto e o seu nome de exibição no sistema.</p>
       </div>
 
       <ProfileFormClient 

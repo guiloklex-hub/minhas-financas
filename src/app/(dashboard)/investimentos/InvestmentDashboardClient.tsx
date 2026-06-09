@@ -154,18 +154,18 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
       
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
-          <div className="flex items-center gap-2 text-zinc-400 mb-2">
+        <div className="bg-card border border-border p-5 rounded-xl">
+          <div className="flex items-center gap-2 text-muted mb-2">
             <Landmark size={18} />
             <h3 className="text-sm font-medium">Total Investido</h3>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             R$ {totalInvested.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </div>
         
-        <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
-          <div className="flex items-center gap-2 text-zinc-400 mb-2">
+        <div className="bg-card border border-border p-5 rounded-xl">
+          <div className="flex items-center gap-2 text-muted mb-2">
             <TrendingUp size={18} className="text-emerald-500" />
             <h3 className="text-sm font-medium">Lucro Bruto (1 Ano)</h3>
           </div>
@@ -174,8 +174,8 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
           </p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
-          <div className="flex items-center gap-2 text-zinc-400 mb-2">
+        <div className="bg-card border border-border p-5 rounded-xl">
+          <div className="flex items-center gap-2 text-muted mb-2">
             <ShieldAlert size={18} className="text-rose-500" />
             <h3 className="text-sm font-medium">Impostos (IR 20%)</h3>
           </div>
@@ -196,8 +196,8 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
       </div>
 
       {/* Gráfico de Projeção */}
-      <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+      <div className="bg-card border border-border p-6 rounded-xl">
+        <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
           <TrendingUp size={20} className="text-blue-500"/> Projeção de Juros Compostos (12 Meses)
         </h3>
         <div className="w-full h-[300px] min-w-0 min-h-0">
@@ -233,16 +233,16 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Formulário e Lista de Ativos */}
         <div className="space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-foreground">
                 {editingInvestment ? "Editar Ativo" : "Novo Ativo"}
               </h3>
               {editingInvestment && (
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors"
+                  className="flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors"
                 >
                   <X size={14} /> Cancelar
                 </button>
@@ -251,38 +251,38 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
             <form key={editingInvestment?.id ?? "new"} onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Nome (Ex: Tesouro Selic)</label>
-                  <input name="name" required defaultValue={editingInvestment?.name ?? ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <label className="block text-xs font-medium text-muted mb-1">Nome (Ex: Tesouro Selic)</label>
+                  <input name="name" required defaultValue={editingInvestment?.name ?? ""} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Tipo</label>
-                  <select name="type" required defaultValue={editingInvestment?.type ?? "FIXED_INCOME"} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white">
+                  <label className="block text-xs font-medium text-muted mb-1">Tipo</label>
+                  <select name="type" required defaultValue={editingInvestment?.type ?? "FIXED_INCOME"} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground">
                     <option value="FIXED_INCOME">Renda Fixa</option>
                     <option value="VARIABLE_INCOME">Renda Variável</option>
                     <option value="CRYPTO">Criptomoeda</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Aporte Inicial (R$)</label>
-                  <input name="initialAmount" type="number" step="0.01" required defaultValue={editingInvestment ? String(editingInvestment.initialAmount) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <label className="block text-xs font-medium text-muted mb-1">Aporte Inicial (R$)</label>
+                  <input name="initialAmount" type="number" step="0.01" required defaultValue={editingInvestment ? String(editingInvestment.initialAmount) : ""} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                 </div>
                 {editingInvestment && (
                   <div>
-                    <label className="block text-xs font-medium text-zinc-400 mb-1">Valor Atual (R$)</label>
-                    <input name="currentAmount" type="number" step="0.01" required defaultValue={String(editingInvestment.currentAmount)} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                    <label className="block text-xs font-medium text-muted mb-1">Valor Atual (R$)</label>
+                    <input name="currentAmount" type="number" step="0.01" required defaultValue={String(editingInvestment.currentAmount)} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Taxa Anual (Ex: 10.5 para 10,5%)</label>
-                  <input name="yieldRate" type="number" step="0.01" required defaultValue={editingInvestment ? String(roundMoney(editingInvestment.yieldRate * 100)) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <label className="block text-xs font-medium text-muted mb-1">Taxa Anual (Ex: 10.5 para 10,5%)</label>
+                  <input name="yieldRate" type="number" step="0.01" required defaultValue={editingInvestment ? String(roundMoney(editingInvestment.yieldRate * 100)) : ""} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Data Início</label>
-                  <input name="startDate" type="date" required defaultValue={editingInvestment ? toDateInputValue(editingInvestment.startDate) : new Date().toISOString().split('T')[0]} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <label className="block text-xs font-medium text-muted mb-1">Data Início</label>
+                  <input name="startDate" type="date" required defaultValue={editingInvestment ? toDateInputValue(editingInvestment.startDate) : new Date().toISOString().split('T')[0]} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Vencimento (Opcional)</label>
-                  <input name="maturityDate" type="date" defaultValue={editingInvestment ? toDateInputValue(editingInvestment.maturityDate) : ""} className="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white" />
+                  <label className="block text-xs font-medium text-muted mb-1">Vencimento (Opcional)</label>
+                  <input name="maturityDate" type="date" defaultValue={editingInvestment ? toDateInputValue(editingInvestment.maturityDate) : ""} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground" />
                 </div>
               </div>
               <button disabled={isPendingCreate} className="w-full h-[42px] bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
@@ -297,50 +297,50 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
             </form>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-              <h3 className="font-bold text-white">Sua Carteira</h3>
-              <span className="text-xs text-zinc-400">{investments.length} ativos</span>
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-bold text-foreground">Sua Carteira</h3>
+              <span className="text-xs text-muted">{investments.length} ativos</span>
             </div>
             <div className="divide-y divide-zinc-800">
               {currentInvestments.map(inv => (
-                <div key={inv.id} className={`p-4 flex items-center justify-between transition-colors ${editingId === inv.id ? "bg-white/5 ring-1 ring-inset ring-blue-500/40" : "hover:bg-white/5"}`}>
+                <div key={inv.id} className={`p-4 flex items-center justify-between transition-colors ${editingId === inv.id ? "bg-accent ring-1 ring-inset ring-blue-500/40" : "hover:bg-accent"}`}>
                   <div>
-                    <h4 className="font-medium text-white">{inv.name}</h4>
-                    <p className="text-xs text-zinc-400 mt-1">
+                    <h4 className="font-medium text-foreground">{inv.name}</h4>
+                    <p className="text-xs text-muted mt-1">
                       R$ {inv.currentAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} • {(inv.yieldRate * 100).toFixed(2)}% a.a.
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => startEdit(inv.id)} className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors" aria-label="Editar investimento">
+                    <button onClick={() => startEdit(inv.id)} className="p-2 text-muted hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors" aria-label="Editar investimento">
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDelete(inv.id)} disabled={isPendingDelete && deletingId === inv.id} className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors" aria-label="Excluir investimento">
+                    <button onClick={() => handleDelete(inv.id)} disabled={isPendingDelete && deletingId === inv.id} className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors" aria-label="Excluir investimento">
                       {isPendingDelete && deletingId === inv.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={16}/>}
                     </button>
                   </div>
                 </div>
               ))}
               {investments.length === 0 && (
-                <div className="p-8 text-center text-zinc-500 text-sm">Nenhum ativo cadastrado.</div>
+                <div className="p-8 text-center text-muted text-sm">Nenhum ativo cadastrado.</div>
               )}
             </div>
             {investments.length > itemsPerPage && (
-              <div className="p-3 border-t border-zinc-800 flex items-center justify-between bg-black/20">
+              <div className="p-3 border-t border-border flex items-center justify-between bg-accent/40">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(p => p - 1)}
-                  className="px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+                  className="px-2 py-1 rounded-md text-xs bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors"
                 >
                   Anterior
                 </button>
-                <span className="text-xs text-zinc-400 font-medium">
+                <span className="text-xs text-muted font-medium">
                   {currentPage} de {totalPages}
                 </span>
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(p => p + 1)}
-                  className="px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+                  className="px-2 py-1 rounded-md text-xs bg-accent border border-white/10 text-foreground disabled:opacity-50 hover:bg-accent transition-colors"
                 >
                   Próximo
                 </button>
@@ -350,41 +350,41 @@ export default function InvestmentDashboardClient({ initialInvestments }: { init
         </div>
 
         {/* Chatbot Simulador IA */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col h-full min-h-[500px]">
-          <div className="p-4 border-b border-zinc-800 flex items-center gap-2">
+        <div className="bg-card border border-border rounded-xl flex flex-col h-full min-h-[500px]">
+          <div className="p-4 border-b border-border flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
               <Sparkles size={16} className="text-purple-400" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-sm">Simulador de Cenários (IA)</h3>
-              <p className="text-xs text-zinc-400">Tributação real e Custo de Oportunidade</p>
+              <h3 className="font-bold text-foreground text-sm">Simulador de Cenários (IA)</h3>
+              <p className="text-xs text-muted">Tributação real e Custo de Oportunidade</p>
             </div>
           </div>
           
           <div className="flex-1 p-6 overflow-y-auto">
             {simResult ? (
               <div className="prose prose-invert prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-zinc-300 leading-relaxed bg-black/40 p-4 rounded-xl border border-zinc-800/50">
+                <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed bg-background p-4 rounded-xl border border-border/50">
                   {simResult}
                 </div>
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
                 <Sparkles size={48} className="text-purple-500" />
-                <p className="text-sm text-zinc-400 max-w-[250px]">
+                <p className="text-sm text-muted max-w-[250px]">
                   Pergunte: &quot;Devo sacar 5 mil do Tesouro Selic hoje ou pegar um empréstimo a 2% ao mês?&quot;
                 </p>
               </div>
             )}
           </div>
 
-          <div className="p-4 border-t border-zinc-800 bg-black/20">
+          <div className="p-4 border-t border-border bg-accent/40">
             <form onSubmit={handleSimulate} className="flex gap-2">
               <input 
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Simular cenário financeiro..." 
-                className="flex-1 bg-black border border-zinc-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 bg-black border border-border rounded-lg px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <button 
                 type="submit" 

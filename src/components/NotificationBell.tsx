@@ -162,7 +162,7 @@ export default function NotificationBell() {
         aria-label="Notificações"
         aria-haspopup="true"
         aria-expanded={open}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -175,12 +175,12 @@ export default function NotificationBell() {
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-xl">
           <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
-            <h3 className="text-sm font-semibold text-white">Notificações</h3>
+            <h3 className="text-sm font-semibold text-foreground">Notificações</h3>
             <button
               type="button"
               onClick={markAllRead}
               disabled={unreadCount === 0}
-              className="flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-1 text-xs text-muted transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
               <CheckCheck size={14} /> Marcar todas
             </button>
@@ -188,12 +188,12 @@ export default function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {!loaded ? (
-              <div className="flex items-center justify-center gap-2 px-4 py-10 text-sm text-zinc-500">
+              <div className="flex items-center justify-center gap-2 px-4 py-10 text-sm text-muted">
                 <Loader2 size={16} className="animate-spin" /> Carregando…
               </div>
             ) : items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-sm text-zinc-500">
-                <Inbox size={22} className="text-zinc-600" />
+              <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-sm text-muted">
+                <Inbox size={22} className="text-muted" />
                 Nenhuma notificação
               </div>
             ) : (
@@ -201,7 +201,7 @@ export default function NotificationBell() {
                 {items.map((n) => (
                   <li
                     key={n.id}
-                    className={`group relative border-l-2 ${TYPE_RING[n.type]} px-4 py-3 transition-colors hover:bg-white/5 ${
+                    className={`group relative border-l-2 ${TYPE_RING[n.type]} px-4 py-3 transition-colors hover:bg-accent ${
                       n.read ? "opacity-70" : ""
                     }`}
                   >
@@ -213,12 +213,12 @@ export default function NotificationBell() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-medium text-white">{n.title}</p>
-                          <span className="shrink-0 text-[10px] text-zinc-500">
+                          <p className="truncate text-sm font-medium text-foreground">{n.title}</p>
+                          <span className="shrink-0 text-[10px] text-muted">
                             {relativeTime(n.createdAt)}
                           </span>
                         </div>
-                        <p className="mt-0.5 text-xs text-zinc-400 break-words">{n.body}</p>
+                        <p className="mt-0.5 text-xs text-muted break-words">{n.body}</p>
 
                         <div className="mt-2 flex items-center gap-3">
                           {n.url && (
@@ -237,7 +237,7 @@ export default function NotificationBell() {
                             <button
                               type="button"
                               onClick={() => void markOneRead(n.id)}
-                              className="text-[11px] font-medium text-zinc-400 hover:text-white"
+                              className="text-[11px] font-medium text-muted hover:text-foreground"
                             >
                               Marcar como lida
                             </button>
@@ -246,7 +246,7 @@ export default function NotificationBell() {
                             type="button"
                             onClick={() => void remove(n.id)}
                             aria-label="Remover notificação"
-                            className="ml-auto text-zinc-600 transition-colors hover:text-red-400"
+                            className="ml-auto text-muted transition-colors hover:text-red-400"
                           >
                             <Trash2 size={13} />
                           </button>

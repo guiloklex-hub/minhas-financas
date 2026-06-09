@@ -23,7 +23,7 @@ interface Props {
 }
 
 const inputClass =
-  "bg-zinc-950 border border-zinc-800 rounded-md p-1.5 text-white text-sm focus:outline-none focus:border-emerald-500";
+  "bg-background border border-border rounded-md p-1.5 text-foreground text-sm focus:outline-none focus:border-emerald-500";
 
 function fmtBRL(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
@@ -118,13 +118,13 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
   const includedSum = rows ? rows.filter((r) => r.include).reduce((a, r) => a + (r.type === "REFUND" ? -r.amount : r.amount), 0) : 0;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-4">
+    <div className="rounded-xl border border-border bg-card p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-sky-400" />
-          <h3 className="text-lg font-semibold text-white">Importar fatura (PDF) com IA</h3>
+          <h3 className="text-lg font-semibold text-foreground">Importar fatura (PDF) com IA</h3>
         </div>
-        <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors"><X size={18} /></button>
+        <button onClick={onClose} className="text-muted hover:text-foreground transition-colors"><X size={18} /></button>
       </div>
 
       {message && (
@@ -135,13 +135,13 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
 
       {!rows ? (
         <form onSubmit={handleAnalyze} className="space-y-3">
-          <p className="text-sm text-zinc-400">Envie o PDF (ou foto) da fatura do cartão. A IA lê os lançamentos e você revisa antes de importar.</p>
+          <p className="text-sm text-muted">Envie o PDF (ou foto) da fatura do cartão. A IA lê os lançamentos e você revisa antes de importar.</p>
           <input
             required
             type="file"
             name="file"
             accept=".pdf,image/*"
-            className="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition-colors"
+            className="w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition-colors"
           />
           <button type="submit" disabled={loading} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors">
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
@@ -151,7 +151,7 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
       ) : (
         <div className="space-y-4">
           {/* Resumo */}
-          <div className="text-sm text-zinc-400">
+          <div className="text-sm text-muted">
             {invoiceMeta?.referenceMonth && invoiceMeta?.referenceYear && (
               <>Competência {String(invoiceMeta.referenceMonth).padStart(2, "0")}/{invoiceMeta.referenceYear} · </>
             )}
@@ -163,13 +163,13 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
 
           {/* Mapeamento de origens (cartões/virtuais) */}
           {sources.length > 1 && (
-            <div className="rounded-lg border border-zinc-800 p-3 space-y-2">
-              <p className="text-xs text-zinc-400 uppercase tracking-wider">Mapear cartões detectados</p>
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-xs text-muted uppercase tracking-wider">Mapear cartões detectados</p>
               {sources.map((s) => {
                 const t = sourceTargets[s.key] ?? { target: "PHYSICAL" };
                 return (
                   <div key={s.key} className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm text-white w-40">{s.label}</span>
+                    <span className="text-sm text-foreground w-40">{s.label}</span>
                     <select
                       value={t.target}
                       onChange={(e) => setSourceTargets((prev) => ({ ...prev, [s.key]: { target: e.target.value, newName: prev[s.key]?.newName } }))}
@@ -196,9 +196,9 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
           )}
 
           {/* Linhas */}
-          <div className="rounded-xl border border-zinc-800 overflow-hidden max-h-[28rem] overflow-y-auto">
+          <div className="rounded-xl border border-border overflow-hidden max-h-[28rem] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="bg-white/5 border-b border-zinc-800 text-zinc-400 uppercase text-xs sticky top-0">
+              <thead className="bg-accent border-b border-border text-muted uppercase text-xs sticky top-0">
                 <tr>
                   <th className="px-2 py-2"></th>
                   <th className="text-left px-2 py-2">Data</th>
@@ -209,7 +209,7 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
               </thead>
               <tbody className="divide-y divide-zinc-800">
                 {rows.map((r, i) => (
-                  <tr key={i} className={`hover:bg-white/5 ${r.include ? "" : "opacity-50"}`}>
+                  <tr key={i} className={`hover:bg-accent ${r.include ? "" : "opacity-50"}`}>
                     <td className="px-2 py-2 text-center">
                       <input
                         type="checkbox"
@@ -217,13 +217,13 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
                         onChange={(e) => setRows((prev) => (prev ? prev.map((x, j) => (j === i ? { ...x, include: e.target.checked } : x)) : prev))}
                       />
                     </td>
-                    <td className="px-2 py-2 text-zinc-400 whitespace-nowrap">{fmtDate(r.date)}</td>
-                    <td className="px-2 py-2 text-white">
+                    <td className="px-2 py-2 text-muted whitespace-nowrap">{fmtDate(r.date)}</td>
+                    <td className="px-2 py-2 text-foreground">
                       {r.description}
-                      {r.installmentTotal && <span className="text-zinc-500"> ({r.installmentNumber}/{r.installmentTotal})</span>}
+                      {r.installmentTotal && <span className="text-muted"> ({r.installmentNumber}/{r.installmentTotal})</span>}
                       {r.type === "REFUND" && <span className="ml-1 text-xs text-emerald-400">(estorno)</span>}
                       {r.type === "FEE" && <span className="ml-1 text-xs text-amber-400">(taxa)</span>}
-                      {r.duplicate && <span className="ml-1 text-xs text-zinc-500">(duplicada)</span>}
+                      {r.duplicate && <span className="ml-1 text-xs text-muted">(duplicada)</span>}
                     </td>
                     <td className="px-2 py-2">
                       {creatingRow === i ? (
@@ -242,7 +242,7 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
                           <button type="button" onClick={() => handleCreateCategory(i)} disabled={catPending || !newCatName.trim()} className="p-1 rounded text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-40">
                             {catPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           </button>
-                          <button type="button" onClick={() => { setCreatingRow(null); setNewCatName(""); }} className="p-1 rounded text-zinc-400 hover:bg-white/10"><X size={14} /></button>
+                          <button type="button" onClick={() => { setCreatingRow(null); setNewCatName(""); }} className="p-1 rounded text-muted hover:bg-accent"><X size={14} /></button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1">
@@ -260,7 +260,7 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
                         </div>
                       )}
                     </td>
-                    <td className={`px-2 py-2 text-right whitespace-nowrap ${r.type === "REFUND" ? "text-emerald-400" : "text-white"}`}>
+                    <td className={`px-2 py-2 text-right whitespace-nowrap ${r.type === "REFUND" ? "text-emerald-400" : "text-foreground"}`}>
                       {r.type === "REFUND" ? "-" : ""}{fmtBRL(r.amount)}
                     </td>
                   </tr>
@@ -274,7 +274,7 @@ export default function InvoiceImport({ cardId, categories, virtualCards, onClos
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
               {loading ? "Importando..." : `Confirmar importação (${rows.filter((r) => r.include).length})`}
             </button>
-            <button onClick={() => { setRows(null); setMessage(null); }} disabled={loading} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all">
+            <button onClick={() => { setRows(null); setMessage(null); }} disabled={loading} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all">
               Voltar
             </button>
           </div>

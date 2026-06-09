@@ -135,19 +135,19 @@ export default function CurrencyClient({
   }
 
   const selectClass =
-    "w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500";
+    "w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500";
 
   return (
     <div className="space-y-6">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-start justify-between gap-3 mb-1">
-          <h3 className="text-lg font-bold text-white">Nova Cotação</h3>
+          <h3 className="text-lg font-bold text-foreground">Nova Cotação</h3>
           <button
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
             title="Buscar cotações na API externa (AwesomeAPI)"
-            className="shrink-0 flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors disabled:opacity-50"
+            className="shrink-0 flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-accent hover:bg-accent text-foreground/80 hover:text-foreground border border-white/10 transition-colors disabled:opacity-50"
           >
             {isRefreshing ? (
               <Loader2 size={15} className="animate-spin" />
@@ -157,18 +157,18 @@ export default function CurrencyClient({
             Atualizar cotações
           </button>
         </div>
-        <p className="text-sm text-zinc-400 mb-2">
+        <p className="text-sm text-muted mb-2">
           Cadastre manualmente a taxa de conversão entre duas moedas, ou use
           &quot;Atualizar cotações&quot; para buscar automaticamente da API externa.
           Uma unidade da moeda de origem equivale à taxa informada na moeda de destino.
         </p>
-        {refreshMsg && <p className="text-xs text-zinc-400 mb-4">{refreshMsg}</p>}
+        {refreshMsg && <p className="text-xs text-muted mb-4">{refreshMsg}</p>}
         <form
           onSubmit={handleCreate}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"
         >
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-muted mb-1">
               De (origem)
             </label>
             <select name="base" required defaultValue="USD" className={selectClass}>
@@ -180,7 +180,7 @@ export default function CurrencyClient({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-muted mb-1">
               Para (destino)
             </label>
             <select name="quote" required defaultValue="BRL" className={selectClass}>
@@ -192,7 +192,7 @@ export default function CurrencyClient({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-muted mb-1">
               Taxa
             </label>
             <input
@@ -206,7 +206,7 @@ export default function CurrencyClient({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-muted mb-1">
               Data
             </label>
             <input
@@ -233,9 +233,9 @@ export default function CurrencyClient({
         {error && <p className="text-rose-500 text-sm mt-3">{error}</p>}
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/5 border-b border-zinc-800 uppercase text-white/60">
+          <thead className="bg-accent border-b border-border uppercase text-muted">
             <tr>
               <th className="px-6 py-4 font-medium">Conversão</th>
               <th className="px-6 py-4 font-medium w-48">Taxa</th>
@@ -249,12 +249,12 @@ export default function CurrencyClient({
               return (
                 <tr
                   key={rate.id}
-                  className="hover:bg-white/5 transition-colors align-middle"
+                  className="hover:bg-accent transition-colors align-middle"
                 >
-                  <td className="px-6 py-4 font-medium text-white">
+                  <td className="px-6 py-4 font-medium text-foreground">
                     <div className="flex items-center gap-2">
                       <span className="font-mono">{rate.base}</span>
-                      <ArrowRightLeft size={14} className="text-zinc-500" />
+                      <ArrowRightLeft size={14} className="text-muted" />
                       <span className="font-mono">{rate.quote}</span>
                     </div>
                   </td>
@@ -268,10 +268,10 @@ export default function CurrencyClient({
                           step="0.000001"
                           min="0"
                           autoFocus
-                          className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          className="w-full bg-background border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         />
                       </td>
-                      <td className="px-6 py-4 text-zinc-400">
+                      <td className="px-6 py-4 text-muted">
                         {formatRateDate(rate.date)}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -292,7 +292,7 @@ export default function CurrencyClient({
                             onClick={cancelEdit}
                             disabled={isEditPending}
                             title="Cancelar"
-                            className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
                           >
                             <X size={16} />
                           </button>
@@ -301,10 +301,10 @@ export default function CurrencyClient({
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-4 text-white font-mono">
+                      <td className="px-6 py-4 text-foreground font-mono">
                         {rate.rate}
                       </td>
-                      <td className="px-6 py-4 text-zinc-400">
+                      <td className="px-6 py-4 text-muted">
                         {formatRateDate(rate.date)}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -313,7 +313,7 @@ export default function CurrencyClient({
                             onClick={() => startEdit(rate)}
                             disabled={loadingId === rate.id || isPending}
                             title="Editar"
-                            className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors disabled:opacity-50"
                           >
                             <Pencil size={16} />
                           </button>
@@ -321,7 +321,7 @@ export default function CurrencyClient({
                             onClick={() => handleDelete(rate.id)}
                             disabled={loadingId === rate.id || isPending}
                             title="Excluir"
-                            className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
                           >
                             {loadingId === rate.id ? (
                               <Loader2 size={16} className="animate-spin" />
@@ -340,7 +340,7 @@ export default function CurrencyClient({
               <tr>
                 <td
                   colSpan={4}
-                  className="px-6 py-8 text-center text-zinc-500"
+                  className="px-6 py-8 text-center text-muted"
                 >
                   Nenhuma cotação cadastrada.
                 </td>
@@ -349,7 +349,7 @@ export default function CurrencyClient({
           </tbody>
         </table>
         {editError && (
-          <p className="text-rose-500 text-sm px-6 py-3 border-t border-zinc-800">
+          <p className="text-rose-500 text-sm px-6 py-3 border-t border-border">
             {editError}
           </p>
         )}

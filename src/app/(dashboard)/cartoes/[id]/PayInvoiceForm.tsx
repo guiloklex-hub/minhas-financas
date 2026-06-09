@@ -52,7 +52,7 @@ export default function PayInvoiceForm({
       )}
 
       <div>
-        <label htmlFor="fromAccountId" className="block text-sm font-medium text-white/70 mb-1">Conta de pagamento</label>
+        <label htmlFor="fromAccountId" className="block text-sm font-medium text-muted mb-1">Conta de pagamento</label>
         <select id="fromAccountId" name="fromAccountId" required defaultValue={defaultAccountId || ""} className={inputClass}>
           <option value="" disabled>Selecione…</option>
           {accounts.map((a) => (
@@ -63,17 +63,17 @@ export default function PayInvoiceForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-white/70 mb-1">Valor</label>
+          <label htmlFor="amount" className="block text-sm font-medium text-muted mb-1">Valor</label>
           <input type="number" id="amount" name="amount" required step="0.01" min="0.01" defaultValue={outstanding > 0 ? outstanding : ""} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-white/70 mb-1">Data</label>
+          <label htmlFor="date" className="block text-sm font-medium text-muted mb-1">Data</label>
           <input type="date" id="date" name="date" required defaultValue={todayISO()} className={inputClass} />
         </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-all">Cancelar</button>
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-all">Cancelar</button>
         <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-md transition-all disabled:opacity-50">
           {loading ? "Processando..." : "Confirmar pagamento"}
         </button>
