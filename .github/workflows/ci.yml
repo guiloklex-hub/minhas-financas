@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela execuções antigas do mesmo branch/PR quando um novo push chega.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Lint, typecheck, testes e build
+    runs-on: ubuntu-latest
+
+    env:
+      # Segredos fictícios só para CI — nunca usar valores reais aqui.
+      # O build roda com NODE_ENV=production e jwt-secret.ts exige JWT_SECRET.
+      DATABASE_URL: "file:./prisma/dev.db"
+      JWT_SECRET: "ci-only-insecure-secret-do-not-use-in-production"
+      CRON_SECRET: "ci-only-cron-secret"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
+
+      - name: Aplicar migrações (SQLite efêmero)
+        run: npx prisma migrate deploy
+
+      - name: Typecheck (tsc)
+        run: npm run typecheck
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Testes (Vitest)
+        run: npm run test:run
+
+      - name: Build de produção
+        run: npm run build

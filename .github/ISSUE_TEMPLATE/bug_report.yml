@@ -1,0 +1,44 @@
+name: 🐛 Relatar bug
+description: Relate um comportamento incorreto no Minhas Finanças
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar! Preencha os campos abaixo para ajudar a reproduzir o problema.
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição do bug
+      description: O que aconteceu? O que você esperava que acontecesse?
+    validations:
+      required: true
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Passos para reproduzir
+      description: Liste os passos para reproduzir o comportamento.
+      placeholder: |
+        1. Acesse '...'
+        2. Clique em '...'
+        3. Veja o erro
+    validations:
+      required: true
+  - type: textarea
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Versão do Node, navegador, SO, etc.
+      placeholder: |
+        - Node: v22.x
+        - SO: Windows 11 / Ubuntu 24.04
+        - Navegador: Chrome 130
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / capturas de tela
+      description: Cole logs de erro relevantes ou anexe imagens (sem dados sensíveis).
+    validations:
+      required: false

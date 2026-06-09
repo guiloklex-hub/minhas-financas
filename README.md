@@ -1,5 +1,8 @@
 # Minhas Finanças 💰
 
+[![CI](https://github.com/guiloklex-hub/minhas-financas/actions/workflows/ci.yml/badge.svg)](https://github.com/guiloklex-hub/minhas-financas/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Gerenciador de finanças pessoais **single-user**, focado em simplicidade, com interface moderna e premium. Desenvolvido para ser executado localmente.
 
 O app possui **autenticação por segurança**: a tela de login protege o acesso e a tela de registro só funciona enquanto **não houver nenhum usuário cadastrado** (o sistema recusa um segundo usuário).
