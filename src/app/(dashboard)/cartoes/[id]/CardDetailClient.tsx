@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, ArrowLeft, Plus, Trash2, CreditCard as CreditCardIcon, Gift, CalendarCheck, Sparkles, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { formatCivilDate } from "@/lib/format-date";
-import { computeBestPurchaseDay } from "@/lib/credit-card";
+import { computeBestPurchaseDay, getInvoiceCompetence } from "@/lib/credit-card";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
 import { FutureInvoicesBar } from "@/components/charts/FutureInvoicesBar";
 import { Repeat } from "lucide-react";
@@ -134,7 +134,18 @@ export default function CardDetailClient({
   virtualCards: VirtualCardView[];
 }) {
   const router = useRouter();
-  const [index, setIndex] = useState(0);
+  // Abre na fatura da competência atual (não na mais futura). As faturas vêm em
+  // ordem desc (mais recente primeiro); se a do mês corrente não existir, cai na
+  // fatura passada mais recente.
+  const [index, setIndex] = useState(() => {
+    if (invoices.length === 0) return 0;
+    const comp = getInvoiceCompetence(new Date(), card.closingDay);
+    const exact = invoices.findIndex((i) => i.referenceYear === comp.year && i.referenceMonth === comp.month);
+    if (exact >= 0) return exact;
+    const target = comp.year * 12 + (comp.month - 1);
+    const notFuture = invoices.findIndex((i) => i.referenceYear * 12 + (i.referenceMonth - 1) <= target);
+    return notFuture >= 0 ? notFuture : invoices.length - 1;
+  });
   const [showPurchase, setShowPurchase] = useState(false);
   const [showPay, setShowPay] = useState(false);
   const [showRedeem, setShowRedeem] = useState(false);
