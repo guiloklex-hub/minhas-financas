@@ -6,6 +6,7 @@ import { getSession } from "@/lib/session"
 import { roundMoney } from "@/lib/money"
 import { suggestCategoriesForTitles } from "@/lib/categorization"
 import { categorizeTitlesWithAi } from "@/lib/ai-categorize"
+import { parseCsvLine } from "@/lib/card-csv-import"
 
 /**
  * Valor especial em `categoryId` que liga a categorização AUTOMÁTICA aprendida:
@@ -16,46 +17,6 @@ const AUTO_CATEGORY = "__auto__";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_LINES = 5000;
-
-/**
- * Parser de linha CSV que respeita campos entre aspas com vírgulas internas
- * e aspas duplas escapadas ("").
- */
-function parseCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-
-    if (inQuotes) {
-      if (char === '"') {
-        if (line[i + 1] === '"') {
-          // Aspas duplas escapadas
-          current += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        current += char;
-      }
-    } else {
-      if (char === '"') {
-        inQuotes = true;
-      } else if (char === ",") {
-        result.push(current);
-        current = "";
-      } else {
-        current += char;
-      }
-    }
-  }
-
-  result.push(current);
-  return result.map(c => c.trim());
-}
 
 /**
  * Converte uma string de data (YYYY-MM-DD ou DD/MM/YYYY) em Date UTC.

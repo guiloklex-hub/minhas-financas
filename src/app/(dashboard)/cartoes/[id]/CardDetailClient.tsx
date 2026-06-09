@@ -19,7 +19,8 @@ import PayInvoiceForm from "./PayInvoiceForm";
 import RewardRedeemForm from "./RewardRedeemForm";
 import VirtualCardForm from "./VirtualCardForm";
 import InvoiceImport from "./InvoiceImport";
-import { Layers, Pencil, FileText } from "lucide-react";
+import CardCsvImport from "./CardCsvImport";
+import { Layers, Pencil, FileText, Upload } from "lucide-react";
 
 type InvoiceItem = {
   id: string;
@@ -140,6 +141,7 @@ export default function CardDetailClient({
   const [showVcForm, setShowVcForm] = useState(false);
   const [editingVc, setEditingVc] = useState<VirtualCardView | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showCsvImport, setShowCsvImport] = useState(false);
   // Filtro da fatura por cartão: "ALL" | "PHYSICAL" | <virtualCardId>
   const [cardFilter, setCardFilter] = useState<string>("ALL");
   const [insights, setInsights] = useState<string[] | null>(null);
@@ -318,8 +320,11 @@ export default function CardDetailClient({
             Pagar fatura
           </button>
         )}
-        <button onClick={() => { setShowImport((s) => !s); setShowPurchase(false); setShowPay(false); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-md transition-all">
+        <button onClick={() => { setShowImport((s) => !s); setShowCsvImport(false); setShowPurchase(false); setShowPay(false); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-md transition-all">
           <FileText size={16} /> Importar fatura
+        </button>
+        <button onClick={() => { setShowCsvImport((s) => !s); setShowImport(false); setShowPurchase(false); setShowPay(false); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-md transition-all">
+          <Upload size={16} /> Importar CSV
         </button>
       </div>
 
@@ -330,6 +335,16 @@ export default function CardDetailClient({
           virtualCards={virtualCards.map((v) => ({ id: v.id, name: v.name }))}
           onClose={() => setShowImport(false)}
           onImported={() => { setShowImport(false); router.refresh(); }}
+        />
+      )}
+
+      {showCsvImport && (
+        <CardCsvImport
+          cardId={card.id}
+          categories={categories}
+          virtualCards={virtualCards.map((v) => ({ id: v.id, name: v.name }))}
+          onClose={() => setShowCsvImport(false)}
+          onImported={() => { setShowCsvImport(false); router.refresh(); }}
         />
       )}
 
