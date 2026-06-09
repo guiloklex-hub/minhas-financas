@@ -14,7 +14,7 @@ vi.mock('@/lib/session', () => ({
 import { prismaMock } from '../lib/__mocks__/prisma';
 import { getSession } from '@/lib/session';
 import type { Transaction } from '@/generated/prisma/client';
-import { getCashFlow, getYearComparison } from './reports';
+import { getCashFlow, getYearComparison, getCategoryBreakdown } from './reports';
 
 const getSessionMock = vi.mocked(getSession);
 
@@ -193,6 +193,26 @@ describe('actions/reports.ts — getYearComparison', () => {
   it('rejeita ano fora do intervalo permitido sem consultar o Prisma', async () => {
     await expect(getYearComparison(1999)).rejects.toThrow('Ano deve ser um inteiro entre 2000 e 2100.');
     await expect(getYearComparison(2101)).rejects.toThrow('Ano deve ser um inteiro entre 2000 e 2100.');
+    expect(prismaMock.transaction.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('actions/reports.ts — guarda de sessão', () => {
+  it('getCashFlow rejeita sem sessão e não consulta o Prisma', async () => {
+    getSessionMock.mockResolvedValueOnce(null);
+    await expect(getCashFlow('2024-01-01', '2024-12-31')).rejects.toThrow('Não autorizado.');
+    expect(prismaMock.transaction.findMany).not.toHaveBeenCalled();
+  });
+
+  it('getYearComparison rejeita sem sessão e não consulta o Prisma', async () => {
+    getSessionMock.mockResolvedValueOnce(null);
+    await expect(getYearComparison(2024)).rejects.toThrow('Não autorizado.');
+    expect(prismaMock.transaction.findMany).not.toHaveBeenCalled();
+  });
+
+  it('getCategoryBreakdown rejeita sem sessão e não consulta o Prisma', async () => {
+    getSessionMock.mockResolvedValueOnce(null);
+    await expect(getCategoryBreakdown('2024-01-01', '2024-12-31')).rejects.toThrow('Não autorizado.');
     expect(prismaMock.transaction.findMany).not.toHaveBeenCalled();
   });
 });

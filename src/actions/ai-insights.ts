@@ -251,7 +251,8 @@ export async function generateMonthlyInsight(month: number, year: number) {
 
 /** Retorna o resumo mensal mais recente (por ano/mês), ou null. */
 export async function getLatestMonthlyInsight(): Promise<MonthlyInsight | null> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
   return prisma.monthlyInsight.findFirst({
     orderBy: [{ year: "desc" }, { month: "desc" }],
   });
@@ -259,7 +260,8 @@ export async function getLatestMonthlyInsight(): Promise<MonthlyInsight | null> 
 
 /** Lista todos os resumos mensais, do mais recente para o mais antigo. */
 export async function getMonthlyInsights(): Promise<MonthlyInsight[]> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
   return prisma.monthlyInsight.findMany({
     orderBy: [{ year: "desc" }, { month: "desc" }],
   });

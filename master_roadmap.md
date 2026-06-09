@@ -33,7 +33,10 @@
 - **Multi-moeda**: `currency` por conta + cotações (`/configuracoes/moedas`) + conversão.
 
 ## 🔒 Gated (precisa de credenciais/infra)
-- **Open Banking** (Pluggy/Belvo): scaffold pronto (`src/lib/openbanking.ts`); requer `PLUGGY_CLIENT_ID/SECRET`.
+- **Open Banking** (Pluggy/Belvo) — **PLANEJADO / não integrado à UI**. Hoje existe apenas um *scaffold* server-side gated por credenciais:
+  - Lib `src/lib/openbanking.ts` (`isOpenBankingConfigured`, `listConnections`, `syncTransactions`) — **stub**, sem chamadas de rede; lança/retorna erro claro enquanto `PLUGGY_CLIENT_ID/SECRET` não estiverem definidos. Os pontos de extensão estão marcados com `TODO` (autenticação no agregador, fetch + dedup + conversão de moeda + persistência).
+  - Action `src/actions/openbanking.ts` (`syncBankTransactions`) — com guarda de sessão; **ainda não consumida por nenhuma tela** (não há botão/fluxo no dashboard). Wireup de UI é trabalho futuro.
+  - Próximos passos para habilitar: implementar os `TODO` da lib, mapear `BankTransaction → Transaction` (dedup + `@/lib/currency`), criar a tela de conexões e plugar `syncBankTransactions` nela.
 - **Postgres + deploy**: opcional; o app é local-first com SQLite.
 
 ## 🚫 Fora de escopo (decisão do produto)

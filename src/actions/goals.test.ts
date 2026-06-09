@@ -129,12 +129,23 @@ describe('actions/goals.ts', () => {
   });
 
   describe('addToGoal', () => {
-    it('deve incrementar currentAmount usando increment com roundMoney', async () => {
-      prismaMock.goal.update.mockResolvedValue({ ...baseGoal, currentAmount: 250.51 });
+    beforeEach(() => {
+      // $transaction interativo: executa o callback com o próprio mock.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.$transaction.mockImplementation(async (arg: any) => {
+        if (typeof arg === 'function') return arg(prismaMock);
+        return Promise.all(arg);
+      });
+    });
+
+    it('soma ao currentAmount existente arredondando o resultado (sem drift de float)', async () => {
+      // Saldo atual com resíduo de float; aporte que, somado cru, daria
+      // 0.1 + 0.2 = 0.30000000000000004 — roundMoney deve devolver 0.3.
+      prismaMock.goal.findUnique.mockResolvedValue({ ...baseGoal, currentAmount: 0.1 });
+      prismaMock.goal.update.mockResolvedValue({ ...baseGoal, currentAmount: 0.3 });
 
       const formData = new FormData();
-      // 250.505 -> roundMoney -> 250.51
-      formData.append('amount', '250.505');
+      formData.append('amount', '0.2');
 
       const result = await addToGoal('goal-1', formData);
 
@@ -142,10 +153,21 @@ describe('actions/goals.ts', () => {
       expect(prismaMock.goal.update).toHaveBeenCalledTimes(1);
       expect(prismaMock.goal.update).toHaveBeenCalledWith({
         where: { id: 'goal-1' },
-        data: {
-          currentAmount: { increment: 250.51 }
-        }
+        data: { currentAmount: 0.3 },
       });
+    });
+
+    it('retorna erro quando a meta não existe', async () => {
+      prismaMock.goal.findUnique.mockResolvedValue(null);
+
+      const formData = new FormData();
+      formData.append('amount', '100');
+
+      const result = await addToGoal('goal-inexistente', formData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Meta não encontrada.');
+      expect(prismaMock.goal.update).not.toHaveBeenCalled();
     });
 
     it('deve retornar erro se o valor do aporte for inválido', async () => {

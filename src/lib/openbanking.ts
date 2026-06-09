@@ -3,8 +3,9 @@
  *
  * Este módulo é um STUB intencional: ele NÃO faz chamadas de rede. Serve como
  * ponto de bloqueio claro até que as credenciais sejam configuradas e a
- * integração real seja implementada. Todos os pontos de extensão estão
- * marcados com TODO.
+ * integração real seja implementada. Os pontos de extensão estão marcados com
+ * ROADMAP (feature planejada e gated — ver master_roadmap.md), não como código
+ * incompleto a finalizar agora.
  *
  * Para habilitar, defina no ambiente:
  *   PLUGGY_CLIENT_ID
@@ -56,10 +57,10 @@ export async function listConnections(): Promise<BankConnection[]> {
     throw new Error(NOT_CONFIGURED_MESSAGE);
   }
 
-  // TODO: autenticar no agregador (obter API key a partir de
-  // PLUGGY_CLIENT_ID/PLUGGY_CLIENT_SECRET) e buscar as conexões (items) do
-  // usuário. Mapear a resposta para BankConnection[]. Sem chamadas de rede
-  // reais neste scaffold.
+  // ROADMAP (Open Banking — gated, ver master_roadmap.md): autenticar no
+  // agregador (obter API key a partir de PLUGGY_CLIENT_ID/PLUGGY_CLIENT_SECRET)
+  // e buscar as conexões (items) do usuário, mapeando a resposta para
+  // BankConnection[]. Scaffold intencional: sem chamadas de rede reais aqui.
   throw new Error(NOT_CONFIGURED_MESSAGE);
 }
 
@@ -73,9 +74,9 @@ export async function syncTransactions(): Promise<BankTransaction[]> {
     throw new Error(NOT_CONFIGURED_MESSAGE);
   }
 
-  // TODO: para cada conexão de listConnections(), buscar as transações no
-  // agregador, deduplicar contra Transaction existentes, converter moeda via
-  // @/lib/currency quando necessário e persistir. Sem chamadas de rede reais
-  // neste scaffold.
+  // ROADMAP (Open Banking — gated, ver master_roadmap.md): para cada conexão de
+  // listConnections(), buscar as transações no agregador, deduplicar contra
+  // Transaction existentes, converter moeda via @/lib/currency quando necessário
+  // e persistir. Scaffold intencional: sem chamadas de rede reais aqui.
   throw new Error(NOT_CONFIGURED_MESSAGE);
 }

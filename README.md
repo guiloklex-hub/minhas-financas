@@ -88,7 +88,7 @@ Crie um arquivo `.env` na raiz com:
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Para Web Push | Geradas com `npx web-push generate-vapid-keys`. Sem elas, o push é no-op. |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Para Web Push | A chave pública VAPID exposta ao client (assinatura do push). |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` / `NOTIFY_EMAIL_TO` | Para e-mail | Envio de alertas e link de recuperação de senha. Sem isso, e-mail é no-op. |
-| `PLUGGY_CLIENT_ID` / `PLUGGY_CLIENT_SECRET` | Para Open Banking | Integração bancária (scaffold). Sem isso, a sincronização fica desativada. |
+| `PLUGGY_CLIENT_ID` / `PLUGGY_CLIENT_SECRET` | Para Open Banking | Integração bancária **planejada** — hoje apenas scaffold server-side, ainda **não ligado a nenhuma tela**. Sem essas credenciais a sincronização permanece desativada. Detalhes e próximos passos em [`master_roadmap.md`](master_roadmap.md). |
 
 > O modelo completo de variáveis está em [`.env.example`](.env.example).
 

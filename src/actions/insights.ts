@@ -35,7 +35,8 @@ export type InsightsPayload = {
 };
 
 export async function getInsightsData(): Promise<InsightsPayload> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
 
   const now = new Date();
   const currentYear = now.getFullYear();

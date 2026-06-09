@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateCompoundInterest, calculateBrazilianTaxes } from "./financial-math";
+import { calculateCompoundInterest, calculateBrazilianTaxes, iofRateForDay } from "./financial-math";
 
 describe("financial-math.ts", () => {
 
@@ -46,13 +46,42 @@ describe("financial-math.ts", () => {
       expect(taxes).toBeCloseTo(150, 2);
     });
 
-    it("deve aplicar punição alta de IOF + IR para saque em 1 dia", () => {
+    it("deve aplicar IOF de 96% (tabela oficial) + IR para saque em 1 dia", () => {
       const profit = 1000;
       const taxes = calculateBrazilianTaxes(profit, 1);
-      // IOF aproximado: max(0, 1 - (1/30)) = 0.9666... (96.66% de 1000) = ~966.67
-      // Sobra ~33.33. IR de 22.5% em cima de 33.33 = ~7.50
-      // Total de imposto: 966.67 + 7.50 = 974.17
-      expect(taxes).toBeCloseTo(974.17, 1);
+      // IOF oficial dia 1 = 96% de 1000 = 960. Sobra 40.
+      // IR de 22.5% sobre 40 = 9. Total = 969.
+      expect(taxes).toBeCloseTo(969, 2);
+    });
+
+    it("deve aplicar IOF de 50% (tabela oficial) no dia 15", () => {
+      const taxes = calculateBrazilianTaxes(1000, 15);
+      // IOF dia 15 = 50% de 1000 = 500. Sobra 500. IR 22.5% = 112.5. Total 612.5.
+      expect(taxes).toBeCloseTo(612.5, 2);
+    });
+
+    it("deve aplicar IOF de 3% (tabela oficial) no dia 29", () => {
+      const taxes = calculateBrazilianTaxes(1000, 29);
+      // IOF dia 29 = 3% de 1000 = 30. Sobra 970. IR 22.5% = 218.25. Total 248.25.
+      expect(taxes).toBeCloseTo(248.25, 2);
+    });
+  });
+
+  describe("iofRateForDay", () => {
+    it("retorna a alíquota máxima (96%) no dia 1 e para frações/zero", () => {
+      expect(iofRateForDay(1)).toBeCloseTo(0.96, 4);
+      expect(iofRateForDay(0)).toBeCloseTo(0.96, 4);
+      expect(iofRateForDay(0.5)).toBeCloseTo(0.96, 4);
+    });
+
+    it("segue a tabela regressiva oficial em dias intermediários", () => {
+      expect(iofRateForDay(15)).toBeCloseTo(0.50, 4);
+      expect(iofRateForDay(29)).toBeCloseTo(0.03, 4);
+    });
+
+    it("zera a partir do dia 30", () => {
+      expect(iofRateForDay(30)).toBe(0);
+      expect(iofRateForDay(45)).toBe(0);
     });
   });
 });

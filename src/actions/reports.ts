@@ -107,7 +107,8 @@ function monthKeysInRange(from: Date, to: Date): string[] {
  * transferências não representam receita/despesa.
  */
 export async function getCashFlow(fromISO: string, toISO: string): Promise<CashFlowPoint[]> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
   const { from, to } = parseDateRange(fromISO, toISO);
 
   const end = new Date(to);
@@ -166,7 +167,8 @@ export async function getCashFlow(fromISO: string, toISO: string): Promise<CashF
  * Ignora transferências (`isTransfer: false`).
  */
 export async function getYearComparison(year: number): Promise<YearComparisonPoint[]> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
 
   if (!Number.isInteger(year) || year < MIN_YEAR || year > MAX_YEAR) {
     throw new Error(`Ano deve ser um inteiro entre ${MIN_YEAR} e ${MAX_YEAR}.`);
@@ -235,7 +237,8 @@ export async function getCategoryBreakdown(
   fromISO: string,
   toISO: string
 ): Promise<CategoryBreakdownItem[]> {
-  await getSession();
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado.");
   const { from, to } = parseDateRange(fromISO, toISO);
 
   const end = new Date(to);

@@ -125,12 +125,22 @@ export async function addToGoal(id: string, formData: FormData): Promise<GoalRes
     const amountRes = parseMoney(formData.get("amount"), "Valor do aporte", { min: 0.01 });
     if (!amountRes.ok) return { success: false, error: amountRes.error };
 
-    const goal = await prisma.goal.update({
-      where: { id },
-      data: {
-        currentAmount: { increment: roundMoney(amountRes.value) },
-      },
+    // Read-modify-write arredondado: garante que currentAmount permaneça um
+    // valor monetário limpo. O `increment` atômico somaria floats crus e, após
+    // muitos aportes, acumularia drift de ponto flutuante no campo Float do
+    // SQLite. App single-user → sem corrida relevante; a transação mantém a
+    // leitura+escrita coerentes.
+    const goal = await prisma.$transaction(async (tx) => {
+      const existing = await tx.goal.findUnique({
+        where: { id },
+        select: { currentAmount: true },
+      });
+      if (!existing) return null;
+      const nextAmount = roundMoney(existing.currentAmount + amountRes.value);
+      return tx.goal.update({ where: { id }, data: { currentAmount: nextAmount } });
     });
+
+    if (!goal) return { success: false, error: "Meta não encontrada." };
 
     revalidatePath("/metas");
     revalidatePath("/");
