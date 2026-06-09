@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Loader2, Upload, Plus, Check, X } from "lucide-react";
-import { analyzeCardCsvForImport, confirmInvoiceImport } from "@/actions/card-csv-import";
-import type { ExtractedInvoiceRow, ExtractedSource, SourceTarget } from "@/actions/ai-invoice-import";
+import { analyzeCardCsvForImport } from "@/actions/card-csv-import";
+import { confirmInvoiceImport, type ExtractedInvoiceRow, type ExtractedSource, type SourceTarget } from "@/actions/ai-invoice-import";
 import { createCategory } from "@/actions/categories";
 
 type Option = { id: string; name: string };

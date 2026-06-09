@@ -16,8 +16,9 @@ import type {
   ExtractedSource,
 } from "@/actions/ai-invoice-import";
 
-// Fase B reaproveitada inteira do import por IA (gravação genérica).
-export { confirmInvoiceImport } from "@/actions/ai-invoice-import";
+// A Fase B (gravação) é reaproveitada inteira do import por IA: a UI importa
+// `confirmInvoiceImport` direto de "@/actions/ai-invoice-import" (não dá para
+// re-exportar aqui — arquivos "use server" só podem exportar funções async).
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_LINES = 5000;
