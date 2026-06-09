@@ -8,6 +8,7 @@ import { sanitizeInvoiceLine, dedupKeyCard, sourceKey } from "@/lib/invoice-impo
 import {
   parseCsvLine,
   detectCsvLayout,
+  detectDelimiter,
   mapCsvRowToRawLine,
 } from "@/lib/card-csv-import";
 import type {
@@ -63,12 +64,14 @@ export async function analyzeCardCsvForImport(formData: FormData): Promise<Extra
       return { success: false, error: "Arquivo vazio. Use o formato: Data,Descrição,Valor[,Tipo,Parcela,Cartão]" };
     }
 
-    const firstCols = parseCsvLine(lines[0]);
+    const delimiter = detectDelimiter(lines[0]);
+    const now = new Date();
+    const firstCols = parseCsvLine(lines[0], delimiter);
     const { layout, hasHeader } = detectCsvLayout(firstCols);
     const dataLines = hasHeader ? lines.slice(1) : lines;
 
     const parsed = dataLines
-      .map((l) => mapCsvRowToRawLine(parseCsvLine(l), layout))
+      .map((l) => mapCsvRowToRawLine(parseCsvLine(l, delimiter), layout, now))
       .filter((r): r is NonNullable<typeof r> => r !== null)
       .map((r) => sanitizeInvoiceLine(r))
       .filter((l): l is NonNullable<typeof l> => l !== null);

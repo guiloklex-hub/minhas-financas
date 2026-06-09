@@ -133,7 +133,9 @@ export default function CardCsvImport({ cardId, categories, virtualCards, onClos
             <span className="text-zinc-200">Data, Descrição, Valor</span> e, opcionalmente,{" "}
             <span className="text-zinc-200">Tipo</span> (compra/estorno/taxa/juros),{" "}
             <span className="text-zinc-200">Parcela</span> (ex.: 03/05) e{" "}
-            <span className="text-zinc-200">Cartão</span> (ex.: final 1234 ou @1234 para virtual). O arquivo é lido localmente — sem IA na leitura. Você revisa antes de importar.
+            <span className="text-zinc-200">Cartão</span> (ex.: final 1234 ou @1234 para virtual). Aceita separador{" "}
+            <span className="text-zinc-200">,</span> ou <span className="text-zinc-200">;</span>, valor em formato BR (1.234,56) e data{" "}
+            <span className="text-zinc-200">DD/MM</span> ou <span className="text-zinc-200">DD/MM/AAAA</span>. O arquivo é lido localmente — sem IA na leitura. Você revisa antes de importar.
           </p>
           <input
             required

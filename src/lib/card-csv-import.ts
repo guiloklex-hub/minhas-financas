@@ -1,4 +1,4 @@
-import type { RawInvoiceLine } from "./invoice-import";
+import { parseInstallment, type RawInvoiceLine } from "./invoice-import";
 
 /**
  * Helpers determinísticos do import de lançamentos do cartão por CSV. Sem Prisma
@@ -7,11 +7,25 @@ import type { RawInvoiceLine } from "./invoice-import";
  * a normalização/validação já existente do import por IA.
  */
 
+export type CsvDelimiter = "," | ";";
+
 /**
- * Parser de linha CSV que respeita campos entre aspas com vírgulas internas e
- * aspas duplas escapadas (""). Compartilhado com o importador de transações.
+ * Detecta o separador de campos a partir de uma amostra (1ª linha). Exports
+ * pt-BR de banco/cartão usam ";" para liberar a vírgula como separador decimal
+ * (ex.: "136,79"). Escolhe o caractere mais frequente; padrão ",".
  */
-export function parseCsvLine(line: string): string[] {
+export function detectDelimiter(sample: string): CsvDelimiter {
+  const semis = (sample.match(/;/g) ?? []).length;
+  const commas = (sample.match(/,/g) ?? []).length;
+  return semis > commas ? ";" : ",";
+}
+
+/**
+ * Parser de linha CSV que respeita campos entre aspas com o separador interno e
+ * aspas duplas escapadas (""). O `delimiter` é configurável (padrão ",", usado
+ * também pelo importador de transações).
+ */
+export function parseCsvLine(line: string, delimiter: CsvDelimiter = ","): string[] {
   const result: string[] = [];
   let current = "";
   let inQuotes = false;
@@ -34,7 +48,7 @@ export function parseCsvLine(line: string): string[] {
     } else {
       if (char === '"') {
         inQuotes = true;
-      } else if (char === ",") {
+      } else if (char === delimiter) {
         result.push(current);
         current = "";
       } else {
@@ -48,12 +62,36 @@ export function parseCsvLine(line: string): string[] {
 }
 
 /**
- * Converte uma string de data (YYYY-MM-DD ou DD/MM/YYYY) em YYYY-MM-DD,
- * validando que a data realmente existe (rejeita 31/02). Retorna null se
- * inválida (provável cabeçalho). Devolve string ISO porque `sanitizeInvoiceLine`
- * espera o formato `^\d{4}-\d{2}-\d{2}`.
+ * Converte um valor monetário em texto (formatos pt-BR/EN) para número.
+ * - "136,79" => 136.79 (vírgula decimal)
+ * - "1.234,56" => 1234.56 (ponto milhar + vírgula decimal)
+ * - "1234.56" => 1234.56 (ponto decimal)
+ * Retorna NaN quando não é numérico.
  */
-export function parseCsvDateToIso(dateStr: string): string | null {
+export function parseCsvAmount(raw: string): number {
+  if (typeof raw !== "string") return NaN;
+  let s = raw.trim().replace(/\s/g, "").replace(/R\$/i, "");
+  if (s.length === 0) return NaN;
+  const hasComma = s.includes(",");
+  const hasDot = s.includes(".");
+  if (hasComma && hasDot) {
+    // Assume "." como milhar e "," como decimal (padrão pt-BR).
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (hasComma) {
+    s = s.replace(",", ".");
+  }
+  return Number(s);
+}
+
+/**
+ * Converte uma string de data em YYYY-MM-DD, validando que a data realmente
+ * existe (rejeita 31/02). Aceita `YYYY-MM-DD`, `DD/MM/YYYY` e `DD/MM` (sem ano).
+ * Em `DD/MM` o ano é inferido como a ocorrência passada mais recente em relação
+ * a `referenceDate` (faturas só têm lançamentos no passado; trata a virada
+ * dez→jan). Retorna null se inválida (provável cabeçalho). Devolve string ISO
+ * porque `sanitizeInvoiceLine` espera o formato `^\d{4}-\d{2}-\d{2}`.
+ */
+export function parseCsvDateToIso(dateStr: string, referenceDate: Date = new Date()): string | null {
   if (typeof dateStr !== "string") return null;
   let y: number, m: number, d: number;
 
@@ -68,6 +106,15 @@ export function parseCsvDateToIso(dateStr: string): string | null {
     d = Number(dd);
     m = Number(mm);
     y = Number(yy);
+  } else if (/^\d{1,2}\/\d{1,2}$/.test(trimmed)) {
+    const [dd, mm] = trimmed.split("/");
+    d = Number(dd);
+    m = Number(mm);
+    if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+    // Ano de referência; se a data cair no futuro, usa o ano anterior.
+    const refY = referenceDate.getUTCFullYear();
+    const sameYear = new Date(Date.UTC(refY, m - 1, d));
+    y = sameYear.getTime() > referenceDate.getTime() ? refY - 1 : refY;
   } else {
     return null;
   }
@@ -189,23 +236,36 @@ export function detectCsvLayout(firstCols: string[]): { layout: CsvLayout; hasHe
  * a data for inválida (linha de cabeçalho/lixo) ou colunas obrigatórias faltarem.
  * A normalização de valor/tipo/parcela final fica a cargo de `sanitizeInvoiceLine`.
  */
-export function mapCsvRowToRawLine(cols: string[], layout: CsvLayout): RawInvoiceLine | null {
+export function mapCsvRowToRawLine(
+  cols: string[],
+  layout: CsvLayout,
+  referenceDate: Date = new Date()
+): RawInvoiceLine | null {
   const dateRaw = cols[layout.date] ?? "";
-  const date = parseCsvDateToIso(dateRaw);
+  const date = parseCsvDateToIso(dateRaw, referenceDate);
   if (!date) return null;
 
-  const description = cols[layout.description] ?? "";
-  if (description.trim().length === 0) return null;
+  const description = (cols[layout.description] ?? "").trim();
+  if (description.length === 0) return null;
 
-  const amountRaw = (cols[layout.amount] ?? "").replace(/\s/g, "").replace(",", ".");
-  const amountNum = Number(amountRaw);
+  const amountNum = parseCsvAmount(cols[layout.amount] ?? "");
   if (!Number.isFinite(amountNum) || amountNum === 0) return null;
 
   const explicitType = layout.type !== null ? normalizeType(cols[layout.type]) : undefined;
   // Sem tipo explícito + valor negativo => estorno; senão PURCHASE (default no sanitize).
   const type = explicitType ?? (amountNum < 0 ? "REFUND" : undefined);
 
-  const installmentText = layout.installment !== null ? (cols[layout.installment] ?? "") : "";
+  // Parcela: usa a coluna explícita (NN/NN) quando válida; senão deixa o
+  // sanitizeInvoiceLine tentar extrair da própria descrição.
+  let installmentNumber: number | null = null;
+  let installmentTotal: number | null = null;
+  if (layout.installment !== null) {
+    const parsed = parseInstallment(cols[layout.installment] ?? "");
+    if (parsed) {
+      installmentNumber = parsed.number;
+      installmentTotal = parsed.total;
+    }
+  }
 
   // Coluna de cartão: "@1234" => virtual; "final 1234" / "1234" => físico com final.
   let cardLastFour: string | null = null;
@@ -221,13 +281,11 @@ export function mapCsvRowToRawLine(cols: string[], layout: CsvLayout): RawInvoic
 
   return {
     date,
-    // Anexa a parcela à descrição quando vier em coluna separada, para que
-    // sanitizeInvoiceLine extraia NN/NN via parseInstallment.
-    description: installmentText && /\d{1,2}\/\d{1,2}/.test(installmentText)
-      ? `${description.trim()} ${installmentText.trim()}`
-      : description.trim(),
+    description,
     amount: Math.abs(amountNum),
     type,
+    installmentNumber,
+    installmentTotal,
     cardLastFour,
     isVirtual,
   };
