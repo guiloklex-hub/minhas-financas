@@ -71,6 +71,26 @@ describe('analyzeCsvForImport', () => {
     expect(padaria?.suggestedCategoryId).toBe('cat-2');
   });
 
+  it('aceita export pt-BR: separador ;, valor BR e data DD/MM', async () => {
+    vi.mocked(suggestCategoriesForTitles).mockResolvedValue(new Map());
+    // Cabeçalho é ignorado (data não parseia). Valores em formato BR e datas DD/MM.
+    const csv = [
+      'Data;Titulo;Valor',
+      '06/06;Mercado;-1.234,56',
+      '05/06;Salario;3.000,00',
+    ].join('\n');
+    const result = await analyzeCsvForImport(csvFormData(csv, 'history'));
+
+    expect(result.success).toBe(true);
+    expect(result.counts).toMatchObject({ total: 2 });
+    const mercado = result.rows?.find((r) => r.title === 'Mercado');
+    const salario = result.rows?.find((r) => r.title === 'Salario');
+    expect(mercado).toMatchObject({ amount: 1234.56, type: 'EXPENSE' });
+    expect(salario).toMatchObject({ amount: 3000, type: 'INCOME' });
+    // DD/MM infere ano (junho já passou em relação a "hoje" do teste).
+    expect(mercado?.date.startsWith('20')).toBe(true);
+  });
+
   it('modo padrão: não sugere nada (tudo sem categoria, fica para o fallback)', async () => {
     const result = await analyzeCsvForImport(csvFormData('05/06/2026,Mercado,-50.00', 'default'));
     expect(result.success).toBe(true);

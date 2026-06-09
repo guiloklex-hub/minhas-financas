@@ -152,6 +152,7 @@ export default function CsvImporter({ categories, accounts }: { categories: Cate
         <form onSubmit={handleAnalyze} className="space-y-4">
           <p className="text-sm text-zinc-400">
             Formato: <code>Data, Título, Valor</code>. Valores positivos = Receitas; negativos = Despesas.
+            Aceita separador <code>,</code> ou <code>;</code>, valor em formato BR (1.234,56) e data <code>DD/MM</code>, <code>DD/MM/AAAA</code> ou <code>AAAA-MM-DD</code>.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -6,7 +6,7 @@ import { getSession } from "@/lib/session"
 import { roundMoney } from "@/lib/money"
 import { suggestCategoriesForTitles } from "@/lib/categorization"
 import { categorizeTitlesWithAi } from "@/lib/ai-categorize"
-import { parseCsvLine } from "@/lib/card-csv-import"
+import { parseCsvLine, parseCsvDateToIso, parseCsvAmount, detectDelimiter } from "@/lib/card-csv-import"
 
 /**
  * Valor especial em `categoryId` que liga a categorização AUTOMÁTICA aprendida:
@@ -19,46 +19,10 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_LINES = 5000;
 
 /**
- * Converte uma string de data (YYYY-MM-DD ou DD/MM/YYYY) em Date UTC.
- * Retorna null se inválida (provável cabeçalho).
- */
-function parseCsvDate(dateStr: string): Date | null {
-  let y: number, m: number, d: number;
-
-  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateStr)) {
-    const [yy, mm, dd] = dateStr.split("-");
-    y = Number(yy);
-    m = Number(mm);
-    d = Number(dd);
-  } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
-    const [dd, mm, yy] = dateStr.split("/");
-    d = Number(dd);
-    m = Number(mm);
-    y = Number(yy);
-  } else {
-    return null;
-  }
-
-  if (m < 1 || m > 12 || d < 1 || d > 31) return null;
-
-  const date = new Date(Date.UTC(y, m - 1, d));
-  // Garante que a data realmente existe (ex.: 31/02 vira outra data)
-  if (
-    date.getUTCFullYear() !== y ||
-    date.getUTCMonth() !== m - 1 ||
-    date.getUTCDate() !== d
-  ) {
-    return null;
-  }
-
-  return date;
-}
-
-/**
  * Chave canônica de deduplicação: uma transação é duplicada de outra quando
  * pertencem à MESMA conta, no mesmo dia (UTC), com mesmo valor e mesmo título.
- * As datas são sempre persistidas como meia-noite UTC (ver parseCsvDate), então
- * derivar yyyy-mm-dd a partir dos componentes UTC mantém a chave estável.
+ * As datas são sempre persistidas como meia-noite UTC (ver parseCsvDateToIso),
+ * então derivar yyyy-mm-dd a partir dos componentes UTC mantém a chave estável.
  */
 function dedupKey(accountId: string, date: Date, amount: number, title: string): string {
   const yyyy = date.getUTCFullYear();
@@ -87,18 +51,24 @@ function parseCsvText(
     truncated = true;
   }
 
+  // Detecta o separador (";" comum em exports pt-BR, que liberam a vírgula
+  // decimal) e infere o ano de datas DD/MM em relação a hoje.
+  const delimiter = lines.length > 0 ? detectDelimiter(lines[0]) : ",";
+  const now = new Date();
+
   const rows: ParsedRow[] = [];
   let duplicatesSkipped = 0;
 
   for (let i = 0; i < lines.length; i++) {
-    const cols = parseCsvLine(lines[i]);
+    const cols = parseCsvLine(lines[i], delimiter);
     if (cols.length < 3) continue;
 
     const [dateStr, title, amountStr] = cols;
-    const date = parseCsvDate(dateStr);
-    if (!date) continue;
+    const iso = parseCsvDateToIso(dateStr, now);
+    if (!iso) continue;
+    const date = new Date(`${iso}T00:00:00.000Z`);
 
-    const amount = parseFloat(amountStr.replace(",", "."));
+    const amount = parseCsvAmount(amountStr);
     if (isNaN(amount)) continue;
 
     const type: "INCOME" | "EXPENSE" = amount >= 0 ? "INCOME" : "EXPENSE";
